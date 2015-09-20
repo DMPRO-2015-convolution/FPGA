@@ -1,0 +1,11 @@
+*
+!*/
+!*.*
+
+*.cpp
+*.o
+*.swp
+*.h
+target/
+project/
+
