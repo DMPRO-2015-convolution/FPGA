@@ -2,14 +2,14 @@ package Core
 
 import Chisel._
 
-class Tile(bits_per_pixel: Int, reg_width: Int) extends Module{
+class Tile(data_width: Int, cols: Int) extends Module{
 
     val io = new Bundle {
-        val data_in = UInt(INPUT, bits_per_pixel)
+        val data_in = UInt(INPUT, data_width)
         val ping_key = Bool(INPUT)
-        val data_out = UInt(OUTPUT, bits_per_pixel)
+        val data_out = UInt(OUTPUT, data_width)
     }
-    val memory = Module(new PixelArray(bits_per_pixel, reg_width))
+    val memory = Module(new PixelArray(data_width, cols))
 
     io.data_out := memory.io.data_out
     memory.io.data_in := io.data_in
