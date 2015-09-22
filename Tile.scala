@@ -6,14 +6,18 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
-        val ping_key = Vec.fill(rows){Bool(INPUT)}
+
+        val pings = Vec.fill(cols/3 + rows + 1){Bool(OUTPUT)}
         val data_out = Vec.fill(rows){UInt(OUTPUT, data_width)}
     }
-    val memory = Module(new PixelGrid(data_width, cols, rows))
 
-    io.data_out := memory.io.data_out
-    memory.io.data_in := io.data_in
-    // memory.io.ping_key := io.ping_key
+    val memory = Module(new PixelGrid(data_width, cols, rows)).io
+    val control = Module(new Orchestrator(cols, rows)).io
+
+
+    io.data_out := memory.data_out
+    memory.data_in := io.data_in
+
     
 }
 

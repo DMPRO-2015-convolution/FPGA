@@ -4,7 +4,7 @@ import Chisel._
 
 class Orchestrator(cols: Int, rows: Int)  extends Module {
     val io = new Bundle {
-        val pings = Vec.fill(cols/3 + rows + 1){ Bool(INPUT) }
+        val pings = Vec.fill(cols/3 + rows + 1){ Bool(OUTPUT) }
     }
 
 
