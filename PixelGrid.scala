@@ -5,9 +5,9 @@ import Chisel._
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
+        val pings = Vec.fill(rows + cols/3 + 1){ Bool(INPUT) }
+
         val data_out = Vec.fill(cols/3){ UInt(OUTPUT, data_width) }
-        val ping_key = Vec.fill(rows){ Bool(INPUT) }
-        val ping_mux_key = Bool(INPUT)
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
@@ -16,7 +16,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // (manually) wire mux enablers
-    secondary_muxes(0).enable_in := (io.ping_mux_key || secondary_muxes(2).enable_out)
+    secondary_muxes(0).enable_in := (io.pings(0) || secondary_muxes(2).enable_out)
     secondary_muxes(1).enable_in := secondary_muxes(0).enable_out
     secondary_muxes(2).enable_in := secondary_muxes(1).enable_out
 

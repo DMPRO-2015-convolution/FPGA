@@ -13,7 +13,7 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
 
     io.data_out := memory.io.data_out
     memory.io.data_in := io.data_in
-    memory.io.ping_key := io.ping_key
+    // memory.io.ping_key := io.ping_key
     
 }
 
