@@ -15,11 +15,18 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val queue_splitter = Vec.fill(cols/3){ Reg(init=UInt(data_width)) }
 
 
-    // (manually) wire mux enablers
-    secondary_muxes(0).enable_in := (io.pings(0) || secondary_muxes(2).enable_out)
+    // manually wire secondary mux enablers
+    secondary_muxes(0).enable_in := io.pings(0)
     secondary_muxes(1).enable_in := secondary_muxes(0).enable_out
     secondary_muxes(2).enable_in := secondary_muxes(1).enable_out
 
+
+    // wire primary mux enablers
+    for(i <- 0 until 3){
+        pixel_rows(i).ping_read := io.pings(2*i + 1)
+        pixel_rows(i).ping_mux := io.pings(2*i + 2)
+    }
+    
 
     // Wire queue data splitter
     for(i <- 0 until cols/3){
