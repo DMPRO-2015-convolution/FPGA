@@ -5,37 +5,42 @@ import Chisel._
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
-        val data_out = Vec.fill(rows){ UInt(OUTPUT, data_width) }
+        val data_out = Vec.fill(cols/3){ UInt(OUTPUT, data_width) }
         val ping_key = Vec.fill(rows){ Bool(INPUT) }
+        val ping_mux_key = Bool(INPUT)
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
+    val secondary_muxes = Vec.fill(rows){ Module(new Mux3(data_width, cols/3)).io }
+    val queue_splitter = Vec.fill(cols/3){ Reg(init=UInt(data_width)) }
 
 
-    // Top row
-    for (i <- 0 until cols){
-        pixel_rows(0).data_in(i) := io.data_in
+    // (manually) wire mux enablers
+    secondary_muxes(0).enable_in := (io.ping_mux_key || secondary_muxes(2).enable_out)
+    secondary_muxes(1).enable_in := secondary_muxes(0).enable_out
+    secondary_muxes(2).enable_in := secondary_muxes(1).enable_out
+
+
+    // Wire queue data splitter
+    for(i <- 0 until cols/3){
+        queue_splitter(i) := io.data_in
     }
-    pixel_rows(0).ping_key := io.ping_key(0)
 
 
-    // Wire cols together
-    for(i <- 0 until cols){
-        for(j <- 1 until rows){
-            pixel_rows(j).data_in(i) := pixel_rows(j-1).data_out(i)
+    // Wire pixel array io
+    for(i <- 0 until cols/3){
+        pixel_rows(0).data_in(i) := queue_splitter(i) 
+    }
+    for(i <- 1 until cols/3){
+        for(j <- 0 until rows){
+            pixel_rows(i).data_in(j) := pixel_rows(i-1).data_out(j)
         }
     }
 
 
-    // Wire key pings
-    for(i <- 0 until rows){
-        pixel_rows(i).ping_key := io.ping_key(i)
-    }
-
-
-    // Collect selected signal TODO improve this
-    for (i <- 0 until rows){
-        io.data_out(i) := pixel_rows(i).data_select
+    // Wire grid data out from secondary muxes
+    for(i <- 0 until cols/3){
+        io.data_out(i) := secondary_muxes(i).data_out
     }
 }
 
