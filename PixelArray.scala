@@ -92,3 +92,4 @@ class PixelArrayTest(c: PixelArray, data_width: Int, cols: Int) extends Tester(c
     }
 }
 
+
