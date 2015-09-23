@@ -33,7 +33,7 @@ class CoreTest(c: Tile) extends Tester(c) {
 
 object CoreMain {
     def main(args: Array[String]): Unit = {
-        chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new CoreTest(c) }
+        // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new CoreTest(c) }
 
         // Behaves
         // chiselMainTest(args, () => Module(new PixelArray(24, 9))) { c => new PixelArrayTest(c, 24, 9) }
@@ -48,6 +48,6 @@ object CoreMain {
         // chiselMainTest(args, () => Module(new PixelReg(24))) { c => new PixelRegTest(c, 24) }
 
         // ???
-        // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c, 24, 9, 3) }
+        chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c, 24, 9, 3) }
     }
 }

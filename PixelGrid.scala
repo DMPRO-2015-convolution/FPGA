@@ -20,6 +20,14 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 
 
+    // Wire io between rows
+    for(i <- 1 until cols/3){
+        for(j <- 0 until rows){
+            pixel_rows(i).data_in(j) := pixel_rows(i-1).data_out(j)
+        }
+    }
+
+
     // wire secondary mux enablers
     secondary_muxes(0).enable_in := pinger.pings(0)
     secondary_muxes(1).enable_in := secondary_muxes(0).enable_out
@@ -35,12 +43,13 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     pixel_rows(2).ping_mux := pinger.pings(6)
     
 
-    // Do uhhh
-    for(i <- 1 until cols/3){
-        for(j <- 0 until rows){
-            pixel_rows(i).data_in(j) := pixel_rows(i-1).data_out(j)
+    // Wire data from primary muxes to secondary muxes
+    for(i <- 0 until 3){
+        for(j <- 0 until 3){
+            secondary_muxes(i).data_in(j) := pixel_rows(i).data_out(j)
         }
     }
+    
 
 
     // Wire grid data out from secondary muxes
@@ -50,7 +59,15 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
-    for(i <- 0 to 27){
-    }
     println("PixelGridTest")
+    for(i <- 0 to 27){
+        poke(c.io.data_in, i)
+        step(1)
+    }
+    for(i <- 0 to 27){
+        poke(c.io.data_in, i)
+        peek(c.io.data_out)
+        step(1)
+    }
+
 }
