@@ -23,7 +23,17 @@ class PixelReg(data_width: Int)  extends Module {
     when (io.enable_in){
         data := io.data_in
     }
-
-    
-
 } 
+
+class PixelRegTest(c: PixelReg, data_width: Int) extends Tester(c) {
+    println("PixelRegTest")
+    for(i <- 0 until 20){
+        step(1)
+        poke(c.io.data_in, i)
+        peek(c.io.data_out)
+        peek(c.io.enable_out)
+        if(i%9 == 0){
+            poke(c.io.enable_in, true)
+        }else{poke(c.io.enable_in,false)}
+    }
+}

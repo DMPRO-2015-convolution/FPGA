@@ -51,3 +51,6 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 }
 
+class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
+    println("PixelGridTest")
+}

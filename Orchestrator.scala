@@ -7,8 +7,8 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val reset = Bool(INPUT)
 
         val pings = Vec.fill(cols/3 + rows + 1){ Bool(OUTPUT) }
+        val out = UInt(OUTPUT)
     }
-
 
     /*
     *   0 - Secondary mux
@@ -20,34 +20,49 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     *   6 - PRIMARY MUX 2
     */
 
+    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
+    val state = Reg(init=s0)
 
-    // Set up counter and default false
-    val counter = Reg(init=UInt(0, width=4))
+
+    // State transitions
+    when(io.reset === Bool(true)){
+        state := UInt(0)
+    }.otherwise{
+        when(state === s8){ state := s0
+        }.otherwise(state := state + UInt(1))
+    }
+
+    
+    // Default pings
     for(i <- 0 until io.pings.size){
         io.pings(i) := Bool(false) 
     }
 
-    
-    when(reset === Bool(true)){
-        counter := UInt(0)
-    }.otherwise{
-        counter := counter + UInt(1)
 
-        when(counter === UInt(0)){
-            io.pings(6) := Bool(true)
-        }.elsewhen(counter === UInt(1)){
-            io.pings(0) := Bool(true)
-            io.pings(1) := Bool(true)
-        }.elsewhen(counter === UInt(3)){
-            io.pings(4) := Bool(true)
-        }.elsewhen(counter === UInt(4)){
-            io.pings(5) := Bool(true)
-        }.elsewhen(counter === UInt(6)){
-            io.pings(2) := Bool(true)
-        }.elsewhen(counter === UInt(7)){
-            io.pings(3) := Bool(true)
-        }.elsewhen(counter === UInt(8)){
-            counter := UInt(0)
-        }
+    // See commet for map
+    switch (state) {
+        is (s0){ io.pings(6) := Bool(true) }
+        is (s1){ io.pings(0) := Bool(true); io.pings(1) := Bool(true) }
+        is (s3){ io.pings(4) := Bool(true) }
+        is (s4){ io.pings(5) := Bool(true) }
+        is (s6){ io.pings(2) := Bool(true) }
+        is (s7){ io.pings(4) := Bool(true) }
+        is (s8){ state := s0 }
+    }
+
+    io.out := state
+}
+
+class OrchestratorTest(c: Orchestrator, cols: Int, rows: Int) extends Tester(c) {
+    println("OrchestratorTest")
+    step(5)
+    poke(c.io.reset, true)
+    peek(c.io)
+    step(2)
+    peek(c.io)
+    poke(c.io.reset, false)
+    for(i <- 0 until 8){
+        step(1)
+        peek(c.io)
     }
 }
