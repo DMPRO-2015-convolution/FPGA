@@ -5,39 +5,37 @@ import Chisel._
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
-        val pings = Vec.fill(rows + cols/3 + 1){ Bool(INPUT) }
 
         val data_out = Vec.fill(cols/3){ UInt(OUTPUT, data_width) }
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
     val secondary_muxes = Vec.fill(rows){ Module(new Mux3(data_width, cols/3)).io }
-    val queue_splitter = Vec.fill(cols/3){ Reg(init=UInt(data_width)) }
+    val pinger = Module(new Orchestrator(cols, rows)).io
 
 
-    // manually wire secondary mux enablers
-    secondary_muxes(0).enable_in := io.pings(0)
+    // wire input into first row input tree
+    for(i <- 0 until cols){
+        pixel_rows(0).data_in(i%3) := io.data_in
+    }
+
+
+    // wire secondary mux enablers
+    secondary_muxes(0).enable_in := pinger.pings(0)
     secondary_muxes(1).enable_in := secondary_muxes(0).enable_out
     secondary_muxes(2).enable_in := secondary_muxes(1).enable_out
 
 
     // wire primary mux enablers
-    for(i <- 0 until 3){
-        pixel_rows(i).ping_read := io.pings(2*i + 1)
-        pixel_rows(i).ping_mux := io.pings(2*i + 2)
-    }
+    pixel_rows(0).ping_read := pinger.pings(1)
+    pixel_rows(0).ping_mux := pinger.pings(2)
+    pixel_rows(1).ping_read := pinger.pings(3)
+    pixel_rows(1).ping_mux := pinger.pings(4)
+    pixel_rows(2).ping_read := pinger.pings(5)
+    pixel_rows(2).ping_mux := pinger.pings(6)
     
 
-    // Wire queue data splitter
-    for(i <- 0 until cols/3){
-        queue_splitter(i) := io.data_in
-    }
-
-
-    // Wire pixel array io
-    for(i <- 0 until cols/3){
-        pixel_rows(0).data_in(i) := queue_splitter(i) 
-    }
+    // Do uhhh
     for(i <- 1 until cols/3){
         for(j <- 0 until rows){
             pixel_rows(i).data_in(j) := pixel_rows(i-1).data_out(j)
@@ -52,5 +50,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
+    for(i <- 0 to 27){
+    }
     println("PixelGridTest")
 }
