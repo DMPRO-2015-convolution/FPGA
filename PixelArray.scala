@@ -11,9 +11,14 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
 
         val data_out = Vec.fill(cols/3){UInt(OUTPUT, data_width)}
 
+
         val dbg_mux_enable = Vec.fill(3){ Bool(OUTPUT) }
         val dbg_m_data_out = UInt(OUTPUT)
         val dbg_m_data_in = Vec.fill(3){ UInt(OUTPUT) }
+        val dbg_data_out = Vec.fill(3){ UInt(OUTPUT) }
+        val dbg_data_in = Vec.fill(3){ UInt(OUTPUT) }
+        val dbg_ping_read = Bool(OUTPUT)
+        val dbg_ping_mux = Bool(OUTPUT)
     }
 
     val pixels = Vec.fill(cols){ Module(new PixelReg(data_width)).io } 
@@ -54,11 +59,17 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     }
 
 
+    // DBG WIRING
+
     for(i <- 0 until 3){
         io.dbg_mux_enable(i) := primary_muxes(0).dbg_enable(i)
         io.dbg_m_data_in(i) := primary_muxes(0).dbg_data_in(i)
+        io.dbg_data_out(i) := primary_muxes(i).data_out
+        io.dbg_data_in(i) := io.data_in(i)
     }
     io.dbg_m_data_out := primary_muxes(0).dbg_data_out
+    io.dbg_ping_read := io.ping_read
+    io.dbg_ping_mux := io.ping_mux
 }
 
 class PixelArrayTest(c: PixelArray, data_width: Int, cols: Int) extends Tester(c) {

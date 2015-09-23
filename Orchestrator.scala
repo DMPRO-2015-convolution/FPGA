@@ -7,7 +7,9 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val reset = Bool(INPUT)
 
         val pings = Vec.fill(cols/3 + rows + 1){ Bool(OUTPUT) }
-        val out = UInt(OUTPUT)
+
+
+        // val out = UInt(OUTPUT)
     }
 
     /*
@@ -46,11 +48,11 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is (s3){ io.pings(4) := Bool(true) }
         is (s4){ io.pings(5) := Bool(true) }
         is (s6){ io.pings(2) := Bool(true) }
-        is (s7){ io.pings(4) := Bool(true) }
+        is (s7){ io.pings(3) := Bool(true) }
         is (s8){ state := s0 }
     }
 
-    io.out := state
+    // io.out := state
 }
 
 class OrchestratorTest(c: Orchestrator, cols: Int, rows: Int) extends Tester(c) {
