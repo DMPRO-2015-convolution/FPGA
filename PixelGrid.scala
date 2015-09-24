@@ -25,8 +25,12 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         val dbg_row_2_read = Bool(OUTPUT)
         val dbg_row_2_mux = Bool(OUTPUT)
 
+        val dbg_row_in = Vec.fill(3){ Vec.fill(3) { UInt(OUTPUT) } }
+        val dbg_row_out = Vec.fill(3){ Vec.fill(3) { UInt(OUTPUT) } }
+
         val dbg_reg_vals = Vec.fill(3){Vec.fill(9){UInt(OUTPUT)}}
         val dbg_reg_enables = Vec.fill(3){Vec.fill(9){Bool(OUTPUT)}}
+        val dbg_mux_enables = Vec.fill(3){Vec.fill(9){Bool(OUTPUT)}}
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
@@ -90,6 +94,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         io.dbg_row_1_out(i) := pixel_rows(1).dbg_data_out(i)
         io.dbg_row_2_out(i) := pixel_rows(2).dbg_data_out(i)
     }
+
     io.dbg_row_0_read := pixel_rows(0).dbg_ping_read
     io.dbg_row_1_read := pixel_rows(1).dbg_ping_read
     io.dbg_row_2_read := pixel_rows(2).dbg_ping_read
@@ -98,10 +103,17 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     io.dbg_row_1_mux := pixel_rows(1).dbg_ping_mux
     io.dbg_row_2_mux := pixel_rows(2).dbg_ping_mux
 
+
+    for(i <- 0 until 3){
+        io.dbg_row_in(i) := pixel_rows(i).dbg_data_in
+        io.dbg_row_out(i) := pixel_rows(i).dbg_data_out
+    }
+
     for(i <- 0 until 3){
         for(j <- 0 until 9){
             io.dbg_reg_vals(i)(j) := pixel_rows(i).dbg_reg_vals(j)
             io.dbg_reg_enables(i)(j) := pixel_rows(i).dbg_reg_enables(j)
+            io.dbg_mux_enables(i)(j) := pixel_rows(i).dbg_mux_enables(j)
         }
     }
 }
@@ -111,6 +123,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
 
     var grid = Array.ofDim[Array[Array[BigInt]]](61)
     var enable = Array.ofDim[Array[Array[BigInt]]](61)
+    var row_io = Array.ofDim[Array[Array[BigInt]]](61)
 
     for(i <- 0 to 60){
 
@@ -120,21 +133,32 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         }
         grid(i) = gridslice
 
-        var enableslice = Array.ofDim[BigInt](3, 9)
+        var enableslice = Array.ofDim[BigInt](6, 9)
         for(j <- 0 until 3){
-            enableslice(j) = peek(c.io.dbg_reg_enables(j))
+            enableslice(j*2) = peek(c.io.dbg_reg_enables(j))
+            enableslice(j*2+1) = peek(c.io.dbg_mux_enables(j))
         }
         enable(i) = enableslice
 
-        poke(c.io.data_in, (i)%9 + 1)
+        var row_ioslice = Array.ofDim[BigInt](6, 3)
+        for(j <- 0 until 3){
+            row_ioslice(j*2) = peek(c.io.dbg_row_in(j))
+            row_ioslice(j*2+1) = peek(c.io.dbg_row_out(j))
+        }
+        row_io(i) = row_ioslice
+
+        poke(c.io.data_in, (i)%9)
+
 
         step(1)
     }
-    for(i <- 0 to 60){
-        println("### enable ###")
+    for(i <- 0 to 20){
+        println("### mux and read enable ###")
         enable(i) foreach { row => row foreach print; println }
-        println("### value ###")
+        println("### pixel register value ###")
         grid(i) foreach { row => row foreach print; println }
+        println("### row io ###")
+        row_io(i) foreach { row => row foreach print; println }
         println("###")
         println()
     }

@@ -46,7 +46,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
 
     // wire input tree to pixels
     for (i <- 0 until cols){
-       pixels(i).data_in := io.data_in(i%3)
+       pixels(i).data_in := io.data_in(i/3)
     }
 
 

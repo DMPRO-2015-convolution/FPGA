@@ -9,6 +9,8 @@ class PixelReg(data_width: Int)  extends Module {
 
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
+
+        val dbg_enable = Bool(OUTPUT)
     } 
 
     val data = Reg(init=UInt(0, width = data_width))
@@ -20,7 +22,7 @@ class PixelReg(data_width: Int)  extends Module {
     enable := io.enable_in
     io.data_out := data
 
-    when (io.enable_in){
+    when (enable){
         data := io.data_in
     }
 } 
