@@ -31,6 +31,8 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         val dbg_reg_vals = Vec.fill(3){Vec.fill(9){UInt(OUTPUT)}}
         val dbg_reg_enables = Vec.fill(3){Vec.fill(9){Bool(OUTPUT)}}
         val dbg_mux_enables = Vec.fill(3){Vec.fill(9){Bool(OUTPUT)}}
+
+        val dbg_secondary_mux_in = Vec.fill(3){Vec.fill(3){UInt(OUTPUT)}}
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
@@ -118,6 +120,10 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
             io.dbg_mux_enables(i)(j) := pixel_rows(i).dbg_mux_enables(j)
         }
     }
+
+    for(i <- 0 until 3){
+        io.dbg_secondary_mux_in(i) := secondary_muxes(i).dbg_data_in
+    }
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
@@ -127,7 +133,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     var enable = Array.ofDim[Array[Array[BigInt]]](61)
     var row_io = Array.ofDim[Array[Array[BigInt]]](61)
     var grid_mux_out = Array.ofDim[Array[BigInt]](61)
-    var grid_mux_in = Array.ofDim[Array[BigInt]](61)
+    var grid_mux_in = Array.ofDim[Array[Array[BigInt]]](61)
 
     for(i <- 0 to 60){
 
@@ -153,25 +159,38 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         }
         row_io(i) = row_io_slice
 
+
         grid_mux_out(i) = peek(c.io.data_out)
 
+
+        var grid_mux_in_slice = Array.ofDim[BigInt](3, 3)
+        for(j <- 0 until 3){
+            grid_mux_in_slice(j) = peek(c.io.dbg_secondary_mux_in(j))
+        }
+        grid_mux_in(i) = grid_mux_in_slice
+
+
         poke(c.io.data_in, ((i-1)%9)+1)
-
-
         step(1)
     }
     for(i <- 0 to 27){
         println("### mux and read enable ###")
         enable(i) foreach { row => row foreach print; println }
+
         println("### pixel register value ###")
         grid(i) foreach { row => row foreach print; println }
+
         println("### row io ###")
         row_io(i) foreach { row => row foreach print; println }
+
+        println("### grid mux in ###")
+        grid_mux_in(i) foreach { row => row foreach print; println }
+
         println("### grid out ###")
         print(grid_mux_out(i)(0))
         print(grid_mux_out(i)(1))
         println(grid_mux_out(i)(2))
-        println()
+
     }
     // grid_mux_out foreach { row => row foreach print; println }
 }
