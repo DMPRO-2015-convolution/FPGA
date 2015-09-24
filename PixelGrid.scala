@@ -80,9 +80,11 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         io.data_out(i) := secondary_muxes(i).data_out
     }
 
-    
-    // DBG WIRING
 
+
+    ////////////// 
+    // DBG WIRING
+    ////////////// 
     for(i <- 0 until 3){
         io.dbg_row_0_in(i) := pixel_rows(0).dbg_data_in(i)
         io.dbg_row_1_in(i) := pixel_rows(1).dbg_data_in(i)
@@ -124,42 +126,52 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     var grid = Array.ofDim[Array[Array[BigInt]]](61)
     var enable = Array.ofDim[Array[Array[BigInt]]](61)
     var row_io = Array.ofDim[Array[Array[BigInt]]](61)
+    var grid_mux_out = Array.ofDim[Array[BigInt]](61)
+    var grid_mux_in = Array.ofDim[Array[BigInt]](61)
 
     for(i <- 0 to 60){
 
-        var gridslice = Array.ofDim[BigInt](3, 9)
+        var grid_slice = Array.ofDim[BigInt](3, 9)
         for(j <- 0 until 3){
-            gridslice(j) = peek(c.io.dbg_reg_vals(j))
+            grid_slice(j) = peek(c.io.dbg_reg_vals(j))
         }
-        grid(i) = gridslice
+        grid(i) = grid_slice
 
-        var enableslice = Array.ofDim[BigInt](6, 9)
+
+        var enable_slice = Array.ofDim[BigInt](6, 9)
         for(j <- 0 until 3){
-            enableslice(j*2) = peek(c.io.dbg_reg_enables(j))
-            enableslice(j*2+1) = peek(c.io.dbg_mux_enables(j))
+            enable_slice(j*2) = peek(c.io.dbg_reg_enables(j))
+            enable_slice(j*2+1) = peek(c.io.dbg_mux_enables(j))
         }
-        enable(i) = enableslice
+        enable(i) = enable_slice
 
-        var row_ioslice = Array.ofDim[BigInt](6, 3)
+
+        var row_io_slice = Array.ofDim[BigInt](6, 3)
         for(j <- 0 until 3){
-            row_ioslice(j*2) = peek(c.io.dbg_row_in(j))
-            row_ioslice(j*2+1) = peek(c.io.dbg_row_out(j))
+            row_io_slice(j*2) = peek(c.io.dbg_row_in(j))
+            row_io_slice(j*2+1) = peek(c.io.dbg_row_out(j))
         }
-        row_io(i) = row_ioslice
+        row_io(i) = row_io_slice
 
-        poke(c.io.data_in, (i)%9)
+        grid_mux_out(i) = peek(c.io.data_out)
+
+        poke(c.io.data_in, ((i-1)%9)+1)
 
 
         step(1)
     }
-    for(i <- 0 to 20){
+    for(i <- 0 to 27){
         println("### mux and read enable ###")
         enable(i) foreach { row => row foreach print; println }
         println("### pixel register value ###")
         grid(i) foreach { row => row foreach print; println }
         println("### row io ###")
         row_io(i) foreach { row => row foreach print; println }
-        println("###")
+        println("### grid out ###")
+        print(grid_mux_out(i)(0))
+        print(grid_mux_out(i)(1))
+        println(grid_mux_out(i)(2))
         println()
     }
+    // grid_mux_out foreach { row => row foreach print; println }
 }

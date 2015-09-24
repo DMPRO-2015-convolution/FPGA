@@ -53,7 +53,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is (s4){ }
         is (s5){ io.pings(2) := Bool(true) }
         is (s6){ io.pings(3) := Bool(true) }
-        is (s7){ }
+        is (s7){ io.pings(0) := Bool(true) }
         is (s8){ io.pings(6) := Bool(true) ; state := s0 }
     }
 
