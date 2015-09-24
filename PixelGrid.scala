@@ -24,6 +24,9 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         val dbg_row_2_out = Vec.fill(3){ UInt(OUTPUT) }
         val dbg_row_2_read = Bool(OUTPUT)
         val dbg_row_2_mux = Bool(OUTPUT)
+
+        val dbg_reg_vals = Vec.fill(3){Vec.fill(9){UInt(OUTPUT)}}
+        val dbg_reg_enables = Vec.fill(3){Vec.fill(9){Bool(OUTPUT)}}
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
@@ -94,37 +97,45 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     io.dbg_row_0_mux := pixel_rows(0).dbg_ping_mux
     io.dbg_row_1_mux := pixel_rows(1).dbg_ping_mux
     io.dbg_row_2_mux := pixel_rows(2).dbg_ping_mux
+
+    for(i <- 0 until 3){
+        for(j <- 0 until 9){
+            io.dbg_reg_vals(i)(j) := pixel_rows(i).dbg_reg_vals(j)
+            io.dbg_reg_enables(i)(j) := pixel_rows(i).dbg_reg_enables(j)
+        }
+    }
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
     println("PixelGridTest")
+
+    var grid = Array.ofDim[Array[Array[BigInt]]](61)
+    var enable = Array.ofDim[Array[Array[BigInt]]](61)
+
     for(i <- 0 to 60){
-        poke(c.io.data_in, i)
-        peek(c.io.data_out)
 
-        println("")
-        //peek(c.io.dbg_row_0_in)
-        //peek(c.io.dbg_row_0_out)
+        var gridslice = Array.ofDim[BigInt](3, 9)
+        for(j <- 0 until 3){
+            gridslice(j) = peek(c.io.dbg_reg_vals(j))
+        }
+        grid(i) = gridslice
 
-        //peek(c.io.dbg_row_1_in)
-        //peek(c.io.dbg_row_1_out)
+        var enableslice = Array.ofDim[BigInt](3, 9)
+        for(j <- 0 until 3){
+            enableslice(j) = peek(c.io.dbg_reg_enables(j))
+        }
+        enable(i) = enableslice
 
-        //peek(c.io.dbg_row_1_mux)
-        //peek(c.io.dbg_row_1_read)
+        poke(c.io.data_in, (i)%9 + 1)
 
-        //peek(c.io.dbg_row_2_in)
-        //peek(c.io.dbg_row_2_out)
-/*
-        println("")
-        peek(c.io.dbg_row_0_mux)
-        peek(c.io.dbg_row_1_mux)
-        peek(c.io.dbg_row_2_mux)
-
-        peek(c.io.dbg_row_0_read)
-        peek(c.io.dbg_row_1_read)
-        peek(c.io.dbg_row_2_read)
-        println("")
-*/
         step(1)
+    }
+    for(i <- 0 to 60){
+        println("### enable ###")
+        enable(i) foreach { row => row foreach print; println }
+        println("### value ###")
+        grid(i) foreach { row => row foreach print; println }
+        println("###")
+        println()
     }
 }
