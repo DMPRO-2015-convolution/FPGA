@@ -44,7 +44,7 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
         val accumulator_flush = Bool(INPUT)
         val selector_shift_enable = Bool(INPUT)
 
-        val data_out = Vec.fill(cols-2){ UInt(OUTPUT, width=data_width) }
+        val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = UInt(OUTPUT, width=data_width)
     } 
 
@@ -94,11 +94,10 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     io.kernel_out := multipliers(cols-3).kernel_out
 
 
-    // Wire accumulator chain
-    io.data_out(0) := accumulators(0).data_out 
-
-    for(i <- 1 until cols-2){
-        io.data_out(i) := accumulators(i).data_out
+    // TODO brain this
+    io.data_out := UInt(0)
+    for(i <- 0 until cols-2){
+        when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
     }
 
 }
