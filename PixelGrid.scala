@@ -62,16 +62,8 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     println("PixelGridTest")
     for(i <- 0 to 60){
         poke(c.io.data_in, ((i-1)%9)+1)
-        for(j <- 0 until 3){
-            peek(c.secondary_muxes(j))
-        }
-        for(j <- 0 until 3){
-        }
         peek(c.io.data_out)
         step(1)
         println("\n\n\n")
-    }
-    for(i <- 0 to 27){
-
     }
 }

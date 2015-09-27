@@ -28,8 +28,11 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
     // TODO Once working 0 should not be used
     when(read_keys(0) === Bool(true)){ balancer := io.data_in(0) 
     }.elsewhen(read_keys(1) === Bool(true)) { balancer := io.data_in(1)
-    }.elsewhen(read_keys(2) === Bool(true)) { balancer := io.data_in(2)
-    }.otherwise{ balancer := UInt(0) }
+    }.otherwise{ balancer := io.data_in(2) }
+
+    // }.otherwise(read_keys(2) === Bool(true)) { balancer := io.data_in(2)
+    // }.otherwise{ balancer := UInt(0) }
+
 
     io.data_out := balancer
 
