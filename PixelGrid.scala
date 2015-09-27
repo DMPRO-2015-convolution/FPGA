@@ -73,17 +73,27 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // Wire memory outputs to ALUs
-    for(i <- 0 until cols-2){
-    
+    for(i <- 0 until rows){
+        ALUs.data_in(i) := secondary_muxes(i).data_out 
     }
+
+
+    // Wire ctrl pings to ALUs
+    ALUs.accumulator_flush := pinger.pings(8)
+    ALUs.selector_shift_enable := pinger.pings(7)
+    ALUs.kernel_in := UInt(1)
 
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
     println("PixelGridTest")
+    for(i <- 0 to 10){
+        step(1)
+    }
     for(i <- 0 to 60){
         poke(c.io.data_in, ((i-1)%9)+1)
         peek(c.io.data_out)
+        peek(c.ALUs.data_out)
         step(1)
         println("\n\n\n")
     }

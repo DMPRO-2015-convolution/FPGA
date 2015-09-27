@@ -71,8 +71,9 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     }
     // Wire shift enablers
     for(i <- 1 until (cols-2)){
-        shift_enablers(i-1) := shift_enablers(i)
+        shift_enablers(i) := shift_enablers(i-1)
     }
+    shift_enablers(0) := io.selector_shift_enable
 
 
     // Wire kernel chain
@@ -90,11 +91,31 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
 
 
     // Wire accumulator chain
-    io.data_out := accumulators(0).data_out 
+    io.data_out(0) := accumulators(0).data_out 
     accumulators(0).flush_in := io.accumulator_flush
 
     for(i <- 1 until cols-2){
         io.data_out(i) := accumulators(i).data_out
         accumulators(i).flush_in := accumulators(i-1).flush_out
+    }
+
+}
+
+class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
+    println("ALU testan")
+
+    poke(c.io.kernel_in, 1)
+
+    poke(c.io.data_in(0), 0)
+    poke(c.io.data_in(1), 1)
+    poke(c.io.data_in(2), 1)
+
+    for(i <- 0 to 60){
+        if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
+        if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
+        step(1)
+        peek(c.selectors)
+        peek(c.io.data_out)
+        println("\n\n\n")
     }
 }
