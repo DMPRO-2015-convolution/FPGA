@@ -10,15 +10,6 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
         val ping_mux = Bool(INPUT)
 
         val data_out = Vec.fill(cols/3){UInt(OUTPUT, data_width)}
-
-
-        val dbg_data_out = Vec.fill(3){ UInt(OUTPUT) }
-        val dbg_data_in = Vec.fill(3){ UInt(OUTPUT) }
-        val dbg_ping_read = Bool(OUTPUT)
-        val dbg_ping_mux = Bool(OUTPUT)
-        val dbg_reg_vals = Vec.fill(9){ UInt(OUTPUT) }
-        val dbg_reg_enables = Vec.fill(9){ Bool(OUTPUT) }
-        val dbg_mux_enables = Vec.fill(9){ Bool(OUTPUT) }
     }
 
     val pixels = Vec.fill(cols){ Module(new PixelReg(data_width)).io } 
@@ -32,7 +23,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     primary_muxes(0).enable_in := io.ping_mux
     primary_muxes(1).enable_in := primary_muxes(0).enable_out
     primary_muxes(2).enable_in := primary_muxes(1).enable_out
-    
+
 
     // wire pixel read ping chain
     pixels(0).enable_in := io.ping_read
@@ -56,24 +47,6 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     }
     for (i <- 0 until cols/3){
         io.data_out(i) := primary_muxes(i).data_out
-    }
-
-
-    // DBG WIRING
-
-    io.dbg_ping_read := io.ping_read
-    io.dbg_ping_mux := io.ping_mux
-
-    for(i <-0 until 9){
-        io.dbg_reg_vals(i) := pixels(i).data_out 
-        io.dbg_reg_enables(i) := pixels(i).enable_out
-    }
-    for(i <-0 until 9){
-        io.dbg_mux_enables(i) := primary_muxes(i/3).dbg_enable(i%3)
-    }
-    for(i <-0 until 3){
-        io.dbg_data_in(i) := io.data_in(i)
-        io.dbg_data_out(i) := io.data_out(i)
     }
 }
 

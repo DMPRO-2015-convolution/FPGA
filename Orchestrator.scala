@@ -7,13 +7,10 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val reset = Bool(INPUT)
 
         val pings = Vec.fill(cols/3 + rows + 1){ Bool(OUTPUT) }
-
-
-        // val out = UInt(OUTPUT)
     }
 
     /*
-    *   0 - Secondary mux
+    *   0 - Secondary mux shift
     *   1 - READ 0
     *   2 - PRIMARY MUX 0
     *   3 - READ 1
@@ -47,9 +44,10 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // See commet for map
     switch (state) {
         is (s0){ io.pings(1) := Bool(true) }
-        is (s1){ }
+        is (s1){ io.pings(0) := Bool(true) }
         is (s2){ io.pings(4) := Bool(true) }
         is (s3){ io.pings(5) := Bool(true) }
+        is (s3){ io.pings(0) := Bool(true) }
         is (s4){ }
         is (s5){ io.pings(2) := Bool(true) }
         is (s6){ io.pings(3) := Bool(true) }

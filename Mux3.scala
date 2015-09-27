@@ -10,9 +10,7 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
 
-        val dbg_enable = Vec.fill(3)( {Bool(OUTPUT)} )
-        val dbg_data_out = UInt(OUTPUT, data_width) 
-        val dbg_data_in = Vec.fill(regs_in){ UInt(OUTPUT, data_width) }
+        val dbg_read_keys = Vec.fill(3){ Bool(OUTPUT) }
     } 
 
     val balancer = Reg(UInt(width=data_width))
@@ -27,14 +25,16 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
 
 
     // three line mux
+    // TODO Once working 0 should not be used
     when(read_keys(0) === Bool(true)){ balancer := io.data_in(0) 
     }.elsewhen(read_keys(1) === Bool(true)) { balancer := io.data_in(1)
-    }.otherwise{ balancer := io.data_in(2) }
+    }.elsewhen(read_keys(2) === Bool(true)) { balancer := io.data_in(2)
+    }.otherwise{ balancer := UInt(0) }
 
     io.data_out := balancer
 
     for(i <- 0 until 3){
-        io.dbg_enable(i) := read_keys(i)
+        io.dbg_read_keys(i) := read_keys(i)
     }
 }
 
