@@ -66,13 +66,13 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is (s3){ io.pings(0) := Bool(true) }
         is (s6){ io.pings(0) := Bool(true) }
 
-        // TODO brain this
-        is (s0){ io.pings(7) := Bool(true) }
-        is (s3){ io.pings(7) := Bool(true) }
-        is (s6){ io.pings(7) := Bool(true) }
+        // ALU mux shift
+        is (s2){ io.pings(7) := Bool(true) }
+        is (s5){ io.pings(7) := Bool(true) }
+        is (s8){ io.pings(7) := Bool(true) }
 
-        // TODO and this
-        is (s0){ io.pings(8) := Bool(true) }
+        // Accumulator flush
+        is (s7){ io.pings(8) := Bool(true) }
 
     }
 

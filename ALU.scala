@@ -23,20 +23,14 @@ class Accumulator(data_width: Int) extends Module {
 
     val io = new Bundle { 
         val pixel_in = UInt(INPUT, data_width)
-        val flush_in = Bool(INPUT)
+        val flush = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
-        val flush_out = Bool(OUTPUT)
-
     } 
 
     val accumulator = Reg(UInt(width=data_width))
-    val flush = Reg(Bool())
 
-    flush := io.flush_in
-    io.flush_out := flush
-
-    when(flush){ accumulator := io.pixel_in }
+    when(io.flush){ accumulator := io.pixel_in }
     .otherwise{ accumulator := accumulator + io.pixel_in }
 
     io.data_out := accumulator
@@ -58,7 +52,8 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     val accumulators = Vec.fill(cols-2){ Module(new Accumulator(data_width)).io }
 
     val selectors = Vec.fill(cols-2){ Module(new ShiftMux3(data_width, 3, 0)).io }
-    val shift_enablers = Vec.fill(cols-2){ Bool() }
+    val shift_enablers = Vec.fill(cols-2){ Reg(Bool()) }
+    val flush_signals = Vec.fill(cols-2){ Reg(Bool()) }
 
     
     // Wire ALU selectors
@@ -74,6 +69,15 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
         shift_enablers(i) := shift_enablers(i-1)
     }
     shift_enablers(0) := io.selector_shift_enable
+
+
+    // Wire flush enablers
+    for(i <- 1 until (cols-2)){
+        flush_signals(i) := flush_signals(i-1)
+        accumulators(i).flush := flush_signals(i)
+    }
+    accumulators(0).flush := flush_signals(0)
+    flush_signals(0) := io.accumulator_flush
 
 
     // Wire kernel chain
@@ -92,21 +96,20 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
 
     // Wire accumulator chain
     io.data_out(0) := accumulators(0).data_out 
-    accumulators(0).flush_in := io.accumulator_flush
 
     for(i <- 1 until cols-2){
         io.data_out(i) := accumulators(i).data_out
-        accumulators(i).flush_in := accumulators(i-1).flush_out
     }
 
 }
+
 
 class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
     println("ALU testan")
 
     poke(c.io.kernel_in, 1)
 
-    poke(c.io.data_in(0), 0)
+    poke(c.io.data_in(0), 1)
     poke(c.io.data_in(1), 1)
     poke(c.io.data_in(2), 1)
 
