@@ -10,7 +10,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
-    val secondary_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, (i+2 % 3) )).io
+    val secondary_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, ((i) % 3) )).io
     val pinger = Module(new Orchestrator(cols, rows)).io
 
 
@@ -63,6 +63,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     for(i <- 0 to 60){
         poke(c.io.data_in, ((i-1)%9)+1)
         for(j <- 0 until 3){
+            peek(c.secondary_muxes(j))
         }
         for(j <- 0 until 3){
         }

@@ -10,7 +10,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     }
 
     /*
-    *   0 - Secondary mux shift
+    *   0 - Secondary mux
     *   1 - READ 0
     *   2 - PRIMARY MUX 0
     *   3 - READ 1
@@ -44,15 +44,19 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // See commet for map
     switch (state) {
         is (s0){ io.pings(1) := Bool(true) }
-        is (s1){ io.pings(0) := Bool(true) }
+        is (s1){ }
         is (s2){ io.pings(4) := Bool(true) }
         is (s3){ io.pings(5) := Bool(true) }
-        is (s3){ io.pings(0) := Bool(true) }
         is (s4){ }
         is (s5){ io.pings(2) := Bool(true) }
         is (s6){ io.pings(3) := Bool(true) }
-        is (s7){ io.pings(0) := Bool(true) }
+        is (s7){ }
         is (s8){ io.pings(6) := Bool(true) ; state := s0 }
+
+        is (s6){ io.pings(0) := Bool(true) }
+        is (s0){ io.pings(0) := Bool(true) }
+        is (s3){ io.pings(0) := Bool(true) }
+
     }
 
     // io.out := state
