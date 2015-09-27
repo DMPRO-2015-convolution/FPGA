@@ -8,15 +8,15 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
         val data_in = UInt(INPUT, data_width)
         val reset = Bool(INPUT)
 
-        val data_out = Vec.fill(rows){UInt(OUTPUT, data_width)}
+        // val data_out = Vec.fill(rows){UInt(OUTPUT, data_width)}
     }
 
     val memory = Module(new PixelGrid(data_width, cols, rows)).io
 
 
     // Wire data inputs and outputs
-    io.data_out := memory.data_out
-    memory.data_in := io.data_in
+    // io.data_out := memory.data_out
+    // memory.data_in := io.data_in
 
 }
 
@@ -24,11 +24,9 @@ class CoreTest(c: Tile) extends Tester(c) {
     
     step(1)
     step(1)
-    poke(c.io.data_in, 1) 
     for(i <- 0 until 60){
         step(1)
     }
-    peek(c.io.data_out)
 }
 
 object CoreMain {

@@ -2,6 +2,8 @@ package Core
 
 import Chisel._
 
+
+// TODO move ALU out of PG
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
@@ -14,6 +16,12 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val pinger = Module(new Orchestrator(cols, rows)).io
 
 
+    //////////////////////////////////////
+    ///////////   GRID
+    ///////////
+    ///////////
+   
+    
     // wire input into first row input tree
     for(i <- 0 until cols){
         pixel_rows(0).data_in(i%3) := io.data_in
@@ -54,6 +62,19 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     // Wire grid data out from secondary muxes
     for(i <- 0 until cols/3){
         io.data_out(i) := secondary_muxes(i).data_out
+    }
+
+
+    //////////////////////////////////////
+    ///////////   ALUs
+    ///////////
+    ///////////
+    val ALUs = Module(new ALUrow(data_width, cols)).io
+
+
+    // Wire memory outputs to ALUs
+    for(i <- 0 until cols-2){
+    
     }
 
 }

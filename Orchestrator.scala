@@ -6,21 +6,30 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val io = new Bundle {
         val reset = Bool(INPUT)
 
-        val pings = Vec.fill(cols/3 + rows + 1){ Bool(OUTPUT) }
+        val pings = Vec.fill(cols/3 + rows + 1 + 2){ Bool(OUTPUT) }
     }
 
     /*
-    *   0 - Secondary mux
-    *   1 - READ 0
-    *   2 - PRIMARY MUX 0
-    *   3 - READ 1
-    *   4 - PRIMARY MUX 1
-    *   5 - READ 2
-    *   6 - PRIMARY MUX 2
-    *
-    *   No amounts of commentig is going to make this clear.
-    *   View the documentation in order to understand the timing
-    */
+     *   GRID
+     *
+     *   0 - Secondary mux
+     *   1 - READ 0
+     *   2 - PRIMARY MUX 0
+     *   3 - READ 1
+     *   4 - PRIMARY MUX 1
+     *   5 - READ 2
+     *   6 - PRIMARY MUX 2
+     *
+     *   No amounts of commentig is going to make this clear.
+     *   View the documentation in order to understand the timing
+     *
+     *
+     *   ALUS
+     *
+     *   7 - ALU mux shift
+     *   8 - Accumulator flush signal
+     *
+     */
 
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val state = Reg(init=s0)
@@ -53,9 +62,17 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is (s7){ }
         is (s8){ io.pings(6) := Bool(true) ; state := s0 }
 
-        is (s6){ io.pings(0) := Bool(true) }
         is (s0){ io.pings(0) := Bool(true) }
         is (s3){ io.pings(0) := Bool(true) }
+        is (s6){ io.pings(0) := Bool(true) }
+
+        // TODO brain this
+        is (s0){ io.pings(7) := Bool(true) }
+        is (s3){ io.pings(7) := Bool(true) }
+        is (s6){ io.pings(7) := Bool(true) }
+
+        // TODO and this
+        is (s0){ io.pings(8) := Bool(true) }
 
     }
 
