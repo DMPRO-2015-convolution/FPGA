@@ -40,7 +40,7 @@ object CoreMain {
         // chiselMainTest(args, () => Module(new Mux3(24, 3))) { c => new Mux3Test(c, 24, 3) }
         
         // Behaves
-        chiselMainTest(args, () => Module(new ShiftMux3(24, 3, 0))) { c => new ShiftMux3Test(c, 24, 3) }
+        // chiselMainTest(args, () => Module(new ShiftMux3(24, 3, 0))) { c => new ShiftMux3Test(c, 24, 3) }
 
         // Behaves
         // chiselMainTest(args, () => Module(new Orchestrator(9, 3))) { c => new OrchestratorTest(c, 24, 9) }
@@ -52,7 +52,7 @@ object CoreMain {
         // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c, 24, 9, 3) }
         
         // (mis)Behaves(?) ALU doenst shift?
-        // chiselMainTest(args, () => Module(new ALUrow(24, 9))) { c => new ALUtest(c, 24, 9) }
+        chiselMainTest(args, () => Module(new ALUrow(24, 9))) { c => new ALUtest(c, 24, 9) }
         
     }
 }

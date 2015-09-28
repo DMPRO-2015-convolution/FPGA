@@ -131,11 +131,11 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
 
     for(i <- 0 to 60){
         poke(c.io.data_in(0), i%9 + 1)
-        poke(c.io.data_in(1), (i + 3) %9 + 1)
-        poke(c.io.data_in(2), (i + 6) %9 + 1)
+        poke(c.io.data_in(1), (i + 6) %9 + 1)
+        poke(c.io.data_in(2), (i + 3) %9 + 1)
 
         if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
-        if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
+        if(i%3 == 1){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
         step(1)
         peek(c.selectors(0))
         // peek(c.io.data_out)

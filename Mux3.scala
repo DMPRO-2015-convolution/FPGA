@@ -10,7 +10,6 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
 
-        val dbg_selected = UInt(OUTPUT)
         val dbg_enable = UInt(OUTPUT)
     } 
 
@@ -53,7 +52,6 @@ class Mux3Test(c: Mux3, data_width: Int, regs_in: Int) extends Tester(c) {
         step(1)
         poke(c.io.data_in(i%3), i)
         peek(c.io.data_out)
-        peek(c.io.dbg_selected)
         peek(c.io.dbg_enable)
         if(i%9 == 0){
             poke(c.io.enable_in, true)
