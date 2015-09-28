@@ -71,7 +71,7 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     val multipliers = Vec.fill(cols-2){ Module(new Multiplier(data_width)).io }
     val accumulators = Vec.fill(cols-2){ Module(new Accumulator(data_width)).io }
 
-    val selectors = Vec.fill(cols-2){ Module(new ShiftMux3(data_width, 3, 0)).io }
+    val selectors = Vec.fill(cols-2){ Module(new ShiftMux3(data_width, 3, 1)).io }
     val shift_enablers = Vec.fill(cols-2){ Reg(Bool()) }
     val flush_signals = Vec.fill(cols-2){ Reg(Bool()) }
 
@@ -79,7 +79,8 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     // Wire ALU selectors
     for(i <- 0 until cols-2){
         for(j <- 0 until 3){
-            selectors(i).data_in(j) := io.data_in(j)
+            // Pay attention to the reversal!
+            selectors(i).data_in(2-j) := io.data_in(j)
         }
         multipliers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)
@@ -136,8 +137,16 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
 
         if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
         if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
+        println("\n")
+        println("sel 0\n")
         peek(c.selectors(0))
-        step(1)
+        println("\n")
+        // println("sel 1\n")
+        // peek(c.selectors(1))
+        // println("\n")
+        peek(c.io.data_out)
         println("\n\n\n")
+        step(1)
+        println("\n")
     }
 }
