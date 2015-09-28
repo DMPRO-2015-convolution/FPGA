@@ -1,9 +1,8 @@
 package Core
 
 import Chisel._
+import java.io._
 import scala.io.Source
-import java.io.File
-import java.io.PrintWriter
 
 
 // TODO move ALU out of PG
@@ -89,12 +88,48 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
-    println("PixelGridTest")
-    for(i <- 0 to 60){
-        poke(c.io.data_in, ((i-1)%9)+1)
-        peek(c.io.data_out)
-        peek(c.ALUs)
-        step(1)
-        println("\n\n\n")
+
+    def coords_to_val(x: Int, y: Int, width: Int) : Int = {
+        return y*width + x
     }
+
+    def feed_row(y: Int, img: Array[Int], width: Int, height: Int) : Unit = {
+        for(i <- 0 until width){
+            for(j <- 0 until 9){
+                val d = coords_to_val(i, j, width)
+                poke(c.io.data_in, d)
+                step(1)
+            }
+        }
+    }
+
+    def feed_image(img: Array[Int], width: Int, height: Int) : Unit = {
+        for(i <- 0 until height/9 - 1){
+            feed_row(i*9, img, width, height)
+        }
+    }
+    
+    val img = Source.fromFile("orig_24bit_dump.txt").getLines()
+    val img_array = img.next().split(" +").map(_.toInt)
+
+    feed_image(img_array, 512, 512)
+
+    /*
+    poke(c.io.data_in, 1)
+    for(i <- 0 to 60){
+        peek(c.ALUs.data_out)
+        step(1)
+        println("\n")
+
+        pw.write(i)
+    }
+    poke(c.io.data_in, 0)
+    for(i <- 0 to 40){
+        peek(c.ALUs.data_out)
+        step(1)
+        println("\n")
+    }
+    */
+
 }
+
