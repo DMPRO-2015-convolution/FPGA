@@ -90,13 +90,10 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
     println("PixelGridTest")
-    for(i <- 0 to 10){
-        step(1)
-    }
     for(i <- 0 to 60){
         poke(c.io.data_in, ((i-1)%9)+1)
         peek(c.io.data_out)
-        peek(c.ALUs.data_out)
+        peek(c.ALUs)
         step(1)
         println("\n\n\n")
     }

@@ -114,7 +114,7 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     io.kernel_out := multipliers(cols-3).kernel_out
 
 
-    // TODO brain this
+    // TODO brain this into using a tree or something
     io.data_out := UInt(0)
     for(i <- 0 until cols-2){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
@@ -130,15 +130,14 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
 
 
     for(i <- 0 to 60){
-        poke(c.io.data_in(0), i%9 + 1)
-        poke(c.io.data_in(1), (i + 6) %9 + 1)
-        poke(c.io.data_in(2), (i + 3) %9 + 1)
+        poke(c.io.data_in(0), (i + 7) %9 + 1)
+        poke(c.io.data_in(1), (i + 1) %9 + 1)
+        poke(c.io.data_in(2), (i + 4) %9 + 1)
 
         if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
-        if(i%3 == 1){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
-        step(1)
+        if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
         peek(c.selectors(0))
-        // peek(c.io.data_out)
+        step(1)
         println("\n\n\n")
     }
 }
