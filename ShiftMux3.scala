@@ -2,6 +2,7 @@ package Core
 
 import Chisel._
 
+// TODO why does this not hold state???
 class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
     val io = new Bundle { 
         val data_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
@@ -10,9 +11,12 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
         val data_out = UInt(OUTPUT, data_width) 
 
         val dbg_enable = UInt(OUTPUT)
+        val dbg_selected = UInt(OUTPUT)
     } 
 
     val balancer = Reg(UInt(width=data_width))
+
+    io.data_out := balancer
 
     val s0 :: s1 :: s2 :: Nil = Enum(UInt(), 3)
     val state = Reg(init=UInt(default, width=data_width))
@@ -28,11 +32,22 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
         is (s2){ balancer := io.data_in(2) }
     }
 
-    io.data_out := balancer
-
     io.dbg_enable := state
-
 }
 
-class ShiftMux3Test(c: Mux3, data_width: Int, regs_in: Int) extends Tester(c) {
+class ShiftMux3Test(c: ShiftMux3, data_width: Int, regs_in: Int) extends Tester(c) {
+    println("shift Mux3 test")
+    for(i <- 0 until 18){
+        step(1)
+        poke(c.io.data_in(i%3), i%3 +1)
+        peek(c.io.data_out)
+        peek(c.io.dbg_selected)
+        peek(c.io.dbg_enable)
+        if(i%3 == 0){
+            poke(c.io.shift, true)
+        }
+        else{
+            (poke(c.io.shift, false))
+        }
+    }
 }

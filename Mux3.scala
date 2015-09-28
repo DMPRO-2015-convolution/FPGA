@@ -10,35 +10,41 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
 
-        val dbg_read_keys = Vec.fill(3){ Bool(OUTPUT) }
+        val dbg_selected = UInt(OUTPUT)
+        val dbg_enable = UInt(OUTPUT)
     } 
 
     val balancer = Reg(UInt(width=data_width))
-    val read_keys = Vec.fill(regs_in){ Reg(init=Bool(false)) }
-
-
-    // (manually) wire up the internal read chain
-    read_keys(0) := io.enable_in
-    read_keys(1) := read_keys(0)
-    read_keys(2) := read_keys(1)
-    io.enable_out := read_keys(2)
-
-
-    // three line mux
-    // TODO Once working 0 should not be used
-    when(read_keys(0) === Bool(true)){ balancer := io.data_in(0) 
-    }.elsewhen(read_keys(1) === Bool(true)) { balancer := io.data_in(1)
-    }.otherwise{ balancer := io.data_in(2) }
-
-    // }.otherwise(read_keys(2) === Bool(true)) { balancer := io.data_in(2)
-    // }.otherwise{ balancer := UInt(0) }
-
 
     io.data_out := balancer
 
-    for(i <- 0 until 3){
-        io.dbg_read_keys(i) := read_keys(i)
+    val sleep :: s0 :: s1 :: s2 :: Nil = Enum(UInt(), 4)
+    val state = Reg(init=UInt(width=data_width))
+
+    when(io.enable_in){
+        state := s0
     }
+
+    io.enable_out := Bool(false)
+
+    when(state === sleep){
+    }otherwise{
+        when(state === s2){
+            state := sleep
+            io.enable_out := Bool(true)
+        }.otherwise{
+            state := state + UInt(1)
+        }
+    }
+    
+
+    switch (state) {
+        is (s0){ balancer := io.data_in(0) }
+        is (s1){ balancer := io.data_in(1) }
+        is (s2){ balancer := io.data_in(2) }
+    }
+
+    io.dbg_enable := state
 }
 
 class Mux3Test(c: Mux3, data_width: Int, regs_in: Int) extends Tester(c) {
@@ -47,7 +53,8 @@ class Mux3Test(c: Mux3, data_width: Int, regs_in: Int) extends Tester(c) {
         step(1)
         poke(c.io.data_in(i%3), i)
         peek(c.io.data_out)
-        peek(c.io.enable_out)
+        peek(c.io.dbg_selected)
+        peek(c.io.dbg_enable)
         if(i%9 == 0){
             poke(c.io.enable_in, true)
         }

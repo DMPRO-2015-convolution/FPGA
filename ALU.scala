@@ -13,10 +13,19 @@ class Multiplier(data_width: Int) extends Module {
     } 
 
     val kernel = Reg(UInt(width=data_width))
+
+    val color1 = io.pixel_in(7,0)
+    val color2 = io.pixel_in(15,8)
+    val color3 = io.pixel_in(23,16)
+
     kernel := io.kernel_in
     io.kernel_out := kernel
 
-    io.data_out := io.pixel_in*kernel
+    io.data_out := UInt(0)
+
+    io.data_out(7, 0) := color1*kernel
+    io.data_out(15, 8) := color2*kernel
+    io.data_out(23, 16) := color3*kernel
 }
 
 class Accumulator(data_width: Int) extends Module {
@@ -30,8 +39,19 @@ class Accumulator(data_width: Int) extends Module {
 
     val accumulator = Reg(UInt(width=data_width))
 
-    when(io.flush){ accumulator := io.pixel_in }
-    .otherwise{ accumulator := accumulator + io.pixel_in }
+    val color1 = io.pixel_in(7,0)
+    val color2 = io.pixel_in(15,8)
+    val color3 = io.pixel_in(23,16)
+
+    when(io.flush){ 
+        accumulator(7, 0) := color1
+        accumulator(15, 8) := color2
+        accumulator(23, 16) := color3
+    }.otherwise{
+        accumulator(7, 0) := accumulator(7, 0) + color1
+        accumulator(15, 8) := accumulator(15, 8) + color2
+        accumulator(23, 16) := accumulator(23, 16) + color3
+    }
 
     io.data_out := accumulator
 }
@@ -108,16 +128,17 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
 
     poke(c.io.kernel_in, 1)
 
-    poke(c.io.data_in(0), 1)
-    poke(c.io.data_in(1), 1)
-    poke(c.io.data_in(2), 1)
 
     for(i <- 0 to 60){
+        poke(c.io.data_in(0), i%9 + 1)
+        poke(c.io.data_in(1), (i + 3) %9 + 1)
+        poke(c.io.data_in(2), (i + 6) %9 + 1)
+
         if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
         if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
         step(1)
-        peek(c.selectors)
-        peek(c.io.data_out)
+        peek(c.selectors(0))
+        // peek(c.io.data_out)
         println("\n\n\n")
     }
 }
