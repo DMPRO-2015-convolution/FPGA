@@ -15,7 +15,8 @@ class PixelReg(data_width: Int)  extends Module {
     val enable = Reg(init=Bool(false))
     val read_switch = Reg(init=Bool(false))
 
-    // Wire enable
+
+    // Wire read enable
     io.enable_out := enable
     enable := io.enable_in
     io.data_out := data

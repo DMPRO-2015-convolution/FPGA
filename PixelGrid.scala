@@ -14,7 +14,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
-    val secondary_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, ((i) % 3) )).io
+    val secondary_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=(i % 3) )).io
     val pinger = Module(new Orchestrator(cols, rows)).io
 
 
@@ -71,7 +71,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     ///////////   ALUs
     ///////////
     ///////////
-    val ALUs = Module(new ALUrow(data_width, cols)).io
+    val ALUs = Module(new ALUrow(data_width, cols, rows)).io
 
 
     // Wire memory outputs to ALUs
@@ -118,7 +118,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         var conv = new ListBuffer[Int]()
         var pixels_collected = 0
         for(i <- 0 until width+200){
-            for(j <- 0 until sweep_input_depth){
+            for(j <- sweep_input_depth-1 to 0 by -1){
                 
                 if(j == 0){ poke(c.ALUs.kernel_in, 0) }
                 if(j == 1){ poke(c.ALUs.kernel_in, 1) }
@@ -181,14 +181,13 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     val img = Source.fromFile("Conv/orig_24bit_dump.txt").getLines()
     val img_array = img.next().split(" +").map(_.toInt)
 
-    val conv_img_array = feed_image(img_array)
-    val conv_img_string = conv_img_array.mkString("\n")
+    // val conv_img_array = feed_image(img_array)
+    // val conv_img_string = conv_img_array.mkString("\n")
 
-    new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
+    // new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
 
     println(total_pixels_collected)
     println(rows_swept)
-
     
     // poke(c.io.data_in, 1)
     // for(i <- 0 to 60){

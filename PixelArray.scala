@@ -4,28 +4,34 @@ import Chisel._
 
 // TODO figure out how to assert cols div 3
 class PixelArray(data_width: Int, cols: Int) extends Module {
+
+    // if(!(cols % 3 == 0)){ val crash = 1/0 }
+
+
+    val n_column_groups = cols/3
+
     val io = new Bundle {
-        val data_in = Vec.fill(cols/3){UInt(INPUT, data_width)}
+        val data_in = Vec.fill(n_column_groups){UInt(INPUT, data_width)}
         val ping_read = Bool(INPUT)
         val ping_mux = Bool(INPUT)
 
-        val data_out = Vec.fill(cols/3){UInt(OUTPUT, data_width)}
+        val data_out = Vec.fill(n_column_groups){UInt(OUTPUT, data_width)}
     }
 
     val pixels = Vec.fill(cols){ Module(new PixelReg(data_width)).io } 
-    val primary_muxes = Vec.fill(cols/3) { Module(new Mux3(data_width, cols/3)).io }
+    val primary_muxes = Vec.fill(n_column_groups) { Module(new Mux3(data_width, n_column_groups)).io }
     
 
     // Wire control chains
     // 
 
-    // wire primary mux enablers
+    // wire primary mux enabler chain
     primary_muxes(0).enable_in := io.ping_mux
     primary_muxes(1).enable_in := primary_muxes(0).enable_out
     primary_muxes(2).enable_in := primary_muxes(1).enable_out
 
 
-    // wire pixel read ping chain
+    // wire pixel read read enable chain
     pixels(0).enable_in := io.ping_read
     for(i <- 1 until cols){
         pixels(i).enable_in := pixels(i-1).enable_out
@@ -41,14 +47,16 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     }
 
 
-    // Wire pixels to primary muxes
+    // Wire pixel data out to primary muxes
     for (i <- 0 until cols){
         primary_muxes(i/3).data_in(i%3) := pixels(i).data_out
     }
-    for (i <- 0 until cols/3){
+    // Wire mux out data to pixelArray out
+    for (i <- 0 until n_column_groups){
         io.data_out(i) := primary_muxes(i).data_out
     }
 }
+
 
 class PixelArrayTest(c: PixelArray, data_width: Int, cols: Int) extends Tester(c) {
     println("Pixel Array test")

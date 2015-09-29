@@ -57,9 +57,12 @@ class Accumulator(data_width: Int) extends Module {
 }
 
 
-class ALUrow(data_width: Int, cols: Int) extends Module{
+class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
+
+    val n_ALUs = cols - 2  
+
     val io = new Bundle { 
-        val data_in = Vec.fill(3){ UInt(INPUT, width=data_width) }
+        val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
         val kernel_in = UInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift_enable = Bool(INPUT)
@@ -68,16 +71,16 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
         val kernel_out = UInt(OUTPUT, width=data_width)
     } 
 
-    val multipliers = Vec.fill(cols-2){ Module(new Multiplier(data_width)).io }
-    val accumulators = Vec.fill(cols-2){ Module(new Accumulator(data_width)).io }
+    val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
+    val accumulators = Vec.fill(n_ALUs){ Module(new Accumulator(data_width)).io }
 
-    val selectors = Vec.fill(cols-2){ Module(new ShiftMux3(data_width, 3, 1)).io }
-    val shift_enablers = Vec.fill(cols-2){ Reg(Bool()) }
-    val flush_signals = Vec.fill(cols-2){ Reg(Bool()) }
+    val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux3(data_width, 3, 1)).io }
+    val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
+    val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
 
     
     // Wire ALU selectors
-    for(i <- 0 until cols-2){
+    for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
             // Pay attention to the reversal!
             selectors(i).data_in(2-j) := io.data_in(j)
@@ -86,14 +89,14 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
         selectors(i).shift := shift_enablers(i)
     }
     // Wire shift enablers
-    for(i <- 1 until (cols-2)){
+    for(i <- 1 until (n_ALUs)){
         shift_enablers(i) := shift_enablers(i-1)
     }
     shift_enablers(0) := io.selector_shift_enable
 
 
     // Wire flush enablers
-    for(i <- 1 until (cols-2)){
+    for(i <- 1 until (n_ALUs)){
         flush_signals(i) := flush_signals(i-1)
         accumulators(i).flush := flush_signals(i)
     }
@@ -106,18 +109,18 @@ class ALUrow(data_width: Int, cols: Int) extends Module{
     multipliers(0).pixel_in := selectors(0).data_out
     accumulators(0).pixel_in := selectors(0).data_out
     
-    for(i <- 1 until cols-2){
+    for(i <- 1 until n_ALUs){
         multipliers(i).kernel_in := multipliers(i-1).kernel_out    
         multipliers(i).pixel_in := selectors(i).data_out
         accumulators(i).pixel_in := multipliers(i).data_out
     }
-    // Since the kernel chain is cyclic it is needed handled outside this scope
-    io.kernel_out := multipliers(cols-3).kernel_out
+    // Since the kernel chain is cyclic it is needed outside this scope
+    io.kernel_out := multipliers(n_ALUs - 1).kernel_out
 
 
     // TODO brain this into using a tree or something
     io.data_out := UInt(0)
-    for(i <- 0 until cols-2){
+    for(i <- 0 until n_ALUs){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
     }
 
@@ -150,3 +153,4 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
         println("\n")
     }
 }
+

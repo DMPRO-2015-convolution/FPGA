@@ -4,6 +4,7 @@ import Chisel._
 
 class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
 
+
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
         val reset = Bool(INPUT)
@@ -48,11 +49,15 @@ object CoreMain {
         // Behaves
         // chiselMainTest(args, () => Module(new PixelReg(24))) { c => new PixelRegTest(c, 24) }
 
-        // behaves(?)
+        // somewhat behaves
         chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c, 24, 9, 3) }
         
-        // Behaves(?)
+        // Behaves
         // chiselMainTest(args, () => Module(new ALUrow(24, 9))) { c => new ALUtest(c, 24, 9) }
         
     }
+}
+
+object Util {
+    def somefun(someval: Int) : Unit = {}
 }
