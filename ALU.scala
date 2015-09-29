@@ -78,7 +78,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
 
-    
+
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){

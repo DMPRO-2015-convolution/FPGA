@@ -61,11 +61,6 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
     
 
-    // Wire grid data out from secondary muxes
-    // for(i <- 0 until cols/3){
-    //    io.data_out(i) := secondary_muxes(i).data_out
-    //}
-
 
     //////////////////////////////////////
     ///////////   ALUs
@@ -134,6 +129,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
                 if( i*j < inputs_per_sweep ){
                     poke(c.io.data_in, img(coords_to_val(i, j+y)))
                     pixels_fed += 1
+                    total_pixels_fed += 1
                 }
 
                 // extract if valid
@@ -143,7 +139,6 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
                     total_pixels_collected += 1
                     conv += out.toInt
                 }
-
                 step(1)
             }
         }
@@ -181,10 +176,10 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     val img = Source.fromFile("Conv/orig_24bit_dump.txt").getLines()
     val img_array = img.next().split(" +").map(_.toInt)
 
-    // val conv_img_array = feed_image(img_array)
-    // val conv_img_string = conv_img_array.mkString("\n")
+    val conv_img_array = feed_image(img_array)
+    val conv_img_string = conv_img_array.mkString("\n")
 
-    // new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
+    new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
 
     println(total_pixels_collected)
     println(rows_swept)

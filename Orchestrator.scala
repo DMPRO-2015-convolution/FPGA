@@ -5,15 +5,16 @@ import Chisel._
 class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     var n_pings =
-        3 +
-        3 +
-        1 +
-        2
+        3 +         // 3 read enables
+        3 +         // 3 mux enables
+        1 +         // 1 secondry mux enable
+        1 +         // 1 ALU mux shift enable
+        1           // 1 Accumulator flush signal
 
     val io = new Bundle {
         val reset = Bool(INPUT)
 
-        val pings = Vec.fill(cols/3 + rows + 1 + 2){ Bool(OUTPUT) }
+        val pings = Vec.fill(n_pings){ Bool(OUTPUT) }
     }
 
     /*
@@ -73,19 +74,28 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val READ3_d = (MUX2 + mux_delay)   % T
     val MUX3_d  = (READ3 + mux_wait)   % T
 
+    val SECONDARYMUX_d = MUX3_d + mux_delay
+
     
     ////////////////
     // For the ALUs
     ////////////////
     
-    // 
-    val ALU_MUX_SHIFT_d = 0
-    val ACCUMULATOR_FLUSH_d = 0
+    // If we pipeline the ALU we need to factor this in
+    val ALU_delay = 0
 
-    // The secondary muxes, being fed by the row muxes, simply needs to wait for the balance register
-    val SECONDARYMUX_d = MUX3 + mux_delay
+    // The ALU muxes read 3 values from each row before switching, each one timestep behind its rigth 
+    // neighbour. Since each row is to be read only three times a ping is issued every 3 steps
     
+    // TODO Mux switcharoo error possibly happens here. Timings may not be correct, draw later
+    // The leftmost ALU does its first read from the bottom left pixel
+    val ALU_MUX_SHIFT_d = MUX3_d + mux_delay
+    val ACCUMULATOR_FLUSH_d = ALU_MUX_SHIFT_d + mux_delay
 
+    // While not handled by the orchestrator, a honorable mention to the kernel is added here.
+    // Since we use the leftmost pixel first, at time ACCUMULATOR FLUSH, the left bottom kernel
+    // element must be delivered at ALU 0
+    
     // As mentioned in the comments, we must translate delays to start points relative to T0
     val READ1                = (T - READ1_d)               % T
     val MUX1                 = (T - MUX1_d)                % T
@@ -98,7 +108,6 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)   % T
 
 
-
     val state = Reg(init=UInt(0))
 
 
@@ -106,7 +115,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     when(state === UInt(T)){
         state := UInt(0)
     }
-    
+
 
     // Default pings
     for(i <- 0 until io.pings.size){
