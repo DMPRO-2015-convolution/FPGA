@@ -97,15 +97,17 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // element must be delivered at ALU 0
     
     // As mentioned in the comments, we must translate delays to start points relative to T0
-    val READ1                = (T - READ1_d)               % T
-    val MUX1                 = (T - MUX1_d)                % T
-    val READ2                = (T - READ2_d)               % T
-    val MUX2                 = (T - MUX2_d)                % T
-    val READ3                = (T - READ2_d)               % T
-    val MUX3                 = (T - MUX3_d)                % T
-    val SECONDARYMUX         = (T - SECONDARYMUX_d)        % T
-    val ALU_MUX_SHIFT        = (T - ALU_MUX_SHIFT_d)       % T
-    val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)   % T
+    val READ1                = (T - READ1_d)                 % T
+    val MUX1                 = (T - MUX1_d)                  % T
+    val READ2                = (T - READ2_d)                 % T
+    val MUX2                 = (T - MUX2_d)                  % T
+    val READ3                = (T - READ2_d)                 % T
+    val MUX3                 = (T - MUX3_d)                  % T
+    val SECONDARYMUX         = (T - SECONDARYMUX_d)          % T
+    val ALU_MUX_SHIFT0       = (T - ALU_MUX_SHIFT_d)         % T
+    val ALU_MUX_SHIFT1       = (T - (ALU_MUX_SHIFT_d) + 3)   % T
+    val ALU_MUX_SHIFT2       = (T - (ALU_MUX_SHIFT_d) + 6)   % T
+    val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)     % T
 
 
     val state = Reg(init=UInt(0))
@@ -132,8 +134,34 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is( UInt(MUX2)                     ){ io.pings(4) := Bool(true) }
         is( UInt(MUX3)                     ){ io.pings(6) := Bool(true) }
         is( UInt(SECONDARYMUX)             ){ io.pings(0) := Bool(true) }
-        is( UInt(ALU_MUX_SHIFT)            ){ io.pings(7) := Bool(true) }
+        is( UInt(ALU_MUX_SHIFT0)           ){ io.pings(7) := Bool(true) }
+        is( UInt(ALU_MUX_SHIFT1)           ){ io.pings(7) := Bool(true) }
+        is( UInt(ALU_MUX_SHIFT2)           ){ io.pings(7) := Bool(true) }
         is( UInt(ACCUMULATOR_FLUSH)        ){ io.pings(8) := Bool(true) }
+    }
+
+    val print_times = true
+    if(print_times){
+        print("READ 1: %d, %d\n".format(READ1_d, READ1))
+        print("READ 2: %d, %d\n".format(READ2_d, READ2))
+        print("READ 3: %d, %d\n".format(READ3_d, READ3))
+        println()
+
+        print("MUX 1: %d, %d\n".format(MUX1_d, MUX1))
+        print("MUX 2: %d, %d\n".format(MUX2_d, MUX2))
+        print("MUX 3: %d, %d\n".format(MUX3_d, MUX3))
+        println()
+        
+        print("SECONDARY MUX (shiftmux): %d, %d\n".format(SECONDARYMUX_d, SECONDARYMUX))
+        println()
+
+        print("ALU MUX SHIFT 1: %d, %d\n".format(ALU_MUX_SHIFT_d, ALU_MUX_SHIFT0))
+        print("ALU MUX SHIFT 2: %d\n".format(ALU_MUX_SHIFT1))
+        print("ALU MUX SHIFT 3: %d\n".format(ALU_MUX_SHIFT2))
+        println()
+
+        print("ACCUMULATOR FLUSH: %d, %d\n".format(ACCUMULATOR_FLUSH_d, ACCUMULATOR_FLUSH))
+        println()
     }
 
 }

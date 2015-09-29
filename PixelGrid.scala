@@ -14,7 +14,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
-    val secondary_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=(i % 3) )).io
+    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=(i % 3) )).io
     val pinger = Module(new Orchestrator(cols, rows)).io
 
 
@@ -49,14 +49,14 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     // Wire shift signals to secondary muxes
     for(i <- 0 until 3){
-        secondary_muxes(i).shift := pinger.pings(0)
+        shift_muxes(i).shift := pinger.pings(0)
     }
 
 
     // Wire data from primary muxes to secondary muxes
     for(i <- 0 until 3){
         for(j <- 0 until 3){
-            secondary_muxes(i).data_in(j) := pixel_rows(i).data_out(j)
+            shift_muxes(i).data_in(j) := pixel_rows(i).data_out(j)
         }
     }
     
@@ -71,7 +71,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     // Wire memory outputs to ALUs
     for(i <- 0 until rows){
-        ALUs.data_in(i) := secondary_muxes(i).data_out 
+        ALUs.data_in(i) := shift_muxes(i).data_out 
     }
 
     io.data_out := ALUs.data_out
@@ -84,6 +84,19 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
+
+    poke(c.io.data_in, 1)
+    for(i <- 0 to 0){
+        peek(c.pixel_rows(0))
+        step(1)
+        println("\n")
+    }
+}
+
+
+
+
+class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     import scala.collection.mutable.ListBuffer
 
@@ -103,13 +116,10 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     var total_pixels_fed = 0
     var pixels_fed = 0
     var rows_swept = 0
-    
-    
 
     def coords_to_val(x: Int, y: Int) : Int = { return y*width + x }
 
     def feed_row(y: Int, img: Array[Int]) : Array[Int] = {
-
         var conv = new ListBuffer[Int]()
         var pixels_collected = 0
         for(i <- 0 until width+200){
@@ -119,7 +129,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
                 if(j == 1){ poke(c.ALUs.kernel_in, 1) }
                 if(j == 2){ poke(c.ALUs.kernel_in, 0) }
                 if(j == 3){ poke(c.ALUs.kernel_in, 1) }
-                if(j == 4){ poke(c.ALUs.kernel_in, -4) }
+                if(j == 4){ poke(c.ALUs.kernel_in, -4)}
                 if(j == 5){ poke(c.ALUs.kernel_in, 0) }
                 if(j == 6){ poke(c.ALUs.kernel_in, 1) }
                 if(j == 7){ poke(c.ALUs.kernel_in, 0) }
@@ -146,6 +156,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         return conv.toArray
     }
 
+
     def serialize(rowslices: Array[Int]) : Array[Int] = {
         println("start serialize")
         println(rowslices.length)
@@ -163,6 +174,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         return serialized.toArray
     }
 
+
     def feed_image(img: Array[Int]) : Array[Int] = {
         var conv = new ListBuffer[Int]()
 
@@ -173,6 +185,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
         return conv.toArray
     }
     
+
     val img = Source.fromFile("Conv/orig_24bit_dump.txt").getLines()
     val img_array = img.next().split(" +").map(_.toInt)
 
@@ -180,25 +193,4 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     val conv_img_string = conv_img_array.mkString("\n")
 
     new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
-
-    println(total_pixels_collected)
-    println(rows_swept)
-    
-    // poke(c.io.data_in, 1)
-    // for(i <- 0 to 60){
-    //     peek(c.ALUs.data_out)
-    //     step(1)
-    //     println("\n")
-
-    //     pw.write(i)
-    // }
-    // poke(c.io.data_in, 0)
-    // for(i <- 0 to 40){
-    //     peek(c.ALUs.data_out)
-    //     step(1)
-    //     println("\n")
-    // }
-    
-
 }
-

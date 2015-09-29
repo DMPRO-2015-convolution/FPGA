@@ -80,11 +80,6 @@ class PixelArrayTest(c: PixelArray, data_width: Int, cols: Int) extends Tester(c
         peek(c.io.data_out(0))
         peek(c.io.data_out(1))
         peek(c.io.data_out(2))
-        //println("DBG\n\n")
-        //peek(c.io.dbg_mux_enable)
-        //peek(c.io.dbg_m_data_in)
-        //peek(c.io.dbg_m_data_out)
-        //println("\n\n")
         step(1)
     }
 }
