@@ -10,7 +10,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
 
-        val data_out = Vec.fill(cols/3){ UInt(OUTPUT, data_width) }
+        val data_out = UInt(OUTPUT, data_width)
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
@@ -62,9 +62,9 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     
 
     // Wire grid data out from secondary muxes
-    for(i <- 0 until cols/3){
-        io.data_out(i) := secondary_muxes(i).data_out
-    }
+    // for(i <- 0 until cols/3){
+    //    io.data_out(i) := secondary_muxes(i).data_out
+    //}
 
 
     //////////////////////////////////////
@@ -79,6 +79,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         ALUs.data_in(i) := secondary_muxes(i).data_out 
     }
 
+    io.data_out := ALUs.data_out
 
     // Wire ctrl pings to ALUs
     ALUs.accumulator_flush := pinger.pings(8)
@@ -89,30 +90,56 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
+    import scala.collection.mutable.ListBuffer
+
     def coords_to_val(x: Int, y: Int, width: Int) : Int = {
         return y*width + x
     }
 
-    def feed_row(y: Int, img: Array[Int], width: Int, height: Int) : Unit = {
+    def feed_row(y: Int, img: Array[Int], width: Int, height: Int) : Array[Int] = {
+        var conv = new ListBuffer[Int]()
         for(i <- 0 until width){
             for(j <- 0 until 9){
                 val d = coords_to_val(i, j, width)
-                poke(c.io.data_in, d)
+                if(i*j < width*9){
+                    poke(c.io.data_in, d)
+                }
+                var out = peek(c.io.data_out)
+                if((out.toInt != 0) && (i*j > 31) && (i*j < 9*width + 9)){
+                    conv += out.toInt
+                }
                 step(1)
             }
         }
+        return conv.toArray
     }
 
-    def feed_image(img: Array[Int], width: Int, height: Int) : Unit = {
-        for(i <- 0 until height/9 - 1){
-            feed_row(i*9, img, width, height)
+    def serialize(rowslices: Array[Int], col_len: Int) : Array[Int] = {
+        var serialized = new ListBuffer[Int]()
+        for(i <- 0 until col_len){
+            for(j <- 0 until rowslices.length/col_len){
+                serialized += rowslices(j*col_len + i)    
+            }
         }
+        return serialized.toArray
+    }
+
+    def feed_image(img: Array[Int], width: Int, height: Int) : Array[Int] = {
+        var conv = new ListBuffer[Int]()
+        for(i <- 0 until height/9 - 1){
+            var conv_slice = feed_row(i*9, img, width, height)
+            conv ++= serialize(conv_slice, 7)
+        }
+        return conv.toArray
     }
     
-    val img = Source.fromFile("orig_24bit_dump.txt").getLines()
+    val img = Source.fromFile("Conv/orig_24bit_dump.txt").getLines()
     val img_array = img.next().split(" +").map(_.toInt)
 
-    feed_image(img_array, 512, 512)
+    val conv_img_array = feed_image(img_array, 512, 512)
+    val conv_img_string = conv_img_array.mkString(" ")
+
+    new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
 
     /*
     poke(c.io.data_in, 1)
