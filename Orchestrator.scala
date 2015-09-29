@@ -48,9 +48,12 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
      */
 
     
-    
     val T = 9
 
+    ////////////////
+    // For the grid
+    ////////////////
+    
     // if the mux is register balanced set to 1
     val mux_delay = 1
 
@@ -70,6 +73,12 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val READ3_d = (MUX2 + mux_delay)   % T
     val MUX3_d  = (READ3 + mux_wait)   % T
 
+    
+    ////////////////
+    // For the ALUs
+    ////////////////
+    
+    // 
     val ALU_MUX_SHIFT_d = 0
     val ACCUMULATOR_FLUSH_d = 0
 
@@ -107,15 +116,15 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     // See comments for descriptions. In scala all matching code will be run
     switch (state) {
-        is( UInt(READ1)                    ){ io.pings(1) := Bool(True) }
-        is( UInt(READ2)                    ){ io.pings(3) := Bool(True) }
-        is( UInt(READ3)                    ){ io.pings(5) := Bool(True) }
-        is( UInt(MUX1)                     ){ io.pings(2) := Bool(True) }
-        is( UInt(MUX2)                     ){ io.pings(4) := Bool(True) }
-        is( UInt(MUX3)                     ){ io.pings(6) := Bool(True) }
-        is( UInt(SECONDARYMUX)             ){ io.pings(0) := Bool(True) }
-        is( UInt(ALU_MUX_SHIFT)            ){ io.pings(7) := Bool(True) }
-        is( UInt(ACCUMULATOR_FLUSH)        ){ io.pings(8) := Bool(True) }
+        is( UInt(READ1)                    ){ io.pings(1) := Bool(true) }
+        is( UInt(READ2)                    ){ io.pings(3) := Bool(true) }
+        is( UInt(READ3)                    ){ io.pings(5) := Bool(true) }
+        is( UInt(MUX1)                     ){ io.pings(2) := Bool(true) }
+        is( UInt(MUX2)                     ){ io.pings(4) := Bool(true) }
+        is( UInt(MUX3)                     ){ io.pings(6) := Bool(true) }
+        is( UInt(SECONDARYMUX)             ){ io.pings(0) := Bool(true) }
+        is( UInt(ALU_MUX_SHIFT)            ){ io.pings(7) := Bool(true) }
+        is( UInt(ACCUMULATOR_FLUSH)        ){ io.pings(8) := Bool(true) }
     }
 
 }
