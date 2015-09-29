@@ -6,7 +6,7 @@ class Multiplier(data_width: Int) extends Module {
 
     val io = new Bundle { 
         val pixel_in = UInt(INPUT, data_width)
-        val kernel_in = UInt(INPUT, data_width)
+        val kernel_in = SInt(INPUT, data_width)
 
         val data_out = UInt(OUTPUT, data_width) 
         val kernel_out = UInt(OUTPUT, data_width)

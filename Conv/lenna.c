@@ -16,7 +16,7 @@ int main( int argc, char ** argv){
   
     size_t pngsize;
     unsigned char* png = NULL;
-    char* filename = "lenna512x512_orig.png";
+    char* filename = "Daisy.png";
     lodepng_load_file(&png, &pngsize, filename);
     printf("lodepng: file loaded file\n");
 
@@ -52,16 +52,11 @@ int main( int argc, char ** argv){
         convolute(kernel, height, width, i, image, convoluted_image);
     }
 
-
-    // convolute(kernel, height, width, 617, image, convoluted_image);
-
-    lodepng_encode24_file("convo.png", convoluted_image , width, height);
-
-    dump_bytes(image, width*height, "orig_dump.txt");
+    // dump_bytes(image, width*height, "orig_dump.txt");
     dump24(image, width*height, "orig_24bit_dump.txt");
 
-    dump_bytes(convoluted_image, width*height, "conv_byte_dump.txt");
-    dump24(convoluted_image, width*height, "conv_24bit_dump.txt");
+    // dump_bytes(convoluted_image, width*height, "conv_byte_dump.txt");
+    // dump24(convoluted_image, width*height, "conv_24bit_dump.txt");
 
     return 0;
 }
