@@ -118,7 +118,6 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is( UInt(ACCUMULATOR_FLUSH)        ){ io.pings(8) := Bool(True) }
     }
 
-    // io.out := state
 }
 
 class OrchestratorTest(c: Orchestrator, cols: Int, rows: Int) extends Tester(c) {
