@@ -12,8 +12,8 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         1           // 1 Accumulator flush signal
 
     val io = new Bundle {
-
         val pings = Vec.fill(n_pings){ Bool(OUTPUT) }
+        val dbg_enable = UInt(OUTPUT)
     }
 
     /*
@@ -109,15 +109,18 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)     % T
 
 
+    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val state = Reg(init=UInt(0))
 
 
     // State transitions
-    when(state === UInt(T)){
-        state := UInt(0)
+    when(state === s8){
+        state := s0
     }.otherwise{
         state := state + UInt(1)
     }
+
+    io.dbg_enable := state
 
 
     // Default pings
