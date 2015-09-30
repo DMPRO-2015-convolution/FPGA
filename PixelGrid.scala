@@ -84,7 +84,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // TODO this is debug stuff
-    val mysterious_kernel = Array(1, 0, 1, 0, -4, 0, 1, 0, 1)
+    val mysterious_kernel = Array(1, 0, 1, 0, 0, 0, 1, 0, 1)
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val k_state = Reg(init=UInt(0))
 

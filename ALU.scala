@@ -8,7 +8,7 @@ class Multiplier(data_width: Int) extends Module {
         val pixel_in = UInt(INPUT, data_width)
         val kernel_in = SInt(INPUT, data_width)
 
-        val data_out = UInt(OUTPUT, data_width) 
+        val data_out = SInt(OUTPUT, data_width) 
         val kernel_out = UInt(OUTPUT, data_width)
     } 
 
@@ -31,13 +31,13 @@ class Multiplier(data_width: Int) extends Module {
 class Accumulator(data_width: Int) extends Module {
 
     val io = new Bundle { 
-        val pixel_in = UInt(INPUT, data_width)
+        val pixel_in = SInt(INPUT, data_width)
         val flush = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
     } 
 
-    val accumulator = Reg(UInt(width=data_width))
+    val accumulator = Reg(SInt(width=data_width))
 
     when(io.flush){
         accumulator := io.pixel_in
@@ -71,7 +71,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val io = new Bundle { 
         val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
-        val kernel_in = UInt(INPUT, width=data_width)
+        val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift_enable = Bool(INPUT)
 
