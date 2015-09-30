@@ -84,7 +84,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // TODO this is debug stuff
-    val mysterious_kernel = Array(1, 0, 1, 0, 0, 0, 1, 0, 1)
+    val mysterious_kernel = Array(1, 1, 1, 1, 1, 1, 1, 1, 1)
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val k_state = Reg(init=UInt(0))
 
@@ -118,8 +118,8 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     poke(c.io.data_in, 1)
     for(i <- 0 to 71){
         peek(c.pinger.pings(8))
-        peek(c.ALUs.dbg_accumulators_in)
-        peek(c.ALUs.dbg_accumulators_out)
+        // peek(c.ALUs.dbg_accumulators_in)
+        // peek(c.ALUs.dbg_accumulators_out)
         println("\n")
         peek(c.io.data_out)
         step(1)
@@ -144,8 +144,7 @@ class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
     val outputs_per_sweep = sweep_output_depth*width
 
     // probably not sane :>
-    val input_delay = 31
-    val output_delay = 9
+    val first_output = 32
     
     var total_pixels_collected = 0
     var total_pixels_fed = 0
@@ -157,24 +156,29 @@ class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
     def feed_row(y: Int, img: Array[Int]) : Array[Int] = {
         var conv = new ListBuffer[Int]()
         var pixels_collected = 0
-        for(i <- 0 until width+200){
-            for(j <- sweep_input_depth-1 to 0 by -1){
+        for(i <- 0 until width){
+            for(j <- 0 until sweep_input_depth){
                 
                 // input data
-                if( i*j < inputs_per_sweep ){
-                    poke(c.io.data_in, img(coords_to_val(i, j+y)))
-                    pixels_fed += 1
-                    total_pixels_fed += 1
-                }
+                poke(c.io.data_in, img(coords_to_val(i, j+y)))
+                pixels_fed += 1
+                total_pixels_fed += 1
 
-                // extract if valid
                 var out = peek(c.io.data_out)
-                if((out.toInt != 0) && (i*j > input_delay) && (pixels_collected < outputs_per_sweep)){
+
+                if(out.toInt != 0){
+                    println(j)
                     pixels_collected += 1
                     total_pixels_collected += 1
                     conv += out.toInt
                 }
                 step(1)
+            }
+            for(i <- 0 until first_output){
+                var out = peek(c.io.data_out)
+                if(out.toInt != 0){
+                    conv += out.toInt
+                }
             }
         }
         rows_swept += 1

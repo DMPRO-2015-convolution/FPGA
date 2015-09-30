@@ -2,33 +2,36 @@ package Core
 
 import Chisel._
 
-class SRAMhandler()  extends Module {
+// Controls transmitting of data from core to SRAM buffer
+class SRAMhandler(data_width: Int, address_width: Int)  extends Module {
     val io = new Bundle {
-        val data_in = UINT(INPUT, data_width)
+        val reset = Bool(INPUT)
+
+        val selected = Bool(OUTPUT)
+        val address = UInt(OUTPUT, width=address_width)
     }
 
-    val sram_select = 0
-    val address = 0
+    val sram_select = Reg(init=Bool(false))
+    val address = UInt(0, width=data_width)
 
-    val max_address = MAX_ADDRESS
+    val MAX_ADDRESS = UInt(1234)
 
-    val sram0 = Mem(Bits(width=data_width), 4096, seqRead=True)
-    val sram1 = Mem(Bits(width=data_width), 4096, seqRead=True)
+    val ram0 :: ram1 :: Nil = Enum(UInt(), 2)
+    val selected = Reg(init=ram0) 
 
-    when (data_in){
-        if (!sram_select){
-            sram0(address) := io.data_in
-            if (address = max_address){
-                addr := 0
-                sram_select := 1
-            }  
+    when(address === MAX_ADDRESS){
+        address := UInt(0)
+        when(selected === ram0){
+            selected := ram1
         }
-        else{
-            sram1(addr) := io.data_in
-            if (address = max_address){
-                addr := 0
-                sram_select := 0
-            }  
+        .otherwise{
+            selected := ram0
         }
     }
+    .otherwise{
+        address := address + UInt(1)
+    }
+
+    io.selected := selected
+    io.address := address
 }
