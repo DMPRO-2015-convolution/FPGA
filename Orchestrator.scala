@@ -128,7 +128,9 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     read3_p = read3_p % T
     mux3_p = mux3_p % T
 
-    shift_mux_p = shift_mux_p % T
+    var shift_mux_p1 = shift_mux_p % T
+    var shift_mux_p2 = (shift_mux_p + 3) % T
+    var shift_mux_p3 = (shift_mux_p + 6) % T
 
     var ALU_sel_p1 = ALU_sel_p % T
     var ALU_sel_p2 = (ALU_sel_p + 3) % T
@@ -166,7 +168,9 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         is( UInt(mux1_p)                     ){ io.pings(2) := Bool(true) }
         is( UInt(mux2_p)                     ){ io.pings(4) := Bool(true) }
         is( UInt(mux3_p)                     ){ io.pings(6) := Bool(true) }
-        is( UInt(shift_mux_p)                ){ io.pings(0) := Bool(true) }
+        is( UInt(shift_mux_p1)               ){ io.pings(0) := Bool(true) }
+        is( UInt(shift_mux_p2)               ){ io.pings(0) := Bool(true) }
+        is( UInt(shift_mux_p3)               ){ io.pings(0) := Bool(true) }
         is( UInt(ALU_sel_p1)                 ){ io.pings(7) := Bool(true) }
         is( UInt(ALU_sel_p2)                 ){ io.pings(7) := Bool(true) }
         is( UInt(ALU_sel_p3)                 ){ io.pings(7) := Bool(true) }
