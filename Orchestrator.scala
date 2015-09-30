@@ -191,7 +191,9 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         print("MUX 3: %d\n".format(mux3_p))
         println()
 
-        print("SECONDARY MUX (shiftmux): %d\n".format(shift_mux_p))
+        print("SECONDARY MUX 1 (shiftmux): %d\n".format(shift_mux_p1))
+        print("SECONDARY MUX 2 (shiftmux): %d\n".format(shift_mux_p2))
+        print("SECONDARY MUX 3 (shiftmux): %d\n".format(shift_mux_p3))
 
         print("ALU MUX SHIFT 1: %d\n".format(ALU_sel_p1))
         print("ALU MUX SHIFT 2: %d\n".format(ALU_sel_p2))
