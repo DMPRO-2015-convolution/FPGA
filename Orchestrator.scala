@@ -12,7 +12,6 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         1           // 1 Accumulator flush signal
 
     val io = new Bundle {
-        val reset = Bool(INPUT)
 
         val pings = Vec.fill(n_pings){ Bool(OUTPUT) }
     }
@@ -58,21 +57,21 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // if the mux is register balanced set to 1
     val mux_delay = 1
 
-    // how much a pixel is behind its successor directly one row above
-    val row_wait = 5 + mux_delay
+    // how much a pixel is behind its successor directly one row above with no mux delay
+    val row_wait = 5
 
     // how much a mux is behind the mux directly above
-    val mux_wait = row_wait
+    val mux_wait = row_wait + mux_delay
 
     // We use READ 1 as our frame of reference. It does not need to be 0
     val READ1_d = (0)                  % T 
-    val MUX1_d  = (READ1 + mux_wait)   % T
+    val MUX1_d  = (READ1_d + row_wait)   % T
 
-    val READ2_d = (MUX1 + mux_delay)   % T
-    val MUX2_d  = (READ2 + mux_wait)   % T
+    val READ2_d = (MUX1_d + mux_delay)   % T
+    val MUX2_d  = (READ2_d + row_wait)   % T
 
-    val READ3_d = (MUX2 + mux_delay)   % T
-    val MUX3_d  = (READ3 + mux_wait)   % T
+    val READ3_d = (MUX2_d + mux_delay)   % T
+    val MUX3_d  = (READ3_d + row_wait)   % T
 
     val SECONDARYMUX_d = MUX3_d + mux_delay
 
@@ -89,8 +88,8 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     
     // TODO Mux switcharoo error possibly happens here. Timings may not be correct, draw later
     // The leftmost ALU does its first read from the bottom left pixel
-    val ALU_MUX_SHIFT_d = MUX3_d + mux_delay
-    val ACCUMULATOR_FLUSH_d = ALU_MUX_SHIFT_d + mux_delay
+    val ALU_MUX_SHIFT_d =     (MUX3_d + mux_delay)          % T
+    val ACCUMULATOR_FLUSH_d = (ALU_MUX_SHIFT_d + mux_delay) % T
 
     // While not handled by the orchestrator, a honorable mention to the kernel is added here.
     // Since we use the leftmost pixel first, at time ACCUMULATOR FLUSH, the left bottom kernel
@@ -116,6 +115,8 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // State transitions
     when(state === UInt(T)){
         state := UInt(0)
+    }.otherwise{
+        state := state + UInt(1)
     }
 
 
@@ -143,17 +144,18 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val print_times = true
     if(print_times){
         print("READ 1: %d, %d\n".format(READ1_d, READ1))
-        print("READ 2: %d, %d\n".format(READ2_d, READ2))
-        print("READ 3: %d, %d\n".format(READ3_d, READ3))
+        print("MUX 1: %d, %d\n".format(MUX1_d, MUX1))
         println()
 
-        print("MUX 1: %d, %d\n".format(MUX1_d, MUX1))
+        print("READ 2: %d, %d\n".format(READ2_d, READ2))
         print("MUX 2: %d, %d\n".format(MUX2_d, MUX2))
-        print("MUX 3: %d, %d\n".format(MUX3_d, MUX3))
         println()
         
-        print("SECONDARY MUX (shiftmux): %d, %d\n".format(SECONDARYMUX_d, SECONDARYMUX))
+        print("READ 3: %d, %d\n".format(READ3_d, READ3))
+        print("MUX 3: %d, %d\n".format(MUX3_d, MUX3))
         println()
+
+        print("SECONDARY MUX (shiftmux): %d, %d\n".format(SECONDARYMUX_d, SECONDARYMUX))
 
         print("ALU MUX SHIFT 1: %d, %d\n".format(ALU_MUX_SHIFT_d, ALU_MUX_SHIFT0))
         print("ALU MUX SHIFT 2: %d\n".format(ALU_MUX_SHIFT1))
@@ -169,11 +171,9 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 class OrchestratorTest(c: Orchestrator, cols: Int, rows: Int) extends Tester(c) {
     println("OrchestratorTest")
     step(5)
-    poke(c.io.reset, true)
     peek(c.io)
     step(2)
     peek(c.io)
-    poke(c.io.reset, false)
     for(i <- 0 until 8){
         step(1)
         peek(c.io)

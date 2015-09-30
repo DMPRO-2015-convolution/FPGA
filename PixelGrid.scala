@@ -6,9 +6,11 @@ import scala.io.Source
 
 
 // TODO move ALU out of PG
+// TODO kernel in should also be moved out at some point
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
+        val kernel_in = UInt(INPUT, data_width)
 
         val data_out = UInt(OUTPUT, data_width)
     }
@@ -86,8 +88,9 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     poke(c.io.data_in, 1)
-    for(i <- 0 to 0){
+    for(i <- 0 to 40){
         peek(c.pixel_rows(0))
+        peek(c.pinger)
         step(1)
         println("\n")
     }
