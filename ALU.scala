@@ -8,7 +8,7 @@ class Multiplier(data_width: Int) extends Module {
         val pixel_in = UInt(INPUT, data_width)
         val kernel_in = SInt(INPUT, data_width)
 
-        val data_out = UInt(OUTPUT, data_width) 
+        val data_out = SInt(OUTPUT, data_width) 
         val kernel_out = UInt(OUTPUT, data_width)
     } 
 
@@ -31,13 +31,21 @@ class Multiplier(data_width: Int) extends Module {
 class Accumulator(data_width: Int) extends Module {
 
     val io = new Bundle { 
-        val pixel_in = UInt(INPUT, data_width)
+        val pixel_in = SInt(INPUT, data_width)
         val flush = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
     } 
 
-    val accumulator = Reg(UInt(width=data_width))
+    val accumulator = Reg(SInt(width=data_width))
+
+    when(io.flush){
+        accumulator := io.pixel_in
+    }
+    .otherwise{
+        accumulator := accumulator + io.pixel_in
+    }
+    
 
     val color1 = io.pixel_in(7,0)
     val color2 = io.pixel_in(15,8)
@@ -63,12 +71,15 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val io = new Bundle { 
         val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
-        val kernel_in = UInt(INPUT, width=data_width)
+        val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift_enable = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = UInt(OUTPUT, width=data_width)
+
+        val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
+        val dbg_accumulators_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
     } 
 
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
@@ -82,12 +93,14 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
-            // Pay attention to the reversal!
+            // See schematics for reversal reason
             selectors(i).data_in(2-j) := io.data_in(j)
         }
         multipliers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)
     }
+
+
     // Wire shift enablers
     for(i <- 1 until (n_ALUs)){
         shift_enablers(i) := shift_enablers(i-1)
@@ -122,8 +135,10 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     io.data_out := UInt(0)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
-    }
 
+        io.dbg_accumulators_out(i) := accumulators(i).data_out
+        io.dbg_accumulators_in(i) := accumulators(i).pixel_in
+    }
 }
 
 
@@ -133,7 +148,7 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
     poke(c.io.kernel_in, 1)
 
 
-    for(i <- 0 to 60){
+    for(i <- 0 to 100){
         poke(c.io.data_in(0), (i + 7) %9 + 1)
         poke(c.io.data_in(1), (i + 1) %9 + 1)
         poke(c.io.data_in(2), (i + 4) %9 + 1)

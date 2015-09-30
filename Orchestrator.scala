@@ -2,6 +2,33 @@ package Core
 
 import Chisel._
 
+
+
+/*
+ *   GRID
+ *
+ *   0 - Secondary mux
+ *   1 - READ 0
+ *   2 - PRIMARY MUX 0
+ *   3 - READ 1
+ *   4 - PRIMARY MUX 1
+ *   5 - READ 2
+ *   6 - PRIMARY MUX 2
+ *
+ *   No amounts of commentig is going to make this clear.
+ *   View the documentation in order to understand the timing
+ *
+ *
+ *   ALUS
+ *
+ *   7 - ALU mux shift
+ *   8 - Accumulator flush signal
+ *
+ */
+
+
+
+
 class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     var n_pings =
@@ -16,27 +43,6 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val dbg_enable = UInt(OUTPUT)
     }
 
-    /*
-     *   GRID
-     *
-     *   0 - Secondary mux
-     *   1 - READ 0
-     *   2 - PRIMARY MUX 0
-     *   3 - READ 1
-     *   4 - PRIMARY MUX 1
-     *   5 - READ 2
-     *   6 - PRIMARY MUX 2
-     *
-     *   No amounts of commentig is going to make this clear.
-     *   View the documentation in order to understand the timing
-     *
-     *
-     *   ALUS
-     *
-     *   7 - ALU mux shift
-     *   8 - Accumulator flush signal
-     *
-     */
 
     /*
      * All timers are given in modulo 9, which is a constant we must adhere for all designs using 3 by 3 kernels
@@ -50,67 +56,88 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     
     val T = 9
 
-    ////////////////
-    // For the grid
-    ////////////////
-    
-    // if the mux is register balanced set to 1
+    // How long after being input to one row should a register be input to the next row?
+    val row_time = 6
+
+    // When pinging it takes one cycle for state to update. The same applies to any register to register transfer
+    val ping_delay = 1
+    val reg_delay = 1
     val mux_delay = 1
+    val ALU_delay = reg_delay
 
-    // how much a pixel is behind its successor directly one row above with no mux delay
-    val row_wait = 5
+    // How long after input until mux opens (5)
+    val mux_wait = row_time - mux_delay
 
-    // how much a mux is behind the mux directly above
-    val mux_wait = row_wait + mux_delay
+    // data enters input tree. Changing this value should propagate throughout the entire system
+    val data_in = 0
 
-    // We use input as our frame of reference. It does not need to be 0, but 
+    val row1_r = data_in + reg_delay
+    val row1_m = data_in + mux_wait
+
+    val row1_out = data_in + row_time
+
+
+    val row2_r = row1_out + reg_delay
+    val row2_m = row1_out + mux_wait
+
+    val row2_out = row1_out + row_time
+
+
+    val row3_r = row2_out + reg_delay
+    val row3_m = row2_out + mux_wait
+
+    val row3_out = row2_out + row_time
+
     
-    val INPUT_d = 0
-    val INPUT_TREE_d = INPUT_d + 1
+    // shift muxes operate a little different. Regardless, this val is the timestep which it chooses input 0
+    val shift_mux = row3_out
 
-    val READ1_d = INPUT_TREE_d + 1       % T 
-    val MUX1_d  = (READ1_d + row_wait)   % T
+    val grid_out = row3_out + reg_delay
 
-    val READ2_d = (MUX1_d + mux_delay)   % T
-    val MUX2_d  = (READ2_d + row_wait)   % T
+    val ALU_sel = grid_out
 
-    val READ3_d = (MUX2_d + mux_delay)   % T
-    val MUX3_d  = (READ3_d + row_wait)   % T
+    val ALU_rdy = grid_out + reg_delay
 
-    val SECONDARYMUX_d = MUX3_d + mux_delay
-
+    val Acc_flush = ALU_rdy + ALU_delay
     
-    ////////////////
-    // For the ALUs
-    ////////////////
-    
-    // If we pipeline the ALU we need to factor this in
-    val ALU_delay = 0
 
-    // The ALU muxes read 3 values from each row before switching, each one timestep behind its rigth 
-    // neighbour. Since each row is to be read only three times a ping is issued every 3 steps
-    
-    // TODO Mux switcharoo error possibly happens here. Timings may not be correct, draw later
-    // The leftmost ALU does its first read from the bottom left pixel
-    val ALU_MUX_SHIFT_d =     (MUX3_d + mux_delay)          % T
-    val ACCUMULATOR_FLUSH_d = (ALU_MUX_SHIFT_d + mux_delay) % T
 
-    // While not handled by the orchestrator, a honorable mention to the kernel is added here.
-    // Since we use the leftmost pixel first, at time ACCUMULATOR FLUSH, the left bottom kernel
-    // element must be delivered at ALU 0
-    
-    // As mentioned in the comments, we must translate delays to start points relative to T0
-    val READ1                = (T - READ1_d)                 % T
-    val MUX1                 = (T - MUX1_d)                  % T
-    val READ2                = (T - READ2_d)                 % T
-    val MUX2                 = (T - MUX2_d)                  % T
-    val READ3                = (T - READ2_d)                 % T
-    val MUX3                 = (T - MUX3_d)                  % T
-    val SECONDARYMUX         = (T - SECONDARYMUX_d)          % T
-    val ALU_MUX_SHIFT0       = (T - ALU_MUX_SHIFT_d)         % T
-    val ALU_MUX_SHIFT1       = (T - (ALU_MUX_SHIFT_d) + 3)   % T
-    val ALU_MUX_SHIFT2       = (T - (ALU_MUX_SHIFT_d) + 6)   % T
-    val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)     % T
+    // Having gathered the data we calculate when to ping
+    var read1_p = row1_r - ping_delay
+    var mux1_p = row1_m - ping_delay
+
+    var read2_p = row2_r - ping_delay
+    var mux2_p = row2_m - ping_delay
+
+    var read3_p = row3_r - ping_delay
+    var mux3_p = row3_m - ping_delay
+
+    var shift_mux_p = shift_mux - ping_delay
+    var ALU_sel_p = ALU_sel - ping_delay 
+
+    var flush_p = Acc_flush - ping_delay
+
+
+    // We now normalize the values
+    read1_p = read1_p % T
+    mux1_p = mux1_p % T
+
+    read2_p = read2_p % T
+    mux2_p = mux2_p % T
+
+    read3_p = read3_p % T
+    mux3_p = mux3_p % T
+
+    var shift_mux_p1 = shift_mux_p % T
+    var shift_mux_p2 = (shift_mux_p + 3) % T
+    var shift_mux_p3 = (shift_mux_p + 6) % T
+
+    var ALU_sel_p1 = ALU_sel_p % T
+    var ALU_sel_p2 = (ALU_sel_p + 3) % T
+    var ALU_sel_p3 = (ALU_sel_p + 6) % T
+
+    flush_p = flush_p % T
+
 
 
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
@@ -135,48 +162,53 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     // See comments for descriptions. In scala all matching code will be run
     switch (state) {
-        is( UInt(READ1)                    ){ io.pings(1) := Bool(true) }
-        is( UInt(READ2)                    ){ io.pings(3) := Bool(true) }
-        is( UInt(READ3)                    ){ io.pings(5) := Bool(true) }
-        is( UInt(MUX1)                     ){ io.pings(2) := Bool(true) }
-        is( UInt(MUX2)                     ){ io.pings(4) := Bool(true) }
-        is( UInt(MUX3)                     ){ io.pings(6) := Bool(true) }
-        is( UInt(SECONDARYMUX)             ){ io.pings(0) := Bool(true) }
-        is( UInt(ALU_MUX_SHIFT0)           ){ io.pings(7) := Bool(true) }
-        is( UInt(ALU_MUX_SHIFT1)           ){ io.pings(7) := Bool(true) }
-        is( UInt(ALU_MUX_SHIFT2)           ){ io.pings(7) := Bool(true) }
-        is( UInt(ACCUMULATOR_FLUSH)        ){ io.pings(8) := Bool(true) }
+        is( UInt(read1_p)                    ){ io.pings(1) := Bool(true) }
+        is( UInt(read2_p)                    ){ io.pings(3) := Bool(true) }
+        is( UInt(read3_p)                    ){ io.pings(5) := Bool(true) }
+        is( UInt(mux1_p)                     ){ io.pings(2) := Bool(true) }
+        is( UInt(mux2_p)                     ){ io.pings(4) := Bool(true) }
+        is( UInt(mux3_p)                     ){ io.pings(6) := Bool(true) }
+        is( UInt(shift_mux_p1)               ){ io.pings(0) := Bool(true) }
+        is( UInt(shift_mux_p2)               ){ io.pings(0) := Bool(true) }
+        is( UInt(shift_mux_p3)               ){ io.pings(0) := Bool(true) }
+        is( UInt(ALU_sel_p1)                 ){ io.pings(7) := Bool(true) }
+        is( UInt(ALU_sel_p2)                 ){ io.pings(7) := Bool(true) }
+        is( UInt(ALU_sel_p3)                 ){ io.pings(7) := Bool(true) }
+        is( UInt(flush_p)                    ){ io.pings(8) := Bool(true) }
     }
 
     val print_times = true
     if(print_times){
-        print("READ 1: %d, %d\n".format(READ1_d, READ1))
-        print("MUX 1: %d, %d\n".format(MUX1_d, MUX1))
+        print("READ 1: %d\n".format(read1_p))
+        print("MUX 1: %d\n".format(mux1_p))
         println()
 
-        print("READ 2: %d, %d\n".format(READ2_d, READ2))
-        print("MUX 2: %d, %d\n".format(MUX2_d, MUX2))
+        print("READ 2: %d\n".format(read2_p))
+        print("MUX 2: %d\n".format(mux2_p))
         println()
         
-        print("READ 3: %d, %d\n".format(READ3_d, READ3))
-        print("MUX 3: %d, %d\n".format(MUX3_d, MUX3))
+        print("READ 3: %d\n".format(read3_p))
+        print("MUX 3: %d\n".format(mux3_p))
         println()
 
-        print("SECONDARY MUX (shiftmux): %d, %d\n".format(SECONDARYMUX_d, SECONDARYMUX))
+        print("SECONDARY MUX 1 (shiftmux): %d\n".format(shift_mux_p1))
+        print("SECONDARY MUX 2 (shiftmux): %d\n".format(shift_mux_p2))
+        print("SECONDARY MUX 3 (shiftmux): %d\n".format(shift_mux_p3))
 
-        print("ALU MUX SHIFT 1: %d, %d\n".format(ALU_MUX_SHIFT_d, ALU_MUX_SHIFT0))
-        print("ALU MUX SHIFT 2: %d\n".format(ALU_MUX_SHIFT1))
-        print("ALU MUX SHIFT 3: %d\n".format(ALU_MUX_SHIFT2))
+        print("ALU MUX SHIFT 1: %d\n".format(ALU_sel_p1))
+        print("ALU MUX SHIFT 2: %d\n".format(ALU_sel_p2))
+        print("ALU MUX SHIFT 3: %d\n".format(ALU_sel_p3))
         println()
 
-        print("ACCUMULATOR FLUSH: %d, %d\n".format(ACCUMULATOR_FLUSH_d, ACCUMULATOR_FLUSH))
+        print("ACCUMULATOR FLUSH: %d\n".format(flush_p))
         println()
 
         val first_valid_output = 
-            1 + 1        +        // wait for input to be available to first row
-            3*mux_wait   +        // cross three rows
-            1*mux_delay  +        // secondary mux
-            1*ALU_delay  +        // wait for ALU ops (currently 0)
+            1            +        // wait for input to be available to first row
+            3*row_time   +        // cross three rows
+            1            +        // secondary mux
+            1            +        // ALU mux
+            1*ALU_delay  +        // wait for ALU ops
             1                     // wait for accumulator to update
 
         print("FIRST VALID ACCUMULATOR INPUT: %d\n".format(first_valid_output))

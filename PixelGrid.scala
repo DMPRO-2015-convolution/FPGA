@@ -84,7 +84,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // TODO this is debug stuff
-    val mysterious_kernel = Array(1, 0, 1, 0, -4, 0, 1, 0, 1)
+    val mysterious_kernel = Array(1, 0, 1, 0, 0, 0, 1, 0, 1)
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val k_state = Reg(init=UInt(0))
 
@@ -116,9 +116,12 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     poke(c.io.data_in, 1)
-    for(i <- 0 to 40){
-        peek(c.pixel_rows(0))
-        peek(c.pinger)
+    for(i <- 0 to 71){
+        peek(c.pinger.pings(8))
+        peek(c.ALUs.dbg_accumulators_in)
+        peek(c.ALUs.dbg_accumulators_out)
+        println("\n")
+        peek(c.io.data_out)
         step(1)
         println("\n")
     }
