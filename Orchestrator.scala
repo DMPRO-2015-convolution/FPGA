@@ -173,6 +173,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         println()
 
         val first_valid_output = 
+            1 + 1        +        // wait for input to be available to first row
             3*mux_wait   +        // cross three rows
             1*mux_delay  +        // secondary mux
             1*ALU_delay  +        // wait for ALU ops (currently 0)

@@ -90,15 +90,18 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     ALUs.kernel_in := UInt(0)
     switch (k_state) {
-        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
-        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
-        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
-        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
-        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
-        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
-        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
-        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
-        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
+
+        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
+        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
+        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
+
+        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
+        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
+        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
+
+        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
+        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
+        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
     }
 
     when(k_state === s8){
