@@ -35,6 +35,7 @@ class Accumulator(data_width: Int) extends Module {
         val flush = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
+
     } 
 
     val accumulator = Reg(UInt(width=data_width))
@@ -69,6 +70,8 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = UInt(OUTPUT, width=data_width)
+
+        val dbg_accumulators = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
     } 
 
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
@@ -122,8 +125,9 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     io.data_out := UInt(0)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
-    }
 
+        io.dbg_accumulators := accumulators(i).data_out
+    }
 }
 
 

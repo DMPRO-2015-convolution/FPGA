@@ -68,16 +68,16 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val INPUT_d = 0
     val INPUT_TREE_d = INPUT_d + 1
 
-    val READ1_d = INPUT_TREE_d + 1       % T 
-    val MUX1_d  = (READ1_d + row_wait)   % T
+    val READ1_d          =  (INPUT_TREE_d + 1)     % T 
+    val MUX1_d           =  (READ1_d + row_wait)   % T
 
-    val READ2_d = (MUX1_d + mux_delay)   % T
-    val MUX2_d  = (READ2_d + row_wait)   % T
+    val READ2_d          =  (MUX1_d + mux_delay)   % T
+    val MUX2_d           =  (READ2_d + row_wait)   % T
 
-    val READ3_d = (MUX2_d + mux_delay)   % T
-    val MUX3_d  = (READ3_d + row_wait)   % T
+    val READ3_d          =  (MUX2_d + mux_delay)   % T
+    val MUX3_d           =  (READ3_d + row_wait)   % T
 
-    val SECONDARYMUX_d = MUX3_d + mux_delay
+    val SECONDARYMUX_d   =  (MUX3_d + mux_delay)   % T
 
     
     ////////////////
@@ -90,27 +90,29 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // The ALU muxes read 3 values from each row before switching, each one timestep behind its rigth 
     // neighbour. Since each row is to be read only three times a ping is issued every 3 steps
     
-    // TODO Mux switcharoo error possibly happens here. Timings may not be correct, draw later
+    // How many reads from each row should an ALU mux read before shifting
+    val ALU_reads_per_shift = rows
+    
     // The leftmost ALU does its first read from the bottom left pixel
-    val ALU_MUX_SHIFT_d =     (MUX3_d + mux_delay)          % T
-    val ACCUMULATOR_FLUSH_d = (ALU_MUX_SHIFT_d + mux_delay) % T
+    val ALU_MUX_SHIFT_d =     (SECONDARYMUX_d + ALU_reads_per_shift)    % T
+    val ACCUMULATOR_FLUSH_d = (ALU_MUX_SHIFT_d + 2)                     % T
 
     // While not handled by the orchestrator, a honorable mention to the kernel is added here.
     // Since we use the leftmost pixel first, at time ACCUMULATOR FLUSH, the left bottom kernel
     // element must be delivered at ALU 0
     
     // As mentioned in the comments, we must translate delays to start points relative to T0
-    val READ1                = (T - READ1_d)                 % T
-    val MUX1                 = (T - MUX1_d)                  % T
-    val READ2                = (T - READ2_d)                 % T
-    val MUX2                 = (T - MUX2_d)                  % T
-    val READ3                = (T - READ2_d)                 % T
-    val MUX3                 = (T - MUX3_d)                  % T
-    val SECONDARYMUX         = (T - SECONDARYMUX_d)          % T
-    val ALU_MUX_SHIFT0       = (T - ALU_MUX_SHIFT_d)         % T
+    val READ1                = (T - READ1_d)                     % T
+    val MUX1                 = (T - (MUX1_d - 1))                % T
+    val READ2                = (T - READ2_d)                     % T
+    val MUX2                 = (T - (MUX2_d - 1))                % T
+    val READ3                = (T - READ2_d)                     % T
+    val MUX3                 = (T - (MUX3_d - 1))                % T
+    val SECONDARYMUX         = (T - (SECONDARYMUX_d))        % T
+    val ALU_MUX_SHIFT0       = (T - (ALU_MUX_SHIFT_d))       % T
     val ALU_MUX_SHIFT1       = (T - (ALU_MUX_SHIFT_d) + 3)   % T
     val ALU_MUX_SHIFT2       = (T - (ALU_MUX_SHIFT_d) + 6)   % T
-    val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)     % T
+    val ACCUMULATOR_FLUSH    = (T - ACCUMULATOR_FLUSH_d)         % T
 
 
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)

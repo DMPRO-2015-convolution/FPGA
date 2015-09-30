@@ -55,7 +55,7 @@ object CoreMain {
         // Behaves
         // chiselMainTest(args, () => Module(new ALUrow(24, 9))) { c => new ALUtest(c, 24, 9) }
         
-        // Misbehaves
+        // Behaves(?)
         // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new Img_test(c, 24, 9, 3) }
         
     }

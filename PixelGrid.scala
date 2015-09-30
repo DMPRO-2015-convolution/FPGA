@@ -116,9 +116,12 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     poke(c.io.data_in, 1)
-    for(i <- 0 to 40){
+    for(i <- 0 to 57){
         peek(c.pixel_rows(0))
         peek(c.pinger)
+        peek(c.ALUs.dbg_accumulators)
+        println("\n")
+        peek(c.io.data_out)
         step(1)
         println("\n")
     }
