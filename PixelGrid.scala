@@ -81,7 +81,32 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     // Wire ctrl pings to ALUs
     ALUs.accumulator_flush := pinger.pings(8)
     ALUs.selector_shift_enable := pinger.pings(7)
-    ALUs.kernel_in := UInt(1)
+
+
+    // TODO this is debug stuff
+    val mysterious_kernel = Array(1, 0, 1, 0, -4, 0, 1, 0, 1)
+    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
+    val k_state = Reg(init=UInt(0))
+
+    ALUs.kernel_in := UInt(0)
+    switch (k_state) {
+        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
+        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
+        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
+        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
+        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
+        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
+        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
+        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
+        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
+    }
+
+    when(k_state === s8){
+        k_state := s0
+    }.otherwise{
+        k_state := k_state + UInt(1)
+    }
+    
 
 }
 
@@ -102,6 +127,7 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
 class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     import scala.collection.mutable.ListBuffer
+
 
     val width = 640
     val height = 480
@@ -128,16 +154,6 @@ class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         for(i <- 0 until width+200){
             for(j <- sweep_input_depth-1 to 0 by -1){
                 
-                if(j == 0){ poke(c.ALUs.kernel_in, 0) }
-                if(j == 1){ poke(c.ALUs.kernel_in, 1) }
-                if(j == 2){ poke(c.ALUs.kernel_in, 0) }
-                if(j == 3){ poke(c.ALUs.kernel_in, 1) }
-                if(j == 4){ poke(c.ALUs.kernel_in, -4)}
-                if(j == 5){ poke(c.ALUs.kernel_in, 0) }
-                if(j == 6){ poke(c.ALUs.kernel_in, 1) }
-                if(j == 7){ poke(c.ALUs.kernel_in, 0) }
-                if(j == 8){ poke(c.ALUs.kernel_in, 1) }
-
                 // input data
                 if( i*j < inputs_per_sweep ){
                     poke(c.io.data_in, img(coords_to_val(i, j+y)))

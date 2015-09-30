@@ -63,8 +63,12 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // how much a mux is behind the mux directly above
     val mux_wait = row_wait + mux_delay
 
-    // We use READ 1 as our frame of reference. It does not need to be 0
-    val READ1_d = (0)                  % T 
+    // We use input as our frame of reference. It does not need to be 0, but 
+    
+    val INPUT_d = 0
+    val INPUT_TREE_d = INPUT_d + 1
+
+    val READ1_d = INPUT_TREE_d + 1       % T 
     val MUX1_d  = (READ1_d + row_wait)   % T
 
     val READ2_d = (MUX1_d + mux_delay)   % T
@@ -167,6 +171,16 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 
         print("ACCUMULATOR FLUSH: %d, %d\n".format(ACCUMULATOR_FLUSH_d, ACCUMULATOR_FLUSH))
         println()
+
+        val first_valid_output = 
+            3*mux_wait   +        // cross three rows
+            1*mux_delay  +        // secondary mux
+            1*ALU_delay  +        // wait for ALU ops (currently 0)
+            1                     // wait for accumulator to update
+
+        print("FIRST VALID ACCUMULATOR INPUT: %d\n".format(first_valid_output))
+        print("FIRST VALID ACCUMULATOR OUTPUT: %d\n".format(first_valid_output + T))
+
     }
 
 }
