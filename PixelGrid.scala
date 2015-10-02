@@ -209,6 +209,9 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 step(1)
             }
         }
+
+        var state = Array.ofDim[Int](9, 9)
+
         for(i <- 0 until 300){
 
             print("\n\n")
@@ -216,7 +219,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
             print(i-1)
             print("\n\n")
 
-            print (pings(i).reverse.mkString("      $     "))
+            state = draw_pings(state, pings(i))
+
             print("\n\n[")
             print(data_tree(i).reverse.mkString("]            ["))
             print("]\n\n[")
@@ -243,6 +247,25 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
             print("\n\n")
             print("\n\n")
         }
+    }
+
+    def draw_pings(state: Array[Array[Int]], pings: Array[Int]) : Array[Array[Int]] = {
+        for(i <- 0 until pings.length){
+            for(j <- 0 until state.length){
+                if(state(i)(j) == 1){
+                    print("#")
+                }
+                else{ print(".") }
+            }
+            println()
+            for(j <- 0 until state.length - 1){
+                val temp = state(i)(j)
+                state(i)(j) = state(i)(j+1)
+                state(i)(j+1) = temp
+            }
+            state(i)(0) = pings.reverse(i)
+        } 
+        return state
     }
 
 
