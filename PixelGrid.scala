@@ -263,7 +263,7 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 state(i)(j) = state(i)(j+1)
                 state(i)(j+1) = temp
             }
-            state(i)(0) = pings.reverse(i)
+            state(8-i)(0) = pings(i)
         } 
         return state
     }
