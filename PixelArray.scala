@@ -16,6 +16,8 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
         val ping_mux = Bool(INPUT)
 
         val data_out = Vec.fill(n_column_groups){UInt(OUTPUT, data_width)}
+
+        val dbg_reg_contents = Vec.fill(cols){ UInt(OUTPUT, width=data_width) }
     }
 
     val pixels = Vec.fill(cols){ Module(new PixelReg(data_width)).io } 
@@ -54,6 +56,10 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     // Wire mux out data to pixelArray out
     for (i <- 0 until n_column_groups){
         io.data_out(i) := primary_muxes(i).data_out
+    }
+
+    for (i <- 0 until cols){
+        io.dbg_reg_contents(i) := pixels(i).data_out
     }
 }
 

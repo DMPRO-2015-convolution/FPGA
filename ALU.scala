@@ -81,6 +81,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
         val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
         val dbg_accumulators_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
+        val dbg_kernel_out  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
     } 
 
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
@@ -139,6 +140,10 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
         io.dbg_accumulators_out(i) := accumulators(i).data_out
         io.dbg_accumulators_in(i) := accumulators(i).pixel_in
+    }
+
+    for(i <- 0 until n_ALUs){
+        io.dbg_kernel_out(i) := multipliers(i).kernel_out
     }
 }
 

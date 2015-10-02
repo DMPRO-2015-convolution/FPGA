@@ -16,7 +16,7 @@ int main( int argc, char ** argv){
   
     size_t pngsize;
     unsigned char* png = NULL;
-    char* filename = "Daisy.png";
+    char* filename = "tiny_daisy.png";
     lodepng_load_file(&png, &pngsize, filename);
     printf("lodepng: file loaded file\n");
 
@@ -53,7 +53,7 @@ int main( int argc, char ** argv){
     }
 
     // dump_bytes(image, width*height, "orig_dump.txt");
-    dump24(image, width*height, "orig_24bit_dump.txt");
+    dump24(image, width*height, "tiny_24dump.txt");
 
     // dump_bytes(convoluted_image, width*height, "conv_byte_dump.txt");
     // dump24(convoluted_image, width*height, "conv_24bit_dump.txt");
@@ -122,6 +122,6 @@ void dump24(unsigned char* image, int size, char* filename){
         int byte2 = (image[(i*3) + 1] << 8) + byte1;
         int byte3 = (image[(i*3) + 2] << 16) + byte2;
 
-        fprintf(fp, "%d ", byte3);
+        fprintf(fp, "%d\n", byte3);
     }
 }

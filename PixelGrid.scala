@@ -84,24 +84,26 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // TODO this is debug stuff
-    val mysterious_kernel = Array(0, 0, 0, 0, 1, 0, 0, 0, 0)
+    val mysterious_kernel = Array(1, 0, 0, 0, 0, 0, 0, 0, 0)
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val k_state = Reg(init=UInt(0))
 
     ALUs.kernel_in := UInt(0)
     switch (k_state) {
 
-        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
-        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
-        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
+        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
+        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
 
-        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
-        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
-        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
+        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
+        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
+        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
 
-        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
-        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
-        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
+        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
+        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
+        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
+
+        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
+
     }
 
     when(k_state === s8){
@@ -130,12 +132,111 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
 }
 
 
+class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
+    import scala.collection.mutable.ListBuffer
+
+    val width = 320
+    val height = 200
+    val sweep_input_depth = 9
+    val sweep_output_depth = sweep_input_depth - 2
+    val sweeps = height/sweep_output_depth -1
+    val inputs_per_sweep = sweep_input_depth*width
+    val outputs_per_sweep = sweep_output_depth*width
+
+    // probably not sane :>
+    val first_output = 32
+    
+    var total_pixels_collected = 0
+    var total_pixels_fed = 0
+    var pixels_fed = 0
+    var rows_swept = 0
+
+    def coords_to_val(x: Int, y: Int) : Int = { return y*width + x }
+
+
+    def feed_row(y: Int, img: Array[Int]) : Unit = {
+
+        var row1 = new ListBuffer[Array[Int]]() 
+        var row2 = new ListBuffer[Array[Int]]() 
+        var row3 = new ListBuffer[Array[Int]]() 
+
+        var row_out_1 = new ListBuffer[Array[Int]]() 
+        var row_out_2 = new ListBuffer[Array[Int]]() 
+        var row_out_3 = new ListBuffer[Array[Int]]() 
+
+        var selected = new ListBuffer[Array[Int]]() 
+
+        var kernels = new ListBuffer[Array[Int]]() 
+        var ALU_in = new ListBuffer[Array[Int]]() 
+
+        var meta = new ListBuffer[Int]() 
+
+        var accumulators = new ListBuffer[Array[Int]]() 
+
+        for(i <- 0 until width){
+            for(j <- 0 until sweep_input_depth){
+
+                var selected_slice = ListBuffer[BigInt]()
+
+                print(coords_to_val(i, j+y))
+
+                poke(c.io.data_in, img(coords_to_val(i, j+y)))
+
+                row1 += peek(c.pixel_rows(0).dbg_reg_contents).map(_.toInt)
+                row2 += peek(c.pixel_rows(1).dbg_reg_contents).map(_.toInt)
+                row3 += peek(c.pixel_rows(2).dbg_reg_contents).map(_.toInt)
+
+                row_out_1 += peek(c.pixel_rows(0).data_out).map(_.toInt)
+                row_out_2 += peek(c.pixel_rows(1).data_out).map(_.toInt)
+                row_out_3 += peek(c.pixel_rows(2).data_out).map(_.toInt)
+                
+                selected_slice += peek(c.shift_muxes(0).data_out)
+                selected_slice += peek(c.shift_muxes(1).data_out)
+                selected_slice += peek(c.shift_muxes(2).data_out)
+                selected += selected_slice.toArray.map(_.toInt)
+
+                kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
+                kernels += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
+
+                step(1)
+            }
+        }
+        for(i <- 0 until 300){
+            print (row1(i).mkString("] ["))
+            print("]\n\n               [")
+            print (row_out_1(i).mkString("]              ["))
+            print("]\n\n[")
+            print (row2(i).mkString("] ["))
+            print("]\n\n               [")
+            print (row_out_2(i).mkString("]              ["))
+            print("]\n\n[")
+            print (row3(i).mkString("] ["))
+            print("]\n\n               [")
+            print (row_out_3(i).mkString("]              ["))
+            print("]\n\n")
+        }
+    }
+
+
+    val img_array = Source.fromFile("Conv/tiny_24dump.txt").getLines.toArray.map(_.toInt)
+
+    print (img_array.length)
+    
+
+    feed_row(0, img_array)  
+
+
+    // val conv_img_array = feed_image(img_array)
+    // val conv_img_string = conv_img_array.mkString("\n")
+
+    // new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
+    
+}
 
 
 class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
 
     import scala.collection.mutable.ListBuffer
-
 
     val width = 640
     val height = 480
@@ -184,6 +285,7 @@ class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         rows_swept += 1
         return conv.toArray
     }
+
 
 
     def serialize(rowslices: Array[Int]) : Array[Int] = {
