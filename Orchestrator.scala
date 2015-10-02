@@ -77,13 +77,13 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val row1_out = data_in + row_time
 
 
-    val row2_r = row1_out + reg_delay
+    val row2_r = row1_out
     val row2_m = row1_out + mux_wait
 
     val row2_out = row1_out + row_time
 
 
-    val row3_r = row2_out + reg_delay
+    val row3_r = row2_out
     val row3_m = row2_out + mux_wait
 
     val row3_out = row2_out + row_time
