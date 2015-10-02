@@ -258,12 +258,12 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 else{ print(".") }
             }
             println()
-            for(j <- 0 until state.length - 1){
+            for(j <- state.length-2 to 0 by - 1){
                 val temp = state(i)(j)
                 state(i)(j) = state(i)(j+1)
                 state(i)(j+1) = temp
             }
-            state(8-i)(0) = pings(i)
+            state(i)(0) = pings(8-i)
         } 
         return state
     }
