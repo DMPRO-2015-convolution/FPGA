@@ -80,7 +80,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         val kernel_out = UInt(OUTPUT, width=data_width)
 
         val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
-        val dbg_accumulators_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
+        val dbg_multipliers_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
         val dbg_kernel_out  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
     } 
 
@@ -139,7 +139,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
 
         io.dbg_accumulators_out(i) := accumulators(i).data_out
-        io.dbg_accumulators_in(i) := accumulators(i).pixel_in
+        io.dbg_multipliers_in(i) := multipliers(i).pixel_in
     }
 
     for(i <- 0 until n_ALUs){

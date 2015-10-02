@@ -203,6 +203,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 selected_slice += peek(c.shift_muxes(2).data_out)
                 selected += selected_slice.toArray.map(_.toInt)
 
+                ALU_in += peek(c.ALUs.dbg_multipliers_in).map(_.toInt)
+
                 kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
                 accumulators += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
 
@@ -215,8 +217,10 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         for(i <- 0 until 300){
 
             print("\n\n")
-            print("STEP ")
+            print("STEP: ")
             print(i-1)
+            print(", mod STEP: ")
+            print((i-1) % 9)
             print("\n\n")
 
             state = draw_pings(state, pings(i))
@@ -239,6 +243,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
             print("\n\n")
             print (selected(i).reverse.mkString("  *  "))
             print("\n\n")
+            print (ALU_in(i).reverse.mkString("  *  "))
+            print("\n\n")
             print (kernels(i).reverse.mkString("    #    "))
             print("\n\n")
             print (accumulators(i).reverse.mkString("   ---   "))
@@ -251,6 +257,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
 
     def draw_pings(state: Array[Array[Int]], pings: Array[Int]) : Array[Array[Int]] = {
         for(i <- 0 until pings.length){
+            print(i)
+            print(": ")
             for(j <- 0 until state.length){
                 if(state(i)(j) == 1){
                     print("#")
