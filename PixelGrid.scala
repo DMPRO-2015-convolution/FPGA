@@ -156,6 +156,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
 
     def feed_row(y: Int, img: Array[Int]) : Unit = {
 
+        var data_tree = new ListBuffer[Array[Int]]() 
+
         var row1 = new ListBuffer[Array[Int]]() 
         var row2 = new ListBuffer[Array[Int]]() 
         var row3 = new ListBuffer[Array[Int]]() 
@@ -165,6 +167,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         var row_out_3 = new ListBuffer[Array[Int]]() 
 
         var selected = new ListBuffer[Array[Int]]() 
+
+        var pings = new ListBuffer[Array[Int]]() 
 
         var kernels = new ListBuffer[Array[Int]]() 
         var ALU_in = new ListBuffer[Array[Int]]() 
@@ -178,9 +182,11 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
 
                 var selected_slice = ListBuffer[BigInt]()
 
-                print(coords_to_val(i, j+y))
 
                 poke(c.io.data_in, img(coords_to_val(i, j+y)))
+                
+                data_tree += peek(c.pixel_rows(0).data_in).map(_.toInt)
+
 
                 row1 += peek(c.pixel_rows(0).dbg_reg_contents).map(_.toInt)
                 row2 += peek(c.pixel_rows(1).dbg_reg_contents).map(_.toInt)
@@ -189,6 +195,8 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 row_out_1 += peek(c.pixel_rows(0).data_out).map(_.toInt)
                 row_out_2 += peek(c.pixel_rows(1).data_out).map(_.toInt)
                 row_out_3 += peek(c.pixel_rows(2).data_out).map(_.toInt)
+
+                pings += peek(c.pinger.pings).map(_.toInt)
                 
                 selected_slice += peek(c.shift_muxes(0).data_out)
                 selected_slice += peek(c.shift_muxes(1).data_out)
@@ -196,24 +204,44 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
                 selected += selected_slice.toArray.map(_.toInt)
 
                 kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
-                kernels += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
+                accumulators += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
 
                 step(1)
             }
         }
         for(i <- 0 until 300){
-            print (row1(i).mkString("] ["))
-            print("]\n\n               [")
-            print (row_out_1(i).mkString("]              ["))
+
+            print("\n\n")
+            print("STEP ")
+            print(i-1)
+            print("\n\n")
+
+            print (pings(i).reverse.mkString("      $     "))
+            print("\n\n[")
+            print(data_tree(i).reverse.mkString("]            ["))
             print("]\n\n[")
-            print (row2(i).mkString("] ["))
-            print("]\n\n               [")
-            print (row_out_2(i).mkString("]              ["))
+            print (row1(i).reverse.mkString("] ["))
+            print("]\n\n                     [")
+            print (row_out_1(i).reverse.mkString("]           ["))
             print("]\n\n[")
-            print (row3(i).mkString("] ["))
-            print("]\n\n               [")
-            print (row_out_3(i).mkString("]              ["))
+            print (row2(i).reverse.mkString("] ["))
+            print("]\n\n                     [")
+            print (row_out_2(i).reverse.mkString("]           ["))
+            print("]\n\n[")
+            print (row3(i).reverse.mkString("] ["))
+            print("]\n\n                     [")
+            print (row_out_3(i).reverse.mkString("]           ["))
             print("]\n\n")
+            print("\n\n")
+            print (selected(i).reverse.mkString("  *  "))
+            print("\n\n")
+            print (kernels(i).reverse.mkString("    #    "))
+            print("\n\n")
+            print (accumulators(i).reverse.mkString("   ---   "))
+            print("\n\n")
+            print("\n\n")
+            print("\n\n")
+            print("\n\n")
         }
     }
 
