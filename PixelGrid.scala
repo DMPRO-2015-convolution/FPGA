@@ -84,7 +84,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // TODO this is debug stuff
-    val mysterious_kernel = Array(1, 1, 1, 1, 1, 1, 1, 1, 1)
+    val mysterious_kernel = Array(0, 0, 0, 0, 1, 0, 0, 0, 0)
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
     val k_state = Reg(init=UInt(0))
 
@@ -118,8 +118,10 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
     poke(c.io.data_in, 1)
     for(i <- 0 to 71){
         peek(c.pinger.pings(8))
-        // peek(c.ALUs.dbg_accumulators_in)
-        // peek(c.ALUs.dbg_accumulators_out)
+        peek(c.ALUs)
+        peek(c.pixel_rows(0).data_out)
+        peek(c.pixel_rows(1).data_out)
+        peek(c.pixel_rows(2).data_out)
         println("\n")
         peek(c.io.data_out)
         step(1)
@@ -159,13 +161,11 @@ class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         for(i <- 0 until width){
             for(j <- 0 until sweep_input_depth){
                 
-                // input data
                 poke(c.io.data_in, img(coords_to_val(i, j+y)))
                 pixels_fed += 1
                 total_pixels_fed += 1
 
                 var out = peek(c.io.data_out)
-
                 if(out.toInt != 0){
                     println(j)
                     pixels_collected += 1

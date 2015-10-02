@@ -28,6 +28,7 @@ class Multiplier(data_width: Int) extends Module {
     io.data_out(23, 16) := color3*kernel
 }
 
+
 class Accumulator(data_width: Int) extends Module {
 
     val io = new Bundle { 
@@ -88,7 +89,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux3(data_width, 3, 2)).io }
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
-
+    
 
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
@@ -120,7 +121,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     // Wire kernel chain
     multipliers(0).kernel_in := io.kernel_in
     multipliers(0).pixel_in := selectors(0).data_out
-    accumulators(0).pixel_in := selectors(0).data_out
+    accumulators(0).pixel_in := multipliers(0).data_out
     
     for(i <- 1 until n_ALUs){
         multipliers(i).kernel_in := multipliers(i-1).kernel_out    
@@ -141,12 +142,10 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     }
 }
 
-
 class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
     println("ALU testan")
 
     poke(c.io.kernel_in, 1)
-
 
     for(i <- 0 to 100){
         poke(c.io.data_in(0), (i + 7) %9 + 1)
@@ -159,13 +158,14 @@ class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
         println("sel 0\n")
         peek(c.selectors(0))
         println("\n")
+
         // println("sel 1\n")
         // peek(c.selectors(1))
         // println("\n")
+        
         peek(c.io.data_out)
         println("\n\n\n")
         step(1)
         println("\n")
     }
 }
-
