@@ -22,6 +22,36 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
     var pixels_fed = 0
     var rows_swept = 0
 
+    def push_kernel(kernel: Array[Int]) : Unit = {
+        poke(c.io.data_in, kernel(1))
+        step(1)
+
+        poke(c.io.data_in, kernel(2))
+        step(1)
+
+        poke(c.io.data_in, kernel(3))
+        step(1)
+
+        poke(c.io.data_in, kernel(4))
+        step(1)
+
+        poke(c.io.data_in, kernel(5))
+        step(1)
+
+        poke(c.io.data_in, kernel(6))
+        step(1)
+
+        poke(c.io.data_in, kernel(7))
+        step(1)
+
+        poke(c.io.data_in, kernel(8))
+        step(1)
+
+        poke(c.io.data_in, kernel(0))
+        step(1)
+
+    }
+
     def feed_row(y_offset: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
 
         
@@ -192,6 +222,8 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
         return state
     }
 
+    val kernel = Array[Int](1, 2, 3, 4, 5, 6, 7, 8, 9)
+    push_kernel(kernel)
 
     val flat_array = Source.fromFile("Conv/tiny_pattern.txt").getLines.toArray.map(_.toInt)
     val img_array = Array.ofDim[Int](height, width)

@@ -138,6 +138,9 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
     var rows_swept = 0
 
 
+    def push_kernel(kernel: Array[Int]){
+
+    }
 
     def feed_row(y_offset: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
         var count = 0
@@ -145,24 +148,16 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
 
         for(x <- 0 until width){
             for(y <- 0 until sweep_input_depth){
-                print("[")
-                print(x)
-                print("][")
-                print(y + y_offset)
-                print("]\n")
-
                 poke(c.io.data_in, img(y + y_offset)(x))
-
                 var out = peek(c.io.data_out).toInt
-
                 if(!(y == 2 || y == 3)){
                     collected += out
                 }
-
                 step(1)
             }
         }
 
+        // Ayyy
         println(collected.length)
         for(x <- 1 until width - 1){
             for(y <- 0 until 7){
