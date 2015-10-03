@@ -131,7 +131,7 @@ void create_pattern_dump(int size, char* filename){
     fp = fopen(filename, "w");
     for(int i = 0; i < size; i++){
 
-        int pattern = i % 80;
+        int pattern = i / 80;
         fprintf(fp, "%d\n", pattern + 1);
     }
 }
