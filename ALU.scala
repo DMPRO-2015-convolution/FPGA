@@ -87,7 +87,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
     val accumulators = Vec.fill(n_ALUs){ Module(new Accumulator(data_width)).io }
 
-    val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux3(data_width, 3, 2)).io }
+    val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux3(data_width, 3, 1)).io }
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
     

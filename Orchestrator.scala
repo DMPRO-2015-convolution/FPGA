@@ -94,7 +94,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     val grid_out = row3_out + reg_delay
 
-    val ALU_sel = grid_out
+    val ALU_sel = grid_out - 1
 
     val ALU_rdy = grid_out + reg_delay
 
