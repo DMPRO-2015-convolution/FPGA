@@ -7,6 +7,7 @@ bool valid(int width, int height, int x, int y);
 void convolute(int** kernel, int height, int width, int pixel_n, unsigned char* image, unsigned char* conv_image);
 void dump_bytes(unsigned char* image, int size, char* filename);
 void dump24(unsigned char* image, int size, char* filename);
+void create_pattern_dump(int size, char* filename);
 
 
 int main( int argc, char ** argv){
@@ -46,20 +47,19 @@ int main( int argc, char ** argv){
         printf("error %u: %s\n", error, lodepng_error_text(error));
     }
 
-    /*Do actual work, invert the image*/
     unsigned char* convoluted_image = malloc(sizeof(unsigned char)*3*height*width);
     for (int i = 0; i < width*height; i++) {
         convolute(kernel, height, width, i, image, convoluted_image);
     }
 
-    // dump_bytes(image, width*height, "orig_dump.txt");
     dump24(image, width*height, "tiny_24dump.txt");
-
-    // dump_bytes(convoluted_image, width*height, "conv_byte_dump.txt");
-    // dump24(convoluted_image, width*height, "conv_24bit_dump.txt");
+    create_pattern_dump(80*80, "tiny_pattern.txt");
 
     return 0;
 }
+
+
+
 
 bool valid(int width, int height, int x, int y){
     return(( x >= 1 && x < width) && ( y >= 1 && y < height));
@@ -123,5 +123,15 @@ void dump24(unsigned char* image, int size, char* filename){
         int byte3 = (image[(i*3) + 2] << 16) + byte2;
 
         fprintf(fp, "%d\n", byte3);
+    }
+}
+
+void create_pattern_dump(int size, char* filename){
+    FILE* fp;
+    fp = fopen(filename, "w");
+    for(int i = 0; i < size; i++){
+
+        int pattern = i % 80;
+        fprintf(fp, "%d\n", pattern + 1);
     }
 }
