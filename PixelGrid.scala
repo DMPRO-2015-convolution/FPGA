@@ -85,7 +85,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     // Ghetto kernel shit
     val kernel_buffer = Vec.fill(2){ Reg(init=UInt(0, width=data_width)) }
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: done :: Nil = Enum(UInt(), 10)
-    val k_state = Reg(init=UInt(0))
+    val k_state = Reg(init=UInt(width=data_width))
 
     when(k_state === done){
         for(i <- 0 until 3){ 

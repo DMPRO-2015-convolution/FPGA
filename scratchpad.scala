@@ -90,6 +90,8 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
  
                 kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
                 accumulators += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
+
+                peek(c.k_state)
  
                 var out = peek(c.io.data_out).toInt
                 step(1)
