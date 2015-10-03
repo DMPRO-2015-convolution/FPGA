@@ -69,7 +69,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val mux_wait = row_time - mux_delay
 
     // data enters input tree. Changing this value should propagate throughout the entire system
-    val data_in = 1
+    val data_in = 0
 
     val row1_r = data_in + reg_delay
     val row1_m = data_in + mux_wait

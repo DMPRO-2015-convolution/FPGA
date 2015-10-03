@@ -10,13 +10,13 @@ import scala.io.Source
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
-        val kernel_in = UInt(INPUT, data_width)
 
         val data_out = UInt(OUTPUT, data_width)
     }
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
-    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=(i % 3) )).io
+    val input_tree = Vec.fill(3){ Reg(init=UInt(0, width = data_width)) }
+    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=((i + 1) % 3))).io
     val pinger = Module(new Orchestrator(cols, rows)).io
 
 
@@ -24,11 +24,10 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     ///////////   GRID
     ///////////
     ///////////
-   
     
     // wire input into first row input tree
     for(i <- 0 until cols){
-        pixel_rows(0).data_in(i%3) := io.data_in
+        pixel_rows(0).data_in(i%3) := input_tree(i/3)
     }
 
 
@@ -83,36 +82,24 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     ALUs.selector_shift_enable := pinger.pings(7)
 
 
-    // TODO this is debug stuff
-    val mysterious_kernel = Array(1, 1, 1, 1, -4, 1, 1, 1, 1)
-    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
+    // Ghetto kernel shit
+    val kernel_buffer = Vec.fill(2){ Reg(init=UInt(0, width=data_width)) }
+    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: done :: Nil = Enum(UInt(), 10)
     val k_state = Reg(init=UInt(0))
 
-    ALUs.kernel_in := UInt(0)
-    switch (k_state) {
-
-        is (s0){ ALUs.kernel_in :=  SInt(mysterious_kernel(3)) }
-        is (s1){ ALUs.kernel_in :=  SInt(mysterious_kernel(4)) }
-
-        is (s2){ ALUs.kernel_in :=  SInt(mysterious_kernel(5)) }
-        is (s3){ ALUs.kernel_in :=  SInt(mysterious_kernel(6)) }
-        is (s4){ ALUs.kernel_in :=  SInt(mysterious_kernel(7)) }
-
-        is (s5){ ALUs.kernel_in :=  SInt(mysterious_kernel(8)) }
-        is (s6){ ALUs.kernel_in :=  SInt(mysterious_kernel(0)) }
-        is (s7){ ALUs.kernel_in :=  SInt(mysterious_kernel(1)) }
-
-        is (s8){ ALUs.kernel_in :=  SInt(mysterious_kernel(2)) }
-
+    when(k_state === done){
+        for(i <- 0 until 3){ 
+            input_tree(i) := io.data_in
+            kernel_buffer(0) := ALUs.kernel_out
+        }
     }
-
-    when(k_state === s8){
-        k_state := s0
-    }.otherwise{
+    .otherwise{
         k_state := k_state + UInt(1)
+        kernel_buffer(0) := io.data_in
     }
-    
 
+    kernel_buffer(1) := kernel_buffer(0)
+    ALUs.kernel_in := kernel_buffer(1)
 }
 
 class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
@@ -132,19 +119,18 @@ class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends
 }
 
 
-class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
+class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
     import scala.collection.mutable.ListBuffer
 
-    val width = 320
-    val height = 200
+    val width = 80
+    val height = 80
     val sweep_input_depth = 9
     val sweep_output_depth = sweep_input_depth - 2
-    val sweeps = height/sweep_output_depth -1
+    val sweeps = height/sweep_output_depth
     val inputs_per_sweep = sweep_input_depth*width
     val outputs_per_sweep = sweep_output_depth*width
 
     // probably not sane :>
-    val first_output = 29
     
     var total_pixels_collected = 0
     var total_pixels_fed = 0
@@ -153,161 +139,50 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
 
 
 
-    def feed_row(y: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
+    def feed_row(y_offset: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
+        var count = 0
+        var collected = new ListBuffer[Int]()
 
-        // 
-        // var data_tree = new ListBuffer[Array[Int]]() 
+        for(x <- 0 until width){
+            for(y <- 0 until sweep_input_depth){
+                print("[")
+                print(x)
+                print("][")
+                print(y + y_offset)
+                print("]\n")
 
-        // var row1 = new ListBuffer[Array[Int]]() 
-        // var row2 = new ListBuffer[Array[Int]]() 
-        // var row3 = new ListBuffer[Array[Int]]() 
+                poke(c.io.data_in, img(y + y_offset)(x))
 
-        // var row_out_1 = new ListBuffer[Array[Int]]() 
-        // var row_out_2 = new ListBuffer[Array[Int]]() 
-        // var row_out_3 = new ListBuffer[Array[Int]]() 
-
-        // var selected = new ListBuffer[Array[Int]]() 
-
-        // var pings = new ListBuffer[Array[Int]]() 
-
-        // var kernels = new ListBuffer[Array[Int]]() 
-        // var ALU_in = new ListBuffer[Array[Int]]() 
-
-        // var meta = new ListBuffer[Int]() 
-
-        // var accumulators = new ListBuffer[Array[Int]]() 
-        // 
-
-        for(i <- 0 until width){
-            for(j <- 0 until sweep_input_depth){
-
-                poke(c.io.data_in, img(i)(j+y))
-                // var selected_slice = ListBuffer[BigInt]()
-
-
-                //  
-                //  
-                //  data_tree += peek(c.pixel_rows(0).data_in).map(_.toInt)
- 
- 
-                //  row1 += peek(c.pixel_rows(0).dbg_reg_contents).map(_.toInt)
-                //  row2 += peek(c.pixel_rows(1).dbg_reg_contents).map(_.toInt)
-                //  row3 += peek(c.pixel_rows(2).dbg_reg_contents).map(_.toInt)
- 
-                //  row_out_1 += peek(c.pixel_rows(0).data_out).map(_.toInt)
-                //  row_out_2 += peek(c.pixel_rows(1).data_out).map(_.toInt)
-                //  row_out_3 += peek(c.pixel_rows(2).data_out).map(_.toInt)
- 
-                //  pings += peek(c.pinger.pings).map(_.toInt)
-                //  
-                //  selected_slice += peek(c.shift_muxes(0).data_out)
-                //  selected_slice += peek(c.shift_muxes(1).data_out)
-                //  selected_slice += peek(c.shift_muxes(2).data_out)
-                //  selected += selected_slice.toArray.map(_.toInt)
- 
-                //  ALU_in += peek(c.ALUs.dbg_multipliers_in).map(_.toInt)
- 
-                //  kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
-                //  accumulators += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
- 
-                //  
- 
                 var out = peek(c.io.data_out).toInt
 
-                var c_x = i - 2
-                var c_y = j - 5
-
-                println(c_x)
-                println(c_y)
-
-                if(c_y < 0){
-                    c_y = c_y + 9
-                    c_x -= 1
+                if(!(y == 2 || y == 3)){
+                    collected += out
                 }
-                println(i)
-                println(j)
-                println(c_x)
-                println(c_y)
 
-                if( ((i*9 + j ) >= 31) && !(c_y == 0 || c_y == 8) ){
-                    convoluted(c_x)(c_y + y) = out
-                }
                 step(1)
             }
         }
 
-        
-        // var state = Array.ofDim[Int](9, 9)
-
-        // for(i <- 0 until 300){
-
-        //     print("\n\n")
-        //     print("STEP: ")
-        //     print(i)
-        //     print(", mod STEP: ")
-        //     print((i) % 9)
-        //     print("\n\n")
-
-        //     state = draw_pings(state, pings(i))
-
-        //     print("\n\n[")
-        //     print(data_tree(i).reverse.mkString("]            ["))
-        //     print("]\n\n[")
-        //     print (row1(i).reverse.mkString("] ["))
-        //     print("]\n\n                     [")
-        //     print (row_out_1(i).reverse.mkString("]           ["))
-        //     print("]\n\n[")
-        //     print (row2(i).reverse.mkString("] ["))
-        //     print("]\n\n                     [")
-        //     print (row_out_2(i).reverse.mkString("]           ["))
-        //     print("]\n\n[")
-        //     print (row3(i).reverse.mkString("] ["))
-        //     print("]\n\n                     [")
-        //     print (row_out_3(i).reverse.mkString("]           ["))
-        //     print("]\n\n")
-        //     print("\n\n")
-        //     print (selected(i).reverse.mkString("  *  "))
-        //     print("\n\n")
-        //     print (ALU_in(i).reverse.mkString("  *  "))
-        //     print("\n\n")
-        //     print (kernels(i).reverse.mkString("    #    "))
-        //     print("\n\n")
-        //     print (accumulators(i).reverse.mkString("   ---   "))
-        //     print("\n\n")
-        //     print("\n\n")
-        //     print("\n\n")
-        //     print("\n\n")
-
-        // }
-        
+        println(collected.length)
+        for(x <- 1 until width - 1){
+            for(y <- 0 until 7){
+                if(y == 1 || y == 0 || y == 2){
+                    conv_img(y + 4 + y_offset + 1)(x) = collected(x*7 + y)
+                }
+                else{
+                    conv_img(y - 3 + y_offset + 1)(x+1) = collected(x*7 + y)
+                }
+            }
+        }
     }
 
-    // def draw_pings(state: Array[Array[Int]], pings: Array[Int]) : Array[Array[Int]] = {
-    //     for(i <- 0 until pings.length){
-    //         print(i)
-    //         print(": ")
-    //         for(j <- 0 until state.length){
-    //             if(state(i)(j) == 1){
-    //                 print("#")
-    //             }
-    //             else{ print(".") }
-    //         }
-    //         println()
-    //         for(j <- state.length-2 to 0 by - 1){
-    //             val temp = state(i)(j)
-    //             state(i)(j) = state(i)(j+1)
-    //             state(i)(j+1) = temp
-    //         }
-    //         state(i)(0) = pings(8-i)
-    //     } 
-    //     return state
-    // }
-
-    val flat_array = Source.fromFile("Conv/tiny_24dump.txt").getLines.toArray.map(_.toInt)
-    val img_array = Array.ofDim[Int](320, 200)
-    for(i <- 0 until 320){
-        for(j <- 0 until 200){
-            img_array(i)(j) = flat_array(i*j + i) 
+    val flat_array = Source.fromFile("Conv/tiny_pattern.txt").getLines.toArray.map(_.toInt)
+    val img_array = Array.ofDim[Int](height, width)
+    var convoluted = Array.ofDim[Int](height, width)
+    for(y <- 0 until height){
+        for(x <- 0 until width){
+            img_array(y)(x) = flat_array(x + width*y) 
+            convoluted(y)(x) = 1
         }
     }
 
@@ -317,110 +192,14 @@ class snapshot(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Test
         }
     }
 
-    var convoluted = Array.ofDim[Int](320, 200)
     // feed_row(0, img_array, convoluted)
     feed_img(img_array, convoluted)
 
     import java.io._
     val w = new PrintWriter("Conv/tiny_disaster.txt")
-    for(i <- 0 until 320){
-        val s = convoluted(i).mkString("\n")
+    for(y <- 0 until height){
+        val s = convoluted(y).mkString("\n")
         w.write(s)
-        for(j <- 0 until 200){
-            println(convoluted(i)(j))
-        }
+        w.write("\n")
     }
-}
-
-
-class Img_test(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
-
-    import scala.collection.mutable.ListBuffer
-
-    val width = 640
-    val height = 480
-    val sweep_input_depth = 9
-    val sweep_output_depth = sweep_input_depth - 2
-    val sweeps = height/sweep_output_depth -1
-    val inputs_per_sweep = sweep_input_depth*width
-    val outputs_per_sweep = sweep_output_depth*width
-
-    // probably not sane :>
-    val first_output = 32
-    
-    var total_pixels_collected = 0
-    var total_pixels_fed = 0
-    var pixels_fed = 0
-    var rows_swept = 0
-
-    def coords_to_val(x: Int, y: Int) : Int = { return y*width + x }
-
-    def feed_row(y: Int, img: Array[Int]) : Array[Int] = {
-        var conv = new ListBuffer[Int]()
-        var pixels_collected = 0
-        for(i <- 0 until width){
-            for(j <- 0 until sweep_input_depth){
-                
-                poke(c.io.data_in, img(coords_to_val(i, j+y)))
-                pixels_fed += 1
-                total_pixels_fed += 1
-
-                var out = peek(c.io.data_out)
-                if(out.toInt != 0){
-                    println(j)
-                    pixels_collected += 1
-                    total_pixels_collected += 1
-                    conv += out.toInt
-                }
-                step(1)
-            }
-            for(i <- 0 until first_output){
-                var out = peek(c.io.data_out)
-                if(out.toInt != 0){
-                    conv += out.toInt
-                }
-            }
-        }
-        rows_swept += 1
-        return conv.toArray
-    }
-
-
-
-    def serialize(rowslices: Array[Int]) : Array[Int] = {
-        println("start serialize")
-        println(rowslices.length)
-        println(width*sweep_output_depth)
-        println(total_pixels_collected)
-        println(total_pixels_fed)
-        var serialized = new ListBuffer[Int]()
-
-        for(i <- 0 until sweep_output_depth){
-            for(j <- 0 until width){
-                serialized += rowslices(j*sweep_output_depth + i)    
-            }
-        }
-        println("Done serialize")
-        return serialized.toArray
-    }
-
-
-    def feed_image(img: Array[Int]) : Array[Int] = {
-        var conv = new ListBuffer[Int]()
-
-        for(i <- 1 until sweeps-1){
-            var conv_slice = feed_row(i*sweep_output_depth, img)
-            conv ++= serialize(conv_slice)
-        }
-        return conv.toArray
-    }
-    
-
-    val img = Source.fromFile("Conv/orig_24bit_dump.txt").getLines()
-    val img_array = img.next().split(" +").map(_.toInt)
-
-    val conv_img_array = feed_image(img_array)
-    val conv_img_string = conv_img_array.mkString("\n")
-
-    new PrintWriter("Conv/chisel_conv.txt"){ write(conv_img_string); close }
 }

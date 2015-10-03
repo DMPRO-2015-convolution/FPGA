@@ -59,7 +59,9 @@ object CoreMain {
         // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new Img_test(c, 24, 9, 3) }
         
         // ???
-        chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new snapshot(c, 24, 9, 3) }
+        // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new snapshot(c, 24, 9, 3) }
+        
+        chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new Snapshot(c) }
     }
 }
 
