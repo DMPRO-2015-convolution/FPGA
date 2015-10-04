@@ -102,35 +102,19 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     ALUs.kernel_in := kernel_buffer(1)
 }
 
-class PixelGridTest(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
-
-    poke(c.io.data_in, 1)
-    for(i <- 0 to 71){
-        peek(c.pinger.pings(8))
-        peek(c.ALUs)
-        peek(c.pixel_rows(0).data_out)
-        peek(c.pixel_rows(1).data_out)
-        peek(c.pixel_rows(2).data_out)
-        println("\n")
-        peek(c.io.data_out)
-        step(1)
-        println("\n")
-    }
-}
-
 
 class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(c) {
     import scala.collection.mutable.ListBuffer
 
-    val width = 80
-    val height = 80
+    val width = 640
+    val height = 480
     val sweep_input_depth = 9
     val sweep_output_depth = sweep_input_depth - 2
-    val sweeps = height/sweep_output_depth
+    val sweeps = height/(sweep_output_depth)
     val inputs_per_sweep = sweep_input_depth*width
     val outputs_per_sweep = sweep_output_depth*width
 
-    // probably not sane :>
+    var first_valid = 30
     
     var total_pixels_collected = 0
     var total_pixels_fed = 0
@@ -138,60 +122,79 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
     var rows_swept = 0
 
 
-    def push_kernel(kernel: Array[Int]){
-
+    def push_kernel(kernel: Array[Int]) : Unit = {
+        poke(c.io.data_in, kernel(1))
+        step(1)
+        poke(c.io.data_in, kernel(2))
+        step(1)
+        poke(c.io.data_in, kernel(3))
+        step(1)
+        poke(c.io.data_in, kernel(4))
+        step(1)
+        poke(c.io.data_in, kernel(5))
+        step(1)
+        poke(c.io.data_in, kernel(6))
+        step(1)
+        poke(c.io.data_in, kernel(7))
+        step(1)
+        poke(c.io.data_in, kernel(8))
+        step(1)
+        poke(c.io.data_in, kernel(0))
+        step(1)
     }
 
     def feed_row(y_offset: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
         var count = 0
-        var collected = new ListBuffer[Int]()
 
         for(x <- 0 until width){
+            var collected = new ListBuffer[Int]()
             for(y <- 0 until sweep_input_depth){
                 poke(c.io.data_in, img(y + y_offset)(x))
                 var out = peek(c.io.data_out).toInt
-                if(!(y == 2 || y == 3)){
-                    collected += out
+
+                if(x+(y*9) >= 30){
+                    if(out != 0){
+                        collected += out
+                    }
                 }
                 step(1)
             }
-        }
-
-        // Ayyy
-        println(collected.length)
-        for(x <- 1 until width - 1){
-            for(y <- 0 until 7){
-                if(y == 1 || y == 0 || y == 2){
-                    conv_img(y + 4 + y_offset + 1)(x) = collected(x*7 + y)
-                }
-                else{
-                    conv_img(y - 3 + y_offset + 1)(x+1) = collected(x*7 + y)
+            if(collected.length == 7 && x < 639){
+                for(y <- 0 until 7){
+                    var ty = (y + 6) % 7 
+                    var tx = x
+                    if(ty == 6){ tx -= 1 }
+                    conv_img(ty+y_offset)(tx) = collected(y)
                 }
             }
         }
     }
 
-    val flat_array = Source.fromFile("Conv/tiny_pattern.txt").getLines.toArray.map(_.toInt)
+    val flat_array = Source.fromFile("Conv/Daisy24dump.txt").getLines.toArray.map(_.toInt)
     val img_array = Array.ofDim[Int](height, width)
     var convoluted = Array.ofDim[Int](height, width)
     for(y <- 0 until height){
         for(x <- 0 until width){
             img_array(y)(x) = flat_array(x + width*y) 
-            convoluted(y)(x) = 1
+            convoluted(y)(x) = 0
         }
     }
 
     def feed_img(img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
-        for(i <- 0 until sweeps){
+        for(i <- 0 until sweeps-1){
             feed_row(i*7, img, conv_img)
         }
     }
+
+
+    val kernel = Array[Int](1, 0, 0, 0, 0, 0, 0, 0, 1)
+    push_kernel(kernel)
 
     // feed_row(0, img_array, convoluted)
     feed_img(img_array, convoluted)
 
     import java.io._
-    val w = new PrintWriter("Conv/tiny_disaster.txt")
+    val w = new PrintWriter("Conv/big_disaster.txt")
     for(y <- 0 until height){
         val s = convoluted(y).mkString("\n")
         w.write(s)

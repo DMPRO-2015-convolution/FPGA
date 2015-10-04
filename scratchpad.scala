@@ -25,31 +25,22 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
     def push_kernel(kernel: Array[Int]) : Unit = {
         poke(c.io.data_in, kernel(1))
         step(1)
-
         poke(c.io.data_in, kernel(2))
         step(1)
-
         poke(c.io.data_in, kernel(3))
         step(1)
-
         poke(c.io.data_in, kernel(4))
         step(1)
-
         poke(c.io.data_in, kernel(5))
         step(1)
-
         poke(c.io.data_in, kernel(6))
         step(1)
-
         poke(c.io.data_in, kernel(7))
         step(1)
-
         poke(c.io.data_in, kernel(8))
         step(1)
-
         poke(c.io.data_in, kernel(0))
         step(1)
-
     }
 
     def feed_row(y_offset: Int, img: Array[Array[Int]], conv_img: Array[Array[Int]]) : Unit = {
@@ -81,6 +72,7 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
 
         var accumulators = new ListBuffer[Array[Int]]() 
         
+        var output = new ListBuffer[Int]() 
 
         for(x <- 0 until height){
             for(y <- 0 until sweep_input_depth){
@@ -90,7 +82,6 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
                 var mux_slice = ListBuffer[BigInt]()
                  
                 data_tree += peek(c.pixel_rows(0).data_in).map(_.toInt)
- 
  
                 row1 += peek(c.pixel_rows(0).dbg_reg_contents).map(_.toInt)
                 row2 += peek(c.pixel_rows(1).dbg_reg_contents).map(_.toInt)
@@ -121,9 +112,10 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
                 kernels += peek(c.ALUs.dbg_kernel_out).map(_.toInt)
                 accumulators += peek(c.ALUs.dbg_accumulators_out).map(_.toInt)
 
-                peek(c.k_state)
  
                 var out = peek(c.io.data_out).toInt
+                output += out
+
                 step(1)
             }
         }
@@ -181,13 +173,16 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
 
             print("]\n\nALU_IN      :   [")
             print (ALU_in(i).reverse.mkString("] ["))
+
             print("]\n\nKERNELS     :   [")
-
             print (kernels(i).reverse.mkString("] ["))
-            print("]\n\nACCUMULATORS: ")
 
-            print (accumulators(i).reverse.mkString("   ---   "))
-            print("\n\n")
+            print("]\n\nACCUMULATORS: [")
+            print (accumulators(i).reverse.mkString("] ["))
+
+            print("]\n\nOUTPUT:             *~>>>>  ")
+            print (output(i))
+            print("  <<<<~*")
             print("\n\n")
             print("\n\n")
             print("\n\n")

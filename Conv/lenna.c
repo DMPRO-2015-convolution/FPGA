@@ -17,7 +17,7 @@ int main( int argc, char ** argv){
   
     size_t pngsize;
     unsigned char* png = NULL;
-    char* filename = "tiny_daisy.png";
+    char* filename = "Daisy.png";
     lodepng_load_file(&png, &pngsize, filename);
     printf("lodepng: file loaded file\n");
 
@@ -52,7 +52,7 @@ int main( int argc, char ** argv){
         convolute(kernel, height, width, i, image, convoluted_image);
     }
 
-    dump24(image, width*height, "tiny_24dump.txt");
+    dump24(image, width*height, "Daisy24dump.txt");
     create_pattern_dump(80*80, "tiny_pattern.txt");
 
     return 0;

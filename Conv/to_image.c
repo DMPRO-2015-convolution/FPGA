@@ -6,9 +6,9 @@
 
 
 int main( int argc, char ** argv){
-    char* in_filename = "tiny_disaster.txt";
-    int width = 320;
-    int height = 200;
+    char* in_filename = "big_disaster.txt";
+    int width = 640;
+    int height = 480;
     
     unsigned char* image = calloc(3*width*height, sizeof(unsigned char));
 
@@ -40,7 +40,7 @@ int main( int argc, char ** argv){
         line_n++;
     }
 
-    lodepng_encode24_file("tiny_disaster.png", image , width, height);
+    lodepng_encode24_file("big_disaster.png", image , width, height);
 
     fclose(fp);
     if (line)
