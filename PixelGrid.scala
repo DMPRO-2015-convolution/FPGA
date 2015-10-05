@@ -83,7 +83,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
 
     // Ghetto kernel shit
-    val kernel_buffer = Vec.fill(2){ Reg(init=UInt(0, width=data_width)) }
+    val kernel_buffer = Vec.fill(2){ Reg(init=SInt(0, width=data_width)) }
     val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: done :: Nil = Enum(UInt(), 10)
     val k_state = Reg(init=UInt(width=data_width))
 
@@ -123,6 +123,8 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
 
 
     def push_kernel(kernel: Array[Int]) : Unit = {
+        poke(c.io.data_in, kernel(0))
+        step(1)
         poke(c.io.data_in, kernel(1))
         step(1)
         poke(c.io.data_in, kernel(2))
@@ -138,8 +140,6 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
         poke(c.io.data_in, kernel(7))
         step(1)
         poke(c.io.data_in, kernel(8))
-        step(1)
-        poke(c.io.data_in, kernel(0))
         step(1)
     }
 
@@ -159,7 +159,7 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
                 }
                 step(1)
             }
-            if(collected.length == 7 && x < 639){
+            if(collected.length == 7 && x < width - 2){
                 for(y <- 0 until 7){
                     var ty = (y + 6) % 7 
                     var tx = x
@@ -170,7 +170,7 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
         }
     }
 
-    val flat_array = Source.fromFile("Conv/Daisy24dump.txt").getLines.toArray.map(_.toInt)
+    val flat_array = Source.fromFile("Conv/disaster24dump.txt").getLines.toArray.map(_.toInt)
     val img_array = Array.ofDim[Int](height, width)
     var convoluted = Array.ofDim[Int](height, width)
     for(y <- 0 until height){
@@ -187,7 +187,7 @@ class image(c: PixelGrid, data_width: Int, cols: Int, rows: Int) extends Tester(
     }
 
 
-    val kernel = Array[Int](1, 0, 0, 0, 0, 0, 0, 0, 1)
+    val kernel = Array[Int](1, 0, 1, 0, -4, 0, 1, 0, 1)
     push_kernel(kernel)
 
     // feed_row(0, img_array, convoluted)

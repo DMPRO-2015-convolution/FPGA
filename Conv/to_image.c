@@ -40,7 +40,7 @@ int main( int argc, char ** argv){
         line_n++;
     }
 
-    lodepng_encode24_file("big_disaster.png", image , width, height);
+    lodepng_encode24_file("disaster_conv.png", image , width, height);
 
     fclose(fp);
     if (line)
