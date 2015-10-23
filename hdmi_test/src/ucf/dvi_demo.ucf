@@ -51,51 +51,51 @@ NET "SW<1>"         LOC = "D14" | IOSTANDARD = LVCMOS33 ;
 ############################################
 # TMDS pairs for Atlys top OUT: J2 - Bank 0
 ############################################
-NET "TX0_TMDS(3)"  	LOC = "C4" |IOSTANDARD = TMDS_33 ; # Clock // fail
-NET "TX0_TMDSB(3)"  LOC = "C5" |IOSTANDARD = TMDS_33 ; # // fail
-NET "TX0_TMDS(2)"  	LOC = "A5" |IOSTANDARD = TMDS_33 ; # Red // fail
+NET "TX0_TMDS(3)"  	LOC = "C5" |IOSTANDARD = TMDS_33 ; # Clock // fail
+NET "TX0_TMDSB(3)"  LOC = "A5" |IOSTANDARD = TMDS_33 ; # // fail
+NET "TX0_TMDS(2)"  	LOC = "B4" |IOSTANDARD = TMDS_33 ; # Red // fail
 NET "TX0_TMDSB(2)"  LOC = "A4" |IOSTANDARD = TMDS_33 ;
-NET "TX0_TMDS(1)"  	LOC = "B4" |IOSTANDARD = TMDS_33 ; # Green
-NET "TX0_TMDSB(1)"  LOC = "B3" |IOSTANDARD = TMDS_33 ; # // fail
-NET "TX0_TMDS(0)"  	LOC = "A2" |IOSTANDARD = TMDS_33 ; # Blue // fail
-NET "TX0_TMDSB(0)"  LOC = "T3" |IOSTANDARD = TMDS_33 ;
+NET "TX0_TMDS(1)"  	LOC = "B3" |IOSTANDARD = TMDS_33 ; # Green
+NET "TX0_TMDSB(1)"  LOC = "A3" |IOSTANDARD = TMDS_33 ; # // fail
+NET "TX0_TMDS(0)"  	LOC = "B2" |IOSTANDARD = TMDS_33 ; # Blue // fail
+NET "TX0_TMDSB(0)"  LOC = "A2" |IOSTANDARD = TMDS_33 ;
 
 ##############################################
 # TMDS pairs for Atlys top OUT: JA - Bank 2
 # Use TML_33 to add output series termination
 ##############################################
-NET "TX1_TMDS(3)"  	LOC = "B2" |IOSTANDARD = TML_33; #TMDS_33 ; ## Clock
-NET "TX1_TMDSB(3)"  LOC = "R3" |IOSTANDARD = TML_33; #TMDS_33 ; # // fail
-NET "TX1_TMDS(2)"  	LOC = "T5" |IOSTANDARD = TML_33; #TMDS_33 ; ## Red // fail
-NET "TX1_TMDSB(2)"  LOC = "V4" |IOSTANDARD = TML_33; #TMDS_33 ; #
-NET "TX1_TMDS(1)"  	LOC = "R5" |IOSTANDARD = TML_33; #TMDS_33 ; ## Green
-NET "TX1_TMDSB(1)"  LOC = "T4" |IOSTANDARD = TML_33; #TMDS_33 ; # // fail
-NET "TX1_TMDS(0)"  	LOC = "V5" |IOSTANDARD = TML_33; #TMDS_33 ; ## Blue // fail
-NET "TX1_TMDSB(0)"  LOC = "P6" |IOSTANDARD = TML_33; #TMDS_33 ; #
+NET "TX1_TMDS(3)"  	LOC = "R3" |IOSTANDARD = TML_33; #TMDS_33 ; ## Clock
+NET "TX1_TMDSB(3)"  LOC = "T3" |IOSTANDARD = TML_33; #TMDS_33 ; # // fail
+NET "TX1_TMDS(2)"  	LOC = "R5" |IOSTANDARD = TML_33; #TMDS_33 ; ## Red // fail
+NET "TX1_TMDSB(2)"  LOC = "T5" |IOSTANDARD = TML_33; #TMDS_33 ; #
+NET "TX1_TMDS(1)"  	LOC = "T4" |IOSTANDARD = TML_33; #TMDS_33 ; ## Green
+NET "TX1_TMDSB(1)"  LOC = "V4" |IOSTANDARD = TML_33; #TMDS_33 ; # // fail
+NET "TX1_TMDS(0)"  	LOC = "U5" |IOSTANDARD = TML_33; #TMDS_33 ; ## Blue // fail
+NET "TX1_TMDSB(0)"  LOC = "V5" |IOSTANDARD = TML_33; #TMDS_33 ; #
 
 ##################################################
 # TMDS pairs for Atlys IN (FPGA Bank 1): J3
 ##################################################
-NET "RX1_TMDS(3)"  	LOC = "U5" |IOSTANDARD = TMDS_33 ; # CLK
+NET "RX1_TMDS(3)"  	LOC = "P6" |IOSTANDARD = TMDS_33 ; # CLK
 NET "RX1_TMDSB(3)"  LOC = "N5" |IOSTANDARD = TMDS_33 ;
 NET "RX1_TMDS(2)"  	LOC = "P7" |IOSTANDARD = TMDS_33 ; # Red
-NET "RX1_TMDSB(2)"  LOC = "P8" |IOSTANDARD = TMDS_33 ;
-NET "RX1_TMDS(1)"  	LOC = "N6" |IOSTANDARD = TMDS_33 ; # Green
+NET "RX1_TMDSB(2)"  LOC = "N6" |IOSTANDARD = TMDS_33 ;
+NET "RX1_TMDS(1)"  	LOC = "P8" |IOSTANDARD = TMDS_33 ; # Green
 NET "RX1_TMDSB(1)"  LOC = "N7" |IOSTANDARD = TMDS_33 ;
 NET "RX1_TMDS(0)"  	LOC = "N8" |IOSTANDARD = TMDS_33 ; # Blue
-NET "RX1_TMDSB(0)"  LOC = "N9" |IOSTANDARD = TMDS_33 ;
+NET "RX1_TMDSB(0)"  LOC = "M8" |IOSTANDARD = TMDS_33 ;
 
 ##############################################
 # TMDS pairs for Atlys IN (FPGA Bank 0): J1
 ##############################################
-NET "RX0_TMDS(3)"  	LOC = "M8" |IOSTANDARD = TMDS_33 ; # CLK
+NET "RX0_TMDS(3)"  	LOC = "N9" |IOSTANDARD = TMDS_33 ; # CLK
 NET "RX0_TMDSB(3)"  LOC = "M10" |IOSTANDARD = TMDS_33 ;
 NET "RX0_TMDS(2)"  	LOC = "T7" |IOSTANDARD = TMDS_33 ; # Red
-NET "RX0_TMDSB(2)"  LOC = "V6" |IOSTANDARD = TMDS_33 ;
-NET "RX0_TMDS(1)"  	LOC = "R7" |IOSTANDARD = TMDS_33 ; # Green
+NET "RX0_TMDSB(2)"  LOC = "R7" |IOSTANDARD = TMDS_33 ;
+NET "RX0_TMDS(1)"  	LOC = "V6" |IOSTANDARD = TMDS_33 ; # Green
 NET "RX0_TMDSB(1)"  LOC = "T6" |IOSTANDARD = TMDS_33 ;
 NET "RX0_TMDS(0)"  	LOC = "V7"  |IOSTANDARD = TMDS_33 ; # Blue
-NET "RX0_TMDSB(0)"  LOC = "V8"  |IOSTANDARD = TMDS_33 ;
+NET "RX0_TMDSB(0)"  LOC = "U7"  |IOSTANDARD = TMDS_33 ;
 
 
 ########################################
