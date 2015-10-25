@@ -2,11 +2,7 @@ package Core
 
 import Chisel._
 
-// TODO figure out how to assert cols div 3
 class PixelArray(data_width: Int, cols: Int) extends Module {
-
-    // if(!(cols % 3 == 0)){ val crash = 1/0 }
-
 
     val n_column_groups = cols/3
 

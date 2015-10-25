@@ -32,19 +32,3 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
 
     io.dbg_enable := state
 }
-
-class ShiftMux3Test(c: ShiftMux3, data_width: Int, regs_in: Int) extends Tester(c) {
-    println("shift Mux3 test")
-    for(i <- 0 until 18){
-        step(1)
-        poke(c.io.data_in(i%3), i%3 +1)
-        peek(c.io.data_out)
-        peek(c.io.dbg_enable)
-        if(i%3 == 0){
-            poke(c.io.shift, true)
-        }
-        else{
-            (poke(c.io.shift, false))
-        }
-    }
-}

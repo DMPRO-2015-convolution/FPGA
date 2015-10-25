@@ -39,7 +39,6 @@ class Accumulator(data_width: Int) extends Module {
     } 
 
     val accumulator = Reg(SInt(width=data_width))
-
     when(io.flush){
         accumulator := io.pixel_in
     }
@@ -57,15 +56,13 @@ class Accumulator(data_width: Int) extends Module {
         accumulator(15, 8) := color2
         accumulator(23, 16) := color3
 
-        io.data_out := accumulator
-
     }.otherwise{
         accumulator(7, 0) := accumulator(7, 0) + color1
         accumulator(15, 8) := accumulator(15, 8) + color2
         accumulator(23, 16) := accumulator(23, 16) + color3
     }
 
-    io.data_out := UInt(0)
+    io.data_out := accumulator
 
 }
 
@@ -73,12 +70,11 @@ class Accumulator(data_width: Int) extends Module {
 class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val n_ALUs = cols - 2  
-
     val io = new Bundle { 
         val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
         val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
-        val selector_shift_enable = Bool(INPUT)
+        val selector_shift = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
@@ -95,32 +91,26 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
     
-
+    
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
-            // See schematics for reversal reason
-            selectors(i).data_in(2-j) := io.data_in(j)
+            selectors(i).data_in(j) := io.data_in(j)
         }
         multipliers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)
     }
 
-
-    // Wire shift enablers
-    for(i <- 1 until (n_ALUs)){
-        shift_enablers(i) := shift_enablers(i-1)
-    }
-    shift_enablers(0) := io.selector_shift_enable
-
+    daisy_chain(io.selector_shift, shift_enablers)
+    daisy_chain(io.accumulator_flush, flush_signals)
+    
+    // wire_all(flush_signals, accumulators
 
     // Wire flush enablers
-    for(i <- 1 until (n_ALUs)){
-        flush_signals(i) := flush_signals(i-1)
+    // wire_all(accumulators, flush_signals, (x: Accumulator) => x.io.flush)
+    for(i <- 0 until (n_ALUs)){
         accumulators(i).flush := flush_signals(i)
     }
-    accumulators(0).flush := flush_signals(0)
-    flush_signals(0) := io.accumulator_flush
 
 
     // Wire kernel chain
@@ -137,7 +127,6 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     io.kernel_out := multipliers(n_ALUs - 1).kernel_out
 
 
-    // TODO brain this into using a tree or something
     io.data_out := UInt(0)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
@@ -149,32 +138,20 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     for(i <- 0 until n_ALUs){
         io.dbg_kernel_out(i) := multipliers(i).kernel_out
     }
-}
 
-class ALUtest(c: ALUrow, data_width: Int, cols: Int) extends Tester(c) {
-    println("ALU testan")
 
-    poke(c.io.kernel_in, 1)
 
-    for(i <- 0 to 100){
-        poke(c.io.data_in(0), (i + 7) %9 + 1)
-        poke(c.io.data_in(1), (i + 1) %9 + 1)
-        poke(c.io.data_in(2), (i + 4) %9 + 1)
-
-        if(i%9 == 0){ poke(c.io.accumulator_flush, true) } else {poke(c.io.accumulator_flush, false)} 
-        if(i%3 == 0){ poke(c.io.selector_shift_enable, true) } else {poke(c.io.selector_shift_enable, false)} 
-        println("\n")
-        println("sel 0\n")
-        peek(c.selectors(0))
-        println("\n")
-
-        // println("sel 1\n")
-        // peek(c.selectors(1))
-        // println("\n")
-        
-        peek(c.io.data_out)
-        println("\n\n\n")
-        step(1)
-        println("\n")
+    def daisy_chain[T <: Data](input: T, elements: Vec[T]){
+        elements(0) := input
+        for(i <- 1 until elements.length){
+            elements(i) := elements(i-1)
+        }
     }
+
+    // def wire_all[T <: Data](inputs: Vec[T], outputs: Vec[T], f: T => T){
+    // // def wire_all[T <: Data](inputs: Vec[T], outputs: Vec[T]){
+    //     for(i <- 0 until inputs.length){
+    //         f(inputs(i)) := outputs(i)
+    //     }
+    // }
 }
