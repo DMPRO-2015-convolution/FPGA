@@ -75,6 +75,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift = Bool(INPUT)
+        val active = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
@@ -96,6 +97,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
             selectors(i).data_in(j) := io.data_in(j)
+            selectors(i).active := io.active
         }
         multipliers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)
