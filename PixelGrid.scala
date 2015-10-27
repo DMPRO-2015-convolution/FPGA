@@ -50,4 +50,5 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         }
     }
 
+
 }
