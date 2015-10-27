@@ -23,6 +23,8 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
     var rows_swept = 0
 
     def push_kernel(kernel: Array[Int]) : Unit = {
+        poke(c.io.data_in, kernel(0))
+        step(1)
         poke(c.io.data_in, kernel(1))
         step(1)
         poke(c.io.data_in, kernel(2))
@@ -38,8 +40,6 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
         poke(c.io.data_in, kernel(7))
         step(1)
         poke(c.io.data_in, kernel(8))
-        step(1)
-        poke(c.io.data_in, kernel(0))
         step(1)
     }
 
@@ -77,7 +77,7 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
         for(x <- 0 until height){
             for(y <- 0 until sweep_input_depth){
 
-                poke(c.io.data_in, img(y + y_offset)(x))
+                poke(c.io.data_in, 1)
                 var selected_slice = ListBuffer[BigInt]()
                 var mux_slice = ListBuffer[BigInt]()
                  
@@ -177,7 +177,7 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
             print("]\n\nKERNELS     :   [")
             print (kernels(i).reverse.mkString("] ["))
 
-            print("]\n\nACCUMULATORS: [")
+            print("]\n\nACCUMULATORS:   [")
             print (accumulators(i).reverse.mkString("] ["))
 
             print("]\n\nOUTPUT:             *~>>>>  ")
@@ -217,7 +217,7 @@ class Snapshot(c: PixelGrid) extends Tester(c) {
         return state
     }
 
-    val kernel = Array[Int](1, 2, 3, 4, 5, 6, 7, 8, 9)
+    val kernel = Array[Int](1, 0, 1, 0, -4, 0, 1, 0, 1)
     push_kernel(kernel)
 
     val flat_array = Source.fromFile("Conv/tiny_pattern.txt").getLines.toArray.map(_.toInt)

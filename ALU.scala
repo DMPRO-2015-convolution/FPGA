@@ -9,7 +9,7 @@ class Multiplier(data_width: Int) extends Module {
         val kernel_in = SInt(INPUT, data_width)
 
         val data_out = SInt(OUTPUT, data_width) 
-        val kernel_out = UInt(OUTPUT, data_width)
+        val kernel_out = SInt(OUTPUT, data_width)
     } 
 
     val kernel = Reg(UInt(width=data_width))
@@ -56,13 +56,17 @@ class Accumulator(data_width: Int) extends Module {
         accumulator(7, 0) := color1
         accumulator(15, 8) := color2
         accumulator(23, 16) := color3
+
+        io.data_out := accumulator
+
     }.otherwise{
         accumulator(7, 0) := accumulator(7, 0) + color1
         accumulator(15, 8) := accumulator(15, 8) + color2
         accumulator(23, 16) := accumulator(23, 16) + color3
     }
 
-    io.data_out := accumulator
+    io.data_out := UInt(0)
+
 }
 
 
@@ -77,11 +81,11 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         val selector_shift_enable = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
-        val kernel_out = UInt(OUTPUT, width=data_width)
+        val kernel_out = SInt(OUTPUT, width=data_width)
 
         val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
         val dbg_multipliers_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
-        val dbg_kernel_out  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
+        val dbg_kernel_out  = Vec.fill(n_ALUs){ SInt(OUTPUT, width=data_width) }
     } 
 
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }

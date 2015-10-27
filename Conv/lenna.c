@@ -52,7 +52,7 @@ int main( int argc, char ** argv){
         convolute(kernel, height, width, i, image, convoluted_image);
     }
 
-    dump24(image, width*height, "Daisy24dump.txt");
+    dump24(image, width*height, "disaster24dump.txt");
     create_pattern_dump(80*80, "tiny_pattern.txt");
 
     return 0;
