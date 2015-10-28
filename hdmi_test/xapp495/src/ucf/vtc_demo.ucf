@@ -55,7 +55,7 @@ VCCAUX = 3.3;
 ########################################
 # Reset button and LEDs
 ########################################
-NET "RSTBTN"        LOC = "T15";
+NET "RSTBTN"        LOC = "H12";
 NET "LED<0>"        LOC = "J13";
 NET "LED<1>"        LOC = "K14";
 NET "LED<2>"        LOC = "U17";
