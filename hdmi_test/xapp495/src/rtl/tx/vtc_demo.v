@@ -89,7 +89,7 @@ module vtc_demo (
     .CLKIN_DIVIDE_BY_2     ("FALSE"),
     .CLKIN_PERIOD          (15.0),
     .CLKOUT_PHASE_SHIFT    ("NONE"),
-    .CLK_FEEDBACK          ("1X"),
+    .CLK_FEEDBACK          (),
     .DESKEW_ADJUST         ("SYSTEM_SYNCHRONOUS"),
     .PHASE_SHIFT           (0),
     .STARTUP_WAIT          ("FALSE"))
@@ -427,9 +427,9 @@ module vtc_demo (
   reg hvsync_polarity; //1-Negative, 0-Positive
   always @ (*)
   begin
-    case (sws_clk_sync)
-      SW_VGA:
-      begin
+//    case (sws_clk_sync)
+//      SW_VGA:
+//      begin
         hvsync_polarity = 1'b1;
 
         tc_hsblnk = HPIXELS_VGA - 11'd1;
@@ -440,64 +440,64 @@ module vtc_demo (
         tc_vssync =  VLINES_VGA - 11'd1 + VFNPRCH_VGA;
         tc_vesync =  VLINES_VGA - 11'd1 + VFNPRCH_VGA + VSYNCPW_VGA;
         tc_veblnk =  VLINES_VGA - 11'd1 + VFNPRCH_VGA + VSYNCPW_VGA + VBKPRCH_VGA;
-      end
-
-      SW_SVGA:
-      begin
-        hvsync_polarity = 1'b0;
-
-        tc_hsblnk = HPIXELS_SVGA - 11'd1;
-        tc_hssync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA;
-        tc_hesync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA;
-        tc_heblnk = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA + HBKPRCH_SVGA;
-        tc_vsblnk =  VLINES_SVGA - 11'd1;
-        tc_vssync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA;
-        tc_vesync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA;
-        tc_veblnk =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA + VBKPRCH_SVGA;
-      end
-
-      SW_XGA:
-      begin
-        hvsync_polarity = 1'b1;
-
-        tc_hsblnk = HPIXELS_XGA - 11'd1;
-        tc_hssync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA;
-        tc_hesync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA;
-        tc_heblnk = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA + HBKPRCH_XGA;
-        tc_vsblnk =  VLINES_XGA - 11'd1;
-        tc_vssync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA;
-        tc_vesync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA;
-        tc_veblnk =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA + VBKPRCH_XGA;
-      end
-
-      SW_SXGA:
-      begin
-        hvsync_polarity = 1'b0; // positive polarity
-
-        tc_hsblnk = HPIXELS_SXGA - 11'd1;
-        tc_hssync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA;
-        tc_hesync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA;
-        tc_heblnk = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA + HBKPRCH_SXGA;
-        tc_vsblnk =  VLINES_SXGA - 11'd1;
-        tc_vssync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA;
-        tc_vesync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA;
-        tc_veblnk =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA + VBKPRCH_SXGA;
-      end
-
-      default: //SW_HDTV720P:
-      begin
-        hvsync_polarity = 1'b0;
-
-        tc_hsblnk = HPIXELS_HDTV720P - 11'd1;
-        tc_hssync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P;
-        tc_hesync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P;
-        tc_heblnk = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P + HBKPRCH_HDTV720P;
-        tc_vsblnk =  VLINES_HDTV720P - 11'd1;
-        tc_vssync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P;
-        tc_vesync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P;
-        tc_veblnk =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P + VBKPRCH_HDTV720P;
-      end
-    endcase
+//      end
+//
+//      SW_SVGA:
+//      begin
+//        hvsync_polarity = 1'b0;
+//
+//        tc_hsblnk = HPIXELS_SVGA - 11'd1;
+//        tc_hssync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA;
+//        tc_hesync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA;
+//        tc_heblnk = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA + HBKPRCH_SVGA;
+//        tc_vsblnk =  VLINES_SVGA - 11'd1;
+//        tc_vssync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA;
+//        tc_vesync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA;
+//        tc_veblnk =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA + VBKPRCH_SVGA;
+//      end
+//
+//      SW_XGA:
+//      begin
+//        hvsync_polarity = 1'b1;
+//
+//        tc_hsblnk = HPIXELS_XGA - 11'd1;
+//        tc_hssync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA;
+//        tc_hesync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA;
+//        tc_heblnk = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA + HBKPRCH_XGA;
+//        tc_vsblnk =  VLINES_XGA - 11'd1;
+//        tc_vssync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA;
+//        tc_vesync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA;
+//        tc_veblnk =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA + VBKPRCH_XGA;
+//      end
+//
+//      SW_SXGA:
+//      begin
+//        hvsync_polarity = 1'b0; // positive polarity
+//
+//        tc_hsblnk = HPIXELS_SXGA - 11'd1;
+//        tc_hssync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA;
+//        tc_hesync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA;
+//        tc_heblnk = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA + HBKPRCH_SXGA;
+//        tc_vsblnk =  VLINES_SXGA - 11'd1;
+//        tc_vssync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA;
+//        tc_vesync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA;
+//        tc_veblnk =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA + VBKPRCH_SXGA;
+//      end
+//
+//      default: //SW_HDTV720P:
+//      begin
+//        hvsync_polarity = 1'b0;
+//
+//        tc_hsblnk = HPIXELS_HDTV720P - 11'd1;
+//        tc_hssync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P;
+//        tc_hesync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P;
+//        tc_heblnk = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P + HBKPRCH_HDTV720P;
+//        tc_vsblnk =  VLINES_HDTV720P - 11'd1;
+//        tc_vssync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P;
+//        tc_vesync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P;
+//        tc_veblnk =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P + VBKPRCH_HDTV720P;
+//      end
+//    endcase
   end
 
   wire VGA_HSYNC_INT, VGA_VSYNC_INT;
