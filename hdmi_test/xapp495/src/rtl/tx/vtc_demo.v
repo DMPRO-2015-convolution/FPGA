@@ -285,7 +285,7 @@ module vtc_demo (
     .LOCKED(pclk_lckd),
     .PROGDONE(progdone),
     .STATUS(),
-    .CLKIN(clk50m),
+    .CLKIN(sysclk_50),
     .FREEZEDCM(1'b0),
     .PROGCLK(clk50m_bufg),
     .PROGDATA(progdata),
