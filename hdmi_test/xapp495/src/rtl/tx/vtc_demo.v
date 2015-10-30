@@ -65,6 +65,8 @@ module vtc_demo (
   //******************************************************************//
   // Create global clock and synchronous system reset.                //
   //******************************************************************//
+
+  // input clock in example: 100mhz
   wire          locked;
   wire          reset;
 
@@ -74,10 +76,54 @@ module vtc_demo (
 
   IBUF sysclk_buf (.I(SYS_CLK), .O(sysclk));
 
-  BUFIO2 #(.DIVIDE_BYPASS("FALSE"), .DIVIDE(2))
-  sysclk_div (.DIVCLK(clk50m), .IOCLK(), .SERDESSTROBE(), .I(sysclk));
+  wire        clkfb;
+  wire        sysclk_50;
+  wire        psdone_unused;
+  wire        locked_int;
+  wire [7:0]  status_int;
 
-  BUFG clk50m_bufgbufg (.I(clk50m), .O(clk50m_bufg));
+  DCM_SP
+  #(.CLKDV_DIVIDE          (),
+    .CLKFX_DIVIDE          (4),
+    .CLKFX_MULTIPLY        (3),
+    .CLKIN_DIVIDE_BY_2     ("FALSE"),
+    .CLKIN_PERIOD          (15.0),
+    .CLKOUT_PHASE_SHIFT    ("NONE"),
+    .CLK_FEEDBACK          ("1X"),
+    .DESKEW_ADJUST         ("SYSTEM_SYNCHRONOUS"),
+    .PHASE_SHIFT           (0),
+    .STARTUP_WAIT          ("FALSE"))
+  dcm_sp_inst
+    // Input clock
+   (.CLKIN                 (sysclk),
+    .CLKFB                 (),
+    // Output clocks
+    .CLK0                  (),
+    .CLK90                 (),
+    .CLK180                (),
+    .CLK270                (),
+    .CLK2X                 (),
+    .CLK2X180              (),
+    .CLKFX                 (sysclk_50),
+    .CLKFX180              (),
+    .CLKDV                 (),
+    // Ports for dynamic phase shift
+    .PSCLK                 (1'b0),
+    .PSEN                  (1'b0),
+    .PSINCDEC              (1'b0),
+    .PSDONE                (),
+    // Other control and status signals
+    .LOCKED                (locked_int),
+    .STATUS                (status_int),
+
+    .RST                   (RSTBTN),
+    // Unused pin- tie low
+    .DSSEN                 (1'b0));
+
+ // BUFIO2 #(.DIVIDE_BYPASS("TRUE")) // takes a GCLK input and generates divclk, ioclk and serdesstrobe
+ // sysclk_div (.DIVCLK(clk50m), .IOCLK(), .SERDESSTROBE(), .I(sysclk_50));
+
+  BUFG clk50m_bufgbufg (.I(sysclk_50), .O(clk50m_bufg));
 
   wire pclk_lckd;
 
