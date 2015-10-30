@@ -715,6 +715,11 @@ module vtc_demo (
  assign DEBUG[0] = VGA_HSYNC;
  assign DEBUG[1] = VGA_VSYNC;
 
+ wire led_test_1;
+
+ assign led_test_1 = 1'b1;
+
  // LEDs
- assign LED = {bufpll_lock, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
+ //assign LED = {bufpll_lock, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
+ assign LED = {led_test_1, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
 endmodule
