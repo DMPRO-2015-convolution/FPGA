@@ -55,33 +55,34 @@ VCCAUX = 3.3;
 ########################################
 # Reset button and LEDs
 ########################################
-NET "RSTBTN"        LOC = "H12";
-NET "LED<0>"        LOC = "J13";
-NET "LED<1>"        LOC = "K14";
-NET "LED<2>"        LOC = "U17";
-NET "LED<3>"        LOC = "U18";
+NET "RSTBTN"        LOC = "H18" | IOSTANDARD = LVCMOS33;
+NET "LED<0>"        LOC = "J13" | IOSTANDARD = LVCMOS33;
+NET "LED<1>"        LOC = "K14" | IOSTANDARD = LVCMOS33;
+NET "LED<2>"        LOC = "U17" | IOSTANDARD = LVCMOS33;
+NET "LED<3>"        LOC = "U18" | IOSTANDARD = LVCMOS33;
 
 ##############################################################################
 # SYSCLK Input
 ##############################################################################
-
-NET "SYS_CLK"       LOC = "L12";
+Net SYS_CLK TNM_NET = SYS_CLK;
+TIMESPEC TS_SYS_CLK = PERIOD SYS_CLK 66666.7 kHz;
+NET "SYS_CLK"       LOC = "L12" | IOSTANDARD = LVCMOS33;
 #NET "SYS_CLK"       LOC = "L15";
 
 ##############################################################################
 # Mechanical Switches (SW)
 ##############################################################################
 
-NET "SW<0>"         LOC = "A10" | IOSTANDARD = LVCMOS33 ;
-NET "SW<1>"         LOC = "D14" | IOSTANDARD = LVCMOS33 ;
-NET "SW<2>"         LOC = "C14" | IOSTANDARD = LVCMOS33 ;
-NET "SW<3>"         LOC = "P15" | IOSTANDARD = LVCMOS33 ;
+NET "SW<0>"         LOC = "L13" | IOSTANDARD = LVCMOS33 ;
+NET "SW<1>"         LOC = "K16" | IOSTANDARD = LVCMOS33 ;
+NET "SW<2>"         LOC = "L16" | IOSTANDARD = LVCMOS33 ;
+NET "SW<3>"         LOC = "C17" | IOSTANDARD = LVCMOS33 ;
 
 ##############################################################################
 # Debug Port # JA1
 ##############################################################################
-NET "DEBUG[0]" LOC = "B12" | IOSTANDARD = LVCMOS33;
-NET "DEBUG[1]" LOC = "B11" | IOSTANDARD = LVCMOS33;
+NET "DEBUG[0]" LOC = "F15" | IOSTANDARD = LVCMOS33;
+NET "DEBUG[1]" LOC = "F16" | IOSTANDARD = LVCMOS33;
 
 ##############################################################################
 # DCM/PLL/BUFPLL positions
@@ -93,6 +94,9 @@ NET "DEBUG[1]" LOC = "B11" | IOSTANDARD = LVCMOS33;
 ###########################################
 # Timing Constraints
 ###########################################
+NET "sysclk_50" TNM_NET = "TNM_sysclk_50";
+TIMESPEC "TS_sysclk_50" = PERIOD "TNM_sysclk_50" 50 MHz HIGH 50 % PRIORITY 0 ;
+
 NET "clk50m_bufg" TNM_NET = "TNM_CLK50M";
 TIMESPEC "TS_CLK50M" = PERIOD "TNM_CLK50M" 50 MHz HIGH 50 % PRIORITY 0 ;
 
