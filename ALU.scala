@@ -34,11 +34,13 @@ class Accumulator(data_width: Int) extends Module {
     val io = new Bundle { 
         val pixel_in = SInt(INPUT, data_width)
         val flush = Bool(INPUT)
+        val active = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
     } 
 
-    val accumulator = Reg(SInt(width=data_width))
+    // val accumulator = Reg(SInt(init=0, width=data_width))
+    val accumulator = Reg(init=SInt(0, data_width))
     when(io.flush){
         accumulator := io.pixel_in
     }
@@ -51,15 +53,17 @@ class Accumulator(data_width: Int) extends Module {
     val color2 = io.pixel_in(15,8)
     val color3 = io.pixel_in(23,16)
 
-    when(io.flush){ 
-        accumulator(7, 0) := color1
-        accumulator(15, 8) := color2
-        accumulator(23, 16) := color3
+    when(io.active){
+        when(io.flush){ 
+            accumulator(7, 0) := color1
+            accumulator(15, 8) := color2
+            accumulator(23, 16) := color3
 
-    }.otherwise{
-        accumulator(7, 0) := accumulator(7, 0) + color1
-        accumulator(15, 8) := accumulator(15, 8) + color2
-        accumulator(23, 16) := accumulator(23, 16) + color3
+        }.otherwise{
+            accumulator(7, 0) := accumulator(7, 0) + color1
+            accumulator(15, 8) := accumulator(15, 8) + color2
+            accumulator(23, 16) := accumulator(23, 16) + color3
+        }
     }
 
     io.data_out := accumulator

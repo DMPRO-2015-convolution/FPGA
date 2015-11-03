@@ -54,6 +54,4 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
             io.data_out(i) := shift_muxes(i).data_out 
         }
     }
-
-
 }

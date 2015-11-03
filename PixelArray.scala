@@ -65,7 +65,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
 }
 
 
-class PixelArrayTest(c: PixelArray, data_width: Int, cols: Int) extends Tester(c) {
+class PixelArrayTest(c: PixelArray) extends Tester(c) {
     println("Pixel Array test")
     poke(c.io.ping_read, false)
     poke(c.io.ping_mux, false)

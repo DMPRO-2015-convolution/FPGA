@@ -35,16 +35,8 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
 
     kernel_control.io.active := io.active
     memory.io.active := io.active
+    ALUs.io.active := io.active
 
     io.data_out := ALUs.io.data_out
 }
 
-class CoreTest(c: Tile) extends Tester(c) {
-    poke(c.io.data_in, 1)
-    step(1)
-    for(i <- 0 until 80){
-        poke(c.io.data_in, 1+(i%9))
-        peek(c.io.data_out)
-        step(1)
-    }
-}

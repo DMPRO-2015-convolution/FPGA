@@ -7,6 +7,7 @@ import scala.io.Source
 class SimpleSnap(c: Tile) extends Tester(c) {
 
     def push_kernel(kernel: Array[Int]) : Unit = {
+        poke(c.io.active, true)
         poke(c.io.data_in, kernel(0))
         step(1)
         poke(c.io.data_in, kernel(1))
@@ -57,15 +58,21 @@ class SimpleSnap(c: Tile) extends Tester(c) {
         
         var output = new ListBuffer[Int]() 
 
-        for(x <- 0 until runs){
-            for(y <- 0 until 9){
+        poke(c.io.data_in, 1)
 
-                poke(c.io.data_in, (y%9)+1)
+        for(x <- 0 until runs){
+            for(y <- 0 until 12){
                 var selected_slice = ListBuffer[BigInt]()
                 var mux_slice = ListBuffer[BigInt]()
                  
                 // data_tree :: peek(c.io.data_in)
  
+                if((y == 9) || (y == 3) || (y == 2)){
+                    poke(c.io.active, false)
+                }
+                else{
+                    poke(c.io.active, true)
+                }
                 row1 += peek(c.memory.pixel_rows(0).dbg_reg_contents).map(_.toInt)
                 row2 += peek(c.memory.pixel_rows(1).dbg_reg_contents).map(_.toInt)
                 row3 += peek(c.memory.pixel_rows(2).dbg_reg_contents).map(_.toInt)
@@ -167,7 +174,8 @@ class SimpleSnap(c: Tile) extends Tester(c) {
             print("  <<<<~*")
             print("\n\n")
             print("\n\n")
-            print("\n\n")
+            print("--------------------------------------------------------------------------\n")
+            print("--------------------------------------------------------------------------\n\n")
 
         }
         
@@ -199,7 +207,7 @@ class SimpleSnap(c: Tile) extends Tester(c) {
         return state
     }
 
-    val kernel = Array[Int](1, 0, 0, 0, 0, 0, 0, 0, 1)
+    val kernel = Array[Int](1, 1, 0, 1, 0, 1, 0, 1, 1)
 
     poke(c.io.active, true)
     push_kernel(kernel)
