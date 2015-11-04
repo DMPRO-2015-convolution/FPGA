@@ -140,10 +140,7 @@ NET "TMDSB(2)"  LOC = "A3" | IOSTANDARD = TMDS_33 ;
 NET "TMDS(3)"  	LOC = "C5" | IOSTANDARD = TMDS_33 ; # Clock
 NET "TMDSB(3)"  LOC = "A5" | IOSTANDARD = TMDS_33 ;
 
-
-
-
-
+#NET "TEST_CLK"  LOC = "T5" | IOSTANDARD = LVCMOS33;
 
 
 ##############################################################################

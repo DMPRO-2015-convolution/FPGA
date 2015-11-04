@@ -60,6 +60,7 @@ module vtc_demo (
   output wire [3:0] TMDSB,
   output wire [3:0] LED,
   output wire [1:0] DEBUG
+  //output wire TEST_CLK
 );
 
   //******************************************************************//
@@ -69,6 +70,7 @@ module vtc_demo (
   // input clock in example: 100mhz
   wire          locked;
   wire          reset;
+
 
   wire          clk50m, clk50m_bufg;
 
@@ -81,6 +83,8 @@ module vtc_demo (
   wire        psdone_unused;
   wire        locked_int;
   wire [7:0]  status_int;
+
+ // assign TEST_CLK = sysclk;
 
   DCM_SP
   #(.CLKDV_DIVIDE          (),
@@ -124,6 +128,9 @@ module vtc_demo (
  // sysclk_div (.DIVCLK(clk50m), .IOCLK(), .SERDESSTROBE(), .I(sysclk_50));
 
   BUFG clk50m_bufgbufg (.I(sysclk_50), .O(clk50m_bufg));
+
+
+  //assign TEST_CLK = clk50m_bufg;
 
   wire pclk_lckd;
 
@@ -720,6 +727,6 @@ module vtc_demo (
  assign led_test_1 = 1'b1;
 
  // LEDs
- //assign LED = {bufpll_lock, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
- assign LED = {led_test_1, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
+ assign LED = {bufpll_lock, RSTBTN, VGA_HSYNC, VGA_VSYNC} ;
+// assign LED = {bufpll_lock, led_test_1, VGA_HSYNC, VGA_VSYNC} ;
 endmodule
