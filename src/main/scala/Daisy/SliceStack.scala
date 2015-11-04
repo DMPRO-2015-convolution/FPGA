@@ -83,6 +83,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     io.data_out := row_buffers(current_row).data_out
 }
 
+// The interface of the buffer. Should tell when it is has buffered a slice
 class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extends Module {
 
     val total_reads = img_width*kernel_dim
@@ -93,8 +94,7 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
         val data_write = Bool(INPUT)
         val data_read = Bool(INPUT)
 
-        val reads_completed = Bool(OUTPUT)
-        val writes_completed = Bool(OUTPUT)
+        val data_ready = Bool(OUTPUT)
 
         val data_out = UInt(INPUT, data_width)
         val error = Bool(OUTPUT)
@@ -144,10 +144,7 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
 
     // Check if reads/writes are finished
     when( (reads_done === UInt(total_reads)) ){
-        io.reads_completed := Bool(true)
-    }
-    when( (writes_done === UInt(total_writes)) ){
-        io.writes_completed := Bool(true)
+        io.data_ready := Bool(false)
     }
 
     // Do the switcheroo
@@ -159,6 +156,8 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
         }
         reads_done := UInt(0)
         writes_done := UInt(0)
+        io.data_ready := Bool(true)
+
     }
 
     // Should never happen, but who am I kidding?

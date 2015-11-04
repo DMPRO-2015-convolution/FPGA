@@ -37,6 +37,7 @@ class Accumulator(data_width: Int) extends Module {
         val active = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
+        val valid_out = Bool(OUTPUT)
     } 
 
     // val accumulator = Reg(SInt(init=0, width=data_width))
@@ -74,6 +75,7 @@ class Accumulator(data_width: Int) extends Module {
 class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val n_ALUs = cols - 2  
+
     val io = new Bundle { 
         val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
         val kernel_in = SInt(INPUT, width=data_width)
@@ -83,6 +85,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
+        val valid_out = Bool(OUTPUT)
 
         val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
         val dbg_multipliers_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
@@ -118,6 +121,13 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         accumulators(i).flush := flush_signals(i)
     }
 
+    // wire valid output
+    io.valid_out := Bool(false)
+    for(i <- 0 until n_ALUs){
+        when(accumulators(i).valid_out){
+            io.valid_out := Bool(true)
+        }
+    }
 
     // Wire kernel chain
     multipliers(0).kernel_in := io.kernel_in
