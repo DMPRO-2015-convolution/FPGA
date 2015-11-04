@@ -20,7 +20,7 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
         val output_valid = Bool(OUTPUT)
     }
 
-    val IO_handler = Module(new IOhandlr(img_width, img_depth, data_width, kernel_dim)).io
+    val IO_handler = Module(new IOhandler(img_width, img_depth, data_width, kernel_dim)).io
     val kernel_control = Module(new KernelController(data_width, 9))
     val memory = Module(new PixelGrid(data_width, cols, rows))
     val orchestrator = Module(new Orchestrator(cols, rows))
@@ -37,7 +37,6 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
         memory.io.control_in(i) := orchestrator.io.pings(i)
     }
 
-
     for(i <- 0 until 3 ) { 
         ALUs.io.data_in(2-i) := memory.io.data_out(i)
     }
@@ -52,7 +51,6 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
     kernel_control.io.active := io.active
     memory.io.active := io.active
     ALUs.io.active := io.active
-
 
     IO_handler.outstream.data_in := ALUs.io.data_out
     IO_handler.outstream.valid_in := ALUs.io.valid_out
