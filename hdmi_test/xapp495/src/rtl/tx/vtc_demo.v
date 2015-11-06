@@ -55,6 +55,10 @@ module vtc_demo (
   input  wire SYS_CLK,
 
   input  wire [3:0] SW,
+  
+  input wire [7:0] red_data;
+  input wire [7:0] green_data;
+  input wire [7:0] blue_data;
 
   output wire [3:0] TMDS,
   output wire [3:0] TMDSB,
@@ -558,7 +562,7 @@ module vtc_demo (
   // Video pattern generator:
   //   SMPTE HD Color Bar
   ///////////////////////////////////
-  wire [7:0] red_data, green_data, blue_data;
+reg [7:0] red_data, green_data, blue_data;
 
 `ifdef SIMULATION
   reg [23:0] pixel_buffer [1279:0];
@@ -583,7 +587,6 @@ module vtc_demo (
   end
 
   assign {red_data, green_data, blue_data} = active_pixel;
-`else
   hdcolorbar clrbar(
     .i_clk_74M(pclk),
     .i_rst(reset),
@@ -595,6 +598,9 @@ module vtc_demo (
     .o_g(green_data),
     .o_b(blue_data)
   );
+`else
+
+
 `endif
   ////////////////////////////////////////////////////////////////
   // DVI Encoder
