@@ -26,9 +26,6 @@ import Chisel._
  *
  */
 
-
-
-
 class Orchestrator(cols: Int, rows: Int)  extends Module {
 
     var n_pings =
@@ -43,105 +40,62 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val dbg_enable = UInt(OUTPUT)
     }
 
+    val T = rows
 
     /*
-     * All timers are given in modulo 9, which is a constant we must adhere for all designs using 3 by 3 kernels
-     * The calculations are done with respect to the leftmost element in the systolic pixel grid, and since 
-     * all signals travel at the same rate this is sufficient. An important point to notice is that these 
-     * timestamps describe how much later, mod 9, a signal is dispatched, not the time it is dispatched!!!
-     *
-     * although modularity is desired this signal box only works for 3 by 3 kernels
+     * All timers are given in modulo T, given by elements per row
+     * The calculations are done with respect to the leftmost element in the systolic pixel grid.
+     * Each value is calculated relatively to the first valid output (thus they are all negative)
+     * After calculating the timestep for each value we normalize relative to the lowest value,
+     * then calculate the congruence mod T for each value
      */
 
-    
-    val T = 9
-
     // How long after being input to one row should a register be input to the next row?
-    val row_time = 6
+    val row_time = (cols - rows)
 
     // When pinging it takes one cycle for state to update. The same applies to any register to register transfer
+    // A component will activate once it has a ping in its register, not as soon as it is offered
     val ping_delay = 1
+
+    // The cycle it takes for a value to travel between registers
     val reg_delay = 1
+
+    // The cycle, as a result of reg delays a value has to spend in the multiplexers balance register
     val mux_delay = 1
+
     val ALU_delay = reg_delay
 
-    // How long after input until mux opens (5)
+    // In order to open the muxes in time for hitting the row time timing we account for the mux delay
     val mux_wait = row_time - mux_delay
 
-    // data enters input tree. Changing this value should propagate throughout the entire system
-    val data_in = 0
-
-    val row1_r = data_in + reg_delay
-    val row1_m = data_in + mux_wait
-
-    val row1_out = data_in + row_time
+    // We need to know how many cycles a full calculation takes
+    val cycle_time = cols*rows
 
 
-    val row2_r = row1_out
-    val row2_m = row1_out + mux_wait
+    // To make the calculations simpler we let the first valid output from the system to be time 0
+    val first_data_out = 0
 
-    val row2_out = row1_out + row_time
+    // TODO implement
+    val calculated_ALU_delay = 0
 
+    // Having calculated the time it took from last read until outputting our first valid data we can calculate row read and write timings. 
+    // We will use the first conveyor read (which in this case is the bottom left pixel) as measuring point to time control signals
+    val last_conveyor_read = calculated_ALU_delay
+    val first_valid_conveyor_read = last_conveyor_read - (cycle_time - 1)
 
-    val row3_r = row2_out
-    val row3_m = row2_out + mux_wait
-
-    val row3_out = row2_out + row_time
-
+    var row_read_start = ArrayBuffer[Int]()
+    var row_mux_start = ArrayBuffer[Int]()
+    var row_out_start = ArrayBuffer[Int]()
+    for(i <- 0 until rows){
+        row_read_start += first_valid_conveyor_read + (i*(cols))
+        row_mux_start  += first_valid_conveyor_read + (i*(cols) - mux_delay)
+        row_out_start  += first_valid_conveyor_read + (i*(cols) - (mux_delay + reg_delay))
+    }
     
-    // shift muxes operate a little different. Regardless, this val is the timestep which it chooses input 0
-    val shift_mux = row3_out
-
-    val grid_out = row3_out + reg_delay
-
-    val ALU_sel = grid_out - 1
-
-    val ALU_rdy = grid_out + reg_delay
-
-    val Acc_flush = ALU_rdy + ALU_delay
-    
-
-
-    // Having gathered the data we calculate when to ping
-    var read1_p = row1_r - ping_delay
-    var mux1_p = row1_m - ping_delay
-
-    var read2_p = row2_r - ping_delay
-    var mux2_p = row2_m - ping_delay
-
-    var read3_p = row3_r - ping_delay
-    var mux3_p = row3_m - ping_delay
-
-    var shift_mux_p = shift_mux - ping_delay
-    var ALU_sel_p = ALU_sel - ping_delay 
-
-    var flush_p = Acc_flush - ping_delay
-
-
-    // We now normalize the values
-    read1_p = read1_p % T
-    mux1_p = mux1_p % T
-
-    read2_p = read2_p % T
-    mux2_p = mux2_p % T
-
-    read3_p = read3_p % T
-    mux3_p = mux3_p % T
-
-    var shift_mux_p1 = shift_mux_p % T
-    var shift_mux_p2 = (shift_mux_p + 3) % T
-    var shift_mux_p3 = (shift_mux_p + 6) % T
-
-    var ALU_sel_p1 = ALU_sel_p % T
-    var ALU_sel_p2 = (ALU_sel_p + 3) % T
-    var ALU_sel_p3 = (ALU_sel_p + 6) % T
-
-    flush_p = flush_p % T
-
-
-
-    val s0 :: s1 :: s2 :: s3 :: s4 :: s5 :: s6 :: s7 :: s8 :: Nil = Enum(UInt(), 9)
-    val state = Reg(init=UInt(0))
+    // We use the timing of one of the first read to calculate secondary mux shift timing 
+    // The shift mux will be pinged at a much faster interval, so we dont care which row we use 
+    // to calculate the shift timing.
+    val shift_mux = row_out_start(0)
 
 
     // State transitions
