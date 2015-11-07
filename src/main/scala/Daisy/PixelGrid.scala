@@ -8,7 +8,10 @@ import scala.io.Source
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
-        val control_in = Vec.fill(7){ Bool(INPUT) }
+        val read_row = Vec.fill(rows){ Bool(INPUT) }
+        val mux_row = Vec.fill(rows){ Bool(INPUT) }
+        val shift_mux = Bool(INPUT)
+
         val active = Bool(INPUT)
 
         val data_out = Vec.fill(3){ UInt(OUTPUT, data_width) }
@@ -34,16 +37,15 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     }
 
     // wire primary mux enablers
-    pixel_rows(0).ping_read  :=  io.control_in(1)
-    pixel_rows(0).ping_mux   :=  io.control_in(2)
-    pixel_rows(1).ping_read  :=  io.control_in(3)
-    pixel_rows(1).ping_mux   :=  io.control_in(4)
-    pixel_rows(2).ping_read  :=  io.control_in(5)
-    pixel_rows(2).ping_mux   :=  io.control_in(6)
+    
+    for(i <- 0 until rows){
+        pixel_rows(i).ping_read := io.read_row(i)
+        pixel_rows(i).ping_mux := io.mux_row(i)
+    }
     
     // Wire shift signals to secondary muxes
     for(i <- 0 until 3){
-        shift_muxes(i).shift := io.control_in(0)
+        shift_muxes(i).shift := io.shift_mux
         shift_muxes(i).active := io.active
     }
 

@@ -20,10 +20,10 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
         val output_valid = Bool(OUTPUT)
     }
 
+    val orchestrator = Module(new Orchestrator(cols, rows))
     val IO_handler = Module(new IOhandler(img_width, img_depth, data_width, kernel_dim)).io
     val kernel_control = Module(new KernelController(data_width, 9))
     val memory = Module(new PixelGrid(data_width, cols, rows))
-    val orchestrator = Module(new Orchestrator(cols, rows))
     val ALUs = Module(new ALUrow(data_width, cols, rows))
 
 
@@ -32,18 +32,15 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
     memory.io.data_in := IO_handler.instream.data_out
     IO_handler.ready := kernel_control.io.ready
 
-
-    for(i <- 0 to 6) {
-        memory.io.control_in(i) := orchestrator.io.pings(i)
-    }
-
+    memory.io.read_row := orchestrator.io.read_row
+    memory.io.mux_row := orchestrator.io.mux_row
+    
     for(i <- 0 until 3 ) { 
         ALUs.io.data_in(2-i) := memory.io.data_out(i)
     }
 
-
-    ALUs.io.selector_shift := orchestrator.io.pings(7)
-    ALUs.io.accumulator_flush := orchestrator.io.pings(8)
+    // ALUs.io.selector_shift := orchestrator.io.system_control(7)
+    // ALUs.io.accumulator_flush := orchestrator.io.system_control(8)
     ALUs.io.kernel_in := kernel_control.io.kernel_out
     kernel_control.io.kernel_in  := ALUs.io.kernel_out
     kernel_control.io.data_in := io.data_in 
@@ -58,3 +55,6 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
     io.output_valid := IO_handler.outstream.valid_out
 }
 
+
+class CoreTest(c: Tile) extends Tester(c) {
+}
