@@ -16,8 +16,6 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
 
         val accumulator_flush = Bool(OUTPUT)
         val ALU_shift = Bool(OUTPUT)
-
-        val dbg_enable = UInt(OUTPUT)
     }
 
     val period = rows
@@ -39,6 +37,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val data_in_tree = 1
     val conveyor_rdy = data_in_tree + time_to_fill
     val conveyor_start = conveyor_rdy + read_delay
+    val first_valid_row_out = conveyor_start + read_delay + read_delay
     val conveyor_done = conveyor_start + cycle_time
     val data_out = conveyor_done + ALU_delay
 
@@ -64,6 +63,8 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         println()
     }
 
+    // The shift mux has a shorter period, T % rows
+    var first_valid_shift_mux_shift = first_valid_row_out + rows
 
     // In order to hit the timings we need to take into account the fact that
     // all elements perform their action when they have the key, not when
@@ -74,11 +75,14 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     // We have no more use for fixed timings, so we collect the timings congruent to the periond
     rowreads.map(_ - ping_delay).map(_%period)
     rowmuxes.map(_ - ping_delay).map(_%period)
+    first_valid_shift_mux_shift = (first_valid_shift_mux_shift - ping_delay) % (rows)
 
 
     // We now have everything we need to create the grid control state machine
     val time = Reg(init=(UInt(0)))
 
+
+    // count
     when(io.active){
         when(time === UInt(period - 1)){
             time := UInt(0)
@@ -87,6 +91,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         }
     }
     
+    // Ping row read and mux
     for(i <- 0 until rows){
         when(time === UInt(rowreads(i))){
             io.read_row(i) := Bool(true)
@@ -98,6 +103,17 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
             io.mux_row(i) := Bool(true)
         }.otherwise{
             io.mux_row(i) := Bool(false)
+        }
+    }
+
+    // Ping shift mux
+    for(i <- 0 until period){
+        if(i%rows == first_valid_shift_mux_shift){
+            when(time === UInt(i)){
+                io.shift_mux := Bool(true)
+            }.otherwise{
+                io.shift_mux := Bool(false)
+            }
         }
     }
 }

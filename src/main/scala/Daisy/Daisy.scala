@@ -7,10 +7,12 @@ object DaisyMain {
 
         // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c) }
 
-        chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new CoreTest(c) }
+        // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new CoreTest(c) }
 
         // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new Snapshot(c) }
         
         // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new SimpleSnap(c) }
+        
+        chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new MemTest(c) }
     }
 }

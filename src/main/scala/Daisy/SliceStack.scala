@@ -19,11 +19,16 @@ class RowBuffer(entries: Int, data_width: Int) extends Module {
         val data_out = UInt(OUTPUT, data_width)
     }
 
+    // defaults
+    io.data_out := UInt(0)
+
+
     val stack_top = Reg(init=UInt(0, width=log2Up(entries)))
     val bram = Module(new DualPortBRAM(addrBits=log2Up(entries), dataBits=data_width)).io 
 
     val writePort = bram.ports(0)
     val readPort = bram.ports(1)
+
     writePort.req.writeData := io.data_in
     writePort.req.writeEn := Bool(false)
     writePort.req.addr := stack_top
@@ -43,6 +48,8 @@ class RowBuffer(entries: Int, data_width: Int) extends Module {
             stack_top := stack_top - UInt(1)
         }
     }
+
+    io.data_out := UInt(0)
 }
 
 class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
@@ -56,6 +63,9 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
         val data_out = UInt(OUTPUT, data_width)
     }
+
+    // defaults
+    io.data_out := UInt(0)
       
     val row_buffers = Vec.fill(kernel_dim){ Module(new RowBuffer(row_length, data_width)).io }
     val current_row = Reg(init=UInt(0, kernel_dim))
@@ -77,10 +87,21 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
             current_row := UInt(kernel_dim)
         }
     }
-    row_buffers(current_row).data_in := io.data_in
-    row_buffers(current_row).push    := io.push
-    row_buffers(current_row).pop     := io.data_in
-    io.data_out := row_buffers(current_row).data_out
+
+    // Is this the only way?
+    
+    for(i <- 0 until row_buffers.length){
+        when(current_row === UInt(i)){
+            row_buffers(i).data_in := io.data_in
+            row_buffers(i).push := io.push
+            row_buffers(i).pop := io.pop
+            io.data_out := row_buffers(i).data_out
+        }.otherwise{
+            row_buffers(i).push := Bool(false)
+            row_buffers(i).pop := Bool(false)
+            row_buffers(i).data_in := UInt(0)
+        }
+    }
 }
 
 // The interface of the buffer. Should tell when it is has buffered a slice
@@ -96,7 +117,7 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
 
         val data_ready = Bool(OUTPUT)
 
-        val data_out = UInt(INPUT, data_width)
+        val data_out = UInt(OUTPUT, data_width)
         val error = Bool(OUTPUT)
     }
 
@@ -116,7 +137,12 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
     slice2.io.pop := Bool(false)
     slice1.io.push := Bool(false)
     slice2.io.push := Bool(false)
+    slice1.io.data_in := UInt(0)
+    slice2.io.data_in := UInt(0)
+    io.data_ready := Bool(false)
+    io.data_out := UInt(0)
     io.error := Bool(false)
+
 
     when(io.data_read){
         when(current === UInt(0)){
@@ -125,7 +151,7 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
             reads := reads + UInt(1)
         }.otherwise{
             slice2.io.pop := Bool(true)
-            io.data_out := slice1.io.data_out
+            io.data_out := slice2.io.data_out
             reads := reads + UInt(1)
         }
     }

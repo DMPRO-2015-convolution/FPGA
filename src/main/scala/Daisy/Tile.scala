@@ -22,7 +22,7 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
 
     val orchestrator = Module(new Orchestrator(cols, rows))
     val IO_handler = Module(new IOhandler(img_width, img_depth, data_width, kernel_dim)).io
-    val kernel_control = Module(new KernelController(data_width, 9))
+    val kernel_control = Module(new KernelController(data_width, rows))
     val memory = Module(new PixelGrid(data_width, cols, rows))
     val ALUs = Module(new ALUrow(data_width, cols, rows))
 
@@ -39,8 +39,8 @@ class Tile(data_width: Int, cols: Int, rows: Int) extends Module{
         ALUs.io.data_in(2-i) := memory.io.data_out(i)
     }
 
-    // ALUs.io.selector_shift := orchestrator.io.system_control(7)
-    // ALUs.io.accumulator_flush := orchestrator.io.system_control(8)
+    ALUs.io.selector_shift := orchestrator.io.ALU_shift
+    ALUs.io.accumulator_flush := orchestrator.io.accumulator_flush
     ALUs.io.kernel_in := kernel_control.io.kernel_out
     kernel_control.io.kernel_in  := ALUs.io.kernel_out
     kernel_control.io.data_in := io.data_in 

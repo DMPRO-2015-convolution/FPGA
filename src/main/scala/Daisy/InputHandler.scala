@@ -35,6 +35,15 @@ class IOhandler(img_width: Int, input_data_width: Int, data_width: Int, kernel_d
     val valid_countdown = Reg(init=UInt(0))
     val processed_pixels = Reg(init=UInt(0))
 
+    io.instream.data_out := UInt(0)
+    io.outstream.data_out := UInt(0)
+    io.outstream.valid_out := Bool(false)
+    io.instream.data_ready := Bool(false)
+
+    input_buffer.io.data_in := UInt(0)
+    input_buffer.io.data_write := Bool(false)
+    input_buffer.io.data_read := Bool(false)
+
     when(io.ready){
         // Instream in
         input_buffer.io.data_in := io.instream.data_in
