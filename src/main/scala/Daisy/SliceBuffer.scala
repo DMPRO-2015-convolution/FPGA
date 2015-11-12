@@ -35,7 +35,14 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
         }.otherwise{
             push_row := UInt(0)
         }
-        push_top := UInt(0)
+    }
+
+    when(io.push){
+        when(push_top === UInt(row_length)){
+            push_top := UInt(0)
+        }.otherwise{
+            push_top := push_top + UInt(1)
+        }
     }
 
     // Maintain pop row
@@ -67,4 +74,34 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
             row_buffers(i).push := Bool(false)
         }
     }
+}
+
+class SliceBufferTest(c: SliceBuffer) extends Tester(c) {
+    
+    // Fill all buffers  
+    poke(c.io.push, true)
+    poke(c.io.pop, false)
+    for(i <- 0 until 4*2){
+        poke(c.io.data_in, i)
+        peek(c.push_row)
+        peek(c.pop_row)
+        peek(c.push_top)
+        step(1)
+    }
+
+    poke(c.io.push, false)
+    poke(c.io.pop, false)
+    step(1)
+
+    // Retrieve data
+    poke(c.io.push, false)
+    poke(c.io.pop, true)
+    for(i <- 0 until 4*2){
+        peek(c.push_row)
+        peek(c.pop_row)
+        peek(c.push_top)
+        peek(c.io.data_out)
+        step(1)
+    }
+
 }

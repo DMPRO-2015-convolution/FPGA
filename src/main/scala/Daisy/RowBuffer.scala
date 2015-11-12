@@ -68,6 +68,5 @@ class RowBufferTest(c: RowBuffer) extends Tester(c) {
         peek(c.io.data_out)
         step(1)
     }
-
 }
 
