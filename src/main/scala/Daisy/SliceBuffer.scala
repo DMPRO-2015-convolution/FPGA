@@ -17,19 +17,6 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
         val data_out = UInt(OUTPUT, data_width)
 
-        val dbg = new Bundle {
-            val sb_push_row  = UInt(OUTPUT, 32)
-            val sb_push_top = UInt(OUTPUT, 32)
-            val sb_pop_row = UInt(OUTPUT, 32)
-
-            val rb1_data_out = UInt(OUTPUT)
-            val rb1_data_in = UInt(OUTPUT)
-            val rb1_stack_top = UInt(OUTPUT)
-
-            val rb2_data_out = UInt(OUTPUT)
-            val rb2_data_in = UInt(OUTPUT)
-            val rb2_stack_top = UInt(OUTPUT)
-        }
     }
 
 
@@ -40,20 +27,6 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     val push_top = Reg(init=UInt(0, 32))
 
     io.data_out := UInt(0)
-
-    io.dbg.sb_push_row := push_row
-    io.dbg.sb_push_top := push_top
-    io.dbg.sb_pop_row := pop_row
-
-    io.dbg.rb1_data_out := row_buffers(0).data_out
-    io.dbg.rb2_data_out := row_buffers(1).data_out
-
-    io.dbg.rb1_data_in := io.data_in
-    io.dbg.rb2_data_in := io.data_in
-
-    io.dbg.rb1_stack_top := row_buffers(0).dbg_stack_top
-    io.dbg.rb2_stack_top := row_buffers(1).dbg_stack_top
-
 
     // Maintain push row
     when(push_top === UInt(row_length)){

@@ -25,29 +25,6 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
 
         val data_out = UInt(OUTPUT, data_width)
         val error = Bool(OUTPUT)
-
-        val dbg_reads_performed = UInt(OUTPUT, 32)
-        val dbg_writes_performed = UInt(OUTPUT, 32)
-        val dbg_current = Bool(OUTPUT)
-
-        val dbg_reads_finished = Bool(OUTPUT)
-        val dbg_writes_finished = Bool(OUTPUT)
-
-        val dbg_slice1_in = UInt(OUTPUT, 32)
-        val dbg_slice1_out = UInt(OUTPUT, 32)
-        val dbg_slice2_in = UInt(OUTPUT, 32)
-        val dbg_slice2_out = UInt(OUTPUT, 32)
-
-        val dbg_db_slice1_pop_row = UInt(OUTPUT, 32)
-        val dbg_db_slice1_push_row = UInt(OUTPUT, 32)
-        val dbg_db_slice2_pop_row = UInt(OUTPUT, 32)
-        val dbg_db_slice2_push_row = UInt(OUTPUT, 32)
-
-        val dbg_db_slice1_rb1_stack_top = UInt(OUTPUT, 32)
-        val dbg_db_slice1_rb2_stack_top= UInt(OUTPUT, 32)
-
-        val dbg_db_slice2_rb1_stack_top = UInt(OUTPUT, 32)
-        val dbg_db_slice2_rb2_stack_top= UInt(OUTPUT, 32)
     }
 
     val slice1 = Module(new SliceBuffer(img_width, data_width, kernel_dim))
@@ -60,28 +37,6 @@ class SliceDoubleBuffer(img_width: Int, data_width: Int, kernel_dim: Int) extend
     val writes_performed = Reg(init=UInt(0, 32))
 
     val current = Reg(init=Bool(false))
-
-    io.dbg_reads_performed := reads_performed
-    io.dbg_writes_performed := writes_performed
-    io.dbg_current := current
-    io.dbg_reads_finished := reads_finished
-    io.dbg_writes_finished := writes_finished
-    io.dbg_slice1_in := slice1.io.data_in
-    io.dbg_slice2_in := slice2.io.data_in
-    io.dbg_slice1_out := slice1.io.data_out
-    io.dbg_slice2_out := slice2.io.data_out
-
-    io.dbg_db_slice1_push_row := slice1.io.dbg.sb_push_row
-    io.dbg_db_slice1_pop_row := slice1.io.dbg.sb_pop_row
-
-    io.dbg_db_slice2_push_row := slice2.io.dbg.sb_push_row
-    io.dbg_db_slice2_pop_row := slice2.io.dbg.sb_pop_row
-
-    io.dbg_db_slice1_rb1_stack_top := slice1.io.dbg.rb1_stack_top
-    io.dbg_db_slice1_rb2_stack_top := slice1.io.dbg.rb2_stack_top
-
-    io.dbg_db_slice2_rb1_stack_top := slice2.io.dbg.rb1_stack_top
-    io.dbg_db_slice2_rb2_stack_top := slice2.io.dbg.rb2_stack_top
 
     // defaults
     slice1.io.pop := Bool(false)

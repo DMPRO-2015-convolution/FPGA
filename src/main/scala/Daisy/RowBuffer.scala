@@ -17,7 +17,6 @@ class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
         val pop = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width)
-        val dbg_stack_top = UInt(OUTPUT, 32)
     }
 
     val stack_top = Reg(init=UInt(0, width=log2Up(entries)))
@@ -46,7 +45,29 @@ class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
         }
     }
 
-    // io.data_out := readPort.rsp.readData
-    io.data_out := UInt(number)
-    io.dbg_stack_top := stack_top
+    io.data_out := readPort.rsp.readData
 }
+
+class RowBufferTest(c: RowBuffer) extends Tester(c) {
+
+    // Fill data
+    poke(c.io.push, true)
+    poke(c.io.pop, false)
+    for(i <- 0 until 10){
+        poke(c.io.data_in, (i%10))
+        step(1)
+    }
+    poke(c.io.push, false)
+    poke(c.io.pop, false)
+    step(1)
+
+    // pop data
+    poke(c.io.push, false)
+    poke(c.io.pop, true)
+    for(i <- 0 until 11){
+        peek(c.io.data_out)
+        step(1)
+    }
+
+}
+
