@@ -13,6 +13,6 @@ object DaisyMain {
         
         // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new SimpleSnap(c) }
         
-        chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new MemTest(c) }
+        chiselMainTest(args, () => Module(new MinimalBRAM())) { c => new InputTest(c) }
     }
 }
