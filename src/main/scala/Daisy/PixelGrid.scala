@@ -19,7 +19,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
     val input_tree = Vec.fill(3){ Reg(init=UInt(0, width = data_width)) }
-    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=((i + 1) % 3)))
+    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=(i%3)))
 
     // Wire input into input tree
     // wire input into first row input tree
