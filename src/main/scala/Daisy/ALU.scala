@@ -23,9 +23,10 @@ class Multiplier(data_width: Int) extends Module {
 
     io.data_out := UInt(0)
 
-    io.data_out(7, 0) := color1*kernel
-    io.data_out(15, 8) := color2*kernel
-    io.data_out(23, 16) := color3*kernel
+    // TODO recouple kernel input
+    io.data_out(7, 0) := color1
+    io.data_out(15, 8) := color2
+    io.data_out(23, 16) := color3
 }
 
 

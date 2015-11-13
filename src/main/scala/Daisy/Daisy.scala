@@ -21,19 +21,16 @@ object DaisyMain {
         
         // chiselMainTest(args, () => Module(new Tile(24, 9, 3))) { c => new SimpleSnap(c) }
         
-        // Behaves
         // chiselMainTest(args, () => Module(new RowBuffer(10, 24, 1))) { c => new RowBufferTest(c) }
 
-        // Behaves
         // chiselMainTest(args, () => Module(new SliceBuffer(3, 24, 2))) { c => new SliceBufferTest(c) }
         
-        // Behaves
         // chiselMainTest(args, () => Module(new SliceDoubleBuffer(3, 24, 2))) { c => new DoubleBufferTest(c) }
         
-        // ???
-        chiselMainTest(args, () => Module(new Processor(24, 9, 3))) { c => new ConveyorTest(c) }
+        // processor
+        // chiselMainTest(args, () => Module(new Processor(24, 9, 3))) { c => new ConveyorTest(c) }
+        chiselMainTest(args, () => Module(new Processor(24, 9, 3))) { c => new ProcessorTest(c) }
 
-        // ???
         // chiselMainTest(args, () => Module(new Orchestrator(9, 3))) { c => new OrchestratorTest(c) }
     }
 }

@@ -29,7 +29,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     val cycle_time = cols
     val time_to_fill = (rows - 1)*row_time
 
-    val ALU_delay = 1
+    val ALU_delay = 2
 
     // We now have everything we need to calculate the time it takes for the first valid output
     // with data in input tree as T0
@@ -39,6 +39,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     val first_valid_row_out = conveyor_start + read_delay + read_delay
     val conveyor_done = conveyor_start + cycle_time
     val data_out = conveyor_done + ALU_delay
+    val first_ALU_shift = 0
 
     println("Time of first data in tree:\t\t\t\t%d".format(data_in_tree))
     println("Time of conveyor being ready:\t\t\t\t%d".format(conveyor_rdy))
@@ -78,7 +79,9 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     rowmuxes = rowmuxes.map(_ - ping_delay)
     rowmuxes = rowmuxes.map(_ % period)
 
-    first_valid_shift_mux_shift = (first_valid_shift_mux_shift - ping_delay) % (rows)
+    first_valid_shift_mux_shift = (first_valid_shift_mux_shift - ping_delay) % rows
+
+    val first_flush = (data_out - ping_delay) % period
 
 
     // We now have everything we need to create the grid control state machine
@@ -95,7 +98,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
         }
     }
     
-    // Ping row read and mux
+    // Ping row read and mux TODO default in a for loop maybe bad?
     for(i <- 0 until rows){
         println("Adding row read at time %d".format(rowreads(i)))
         when(time === UInt(rowreads(i))){
@@ -112,19 +115,27 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
         }
     }
 
-    // Ping shift mux
+    
+
+    // Ping secondary mux shifts
     io.shift_mux := Bool(false)
-    for(i <- 0 until period){
-        if(i%rows == first_valid_shift_mux_shift){
-            println("At time %d the shift muxes will ping".format(i))
-            when(time === UInt(i)){
-                io.shift_mux := Bool(true)
-            }
+    io.ALU_shift := Bool(false)
+    for(i <- 0 until rows){
+        println("At time %d the shift muxes will be pinged".format(first_valid_shift_mux_shift + (i*rows)))
+        when(time === UInt(first_valid_shift_mux_shift + (i*rows))){
+            io.shift_mux := Bool(true)
+        }
+        println("At time %d the ALU select muxes will be pinged".format(first_ALU_shift + (i*rows)))
+        when(time === UInt(first_ALU_shift + (i*rows))){
+            io.ALU_shift := Bool(true)
         }
     }
+            
 
     io.accumulator_flush := Bool(false)
-    io.ALU_shift := Bool(false)
+    when(time === UInt(first_flush)){
+        io.accumulator_flush := Bool(true)
+    }
 }
 
 

@@ -48,7 +48,6 @@ class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
 class ConveyorTest(c: Processor) extends Tester(c) {
 
     poke(c.io.active, true)
-
     poke(c.io.input_ready, true)
 
     for(cycle <- 0 until 6){
@@ -69,5 +68,23 @@ class ConveyorTest(c: Processor) extends Tester(c) {
             println()
         }
     }
+}
 
+class ProcessorTest(c: Processor) extends Tester(c) {
+
+    poke(c.io.active, true)
+    poke(c.io.input_ready, true)
+
+    for(cycle <- 0 until 6){
+        for(i <- 0 until c.cols){
+            poke(c.io.data_in, (i%c.cols)+1)
+            peek(c.conveyor.io.data_out)
+            peek(c.ALUs.io)
+            peek(c.ALUs.selectors(0).dbg_state)
+            println()
+            step(1)
+            println()
+        }
+    }
+    
 }

@@ -10,7 +10,7 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
 
         val data_out = UInt(OUTPUT, data_width) 
 
-        val dbg_enable = UInt(OUTPUT)
+        val dbg_state = UInt(OUTPUT)
     } 
 
     val balancer = Reg(UInt(width=data_width))
@@ -33,5 +33,5 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
         is (s2){ balancer := io.data_in(2) }
     }
 
-    io.dbg_enable := state
+    io.dbg_state := state
 }
