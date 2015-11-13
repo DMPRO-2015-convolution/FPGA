@@ -15,11 +15,11 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
 
-        val request_write = Bool(INPUT)   // parent requests the sdb to write data
-        val request_read = Bool(INPUT)    // parent requests to read data from sdb
+        val slave_read_input = Bool(INPUT)        // master requests the sdb to write data
+        val slave_drive_output = Bool(INPUT)      // master requests to read data from sdb
 
-        val request_input = Bool(OUTPUT)  // input can be fed to sdb via request read
-        val request_output = Bool(OUTPUT) // output can be extracted from sbd with request write
+        val slave_can_read_input = Bool(OUTPUT)   // slave can be fed data
+        val slave_can_drive_output = Bool(OUTPUT) // slave has valid output data
 
         val data_out = UInt(OUTPUT, data_width)
         val error = Bool(OUTPUT)
@@ -45,12 +45,12 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     slice2.io.data_in := UInt(0)
     io.data_out := UInt(0)
     io.error := Bool(false)
-    io.request_input := Bool(false)
-    io.request_output := Bool(false)
+    io.slave_can_read_input := Bool(false)
+    io.slave_can_drive_output := Bool(false)
 
     // Handle read requests
     // This means we want to read some data from, which means we want the buffer to write data out
-    when(io.request_read){
+    when(io.slave_read_input){
         when(current === Bool(false)){
             slice1.io.push := Bool(true)
             slice1.io.data_in := io.data_in
@@ -67,7 +67,7 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
     // Handle write requests
     // This means we want to write some input into buffer
-    when(io.request_write){
+    when(io.slave_drive_output){
         when(current === Bool(true)){
             slice1.io.pop := Bool(true)
             io.data_out := slice1.io.data_out
@@ -102,10 +102,10 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
     // Decide if data should be requested
     when( !reads_finished ){
-        io.request_input := Bool(true)
+        io.slave_can_read_input := Bool(true)
     }
     when( !writes_finished ){
-        io.request_output := Bool(true)
+        io.slave_can_drive_output := Bool(true)
     }
 
     // Should never happen, but who am I kidding?
@@ -119,8 +119,8 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
     
     // Inspect initial state
     poke(c.io.data_in, 0)
-    poke(c.io.request_write, 0)
-    poke(c.io.request_read, 0)
+    poke(c.io.slave_read_input, 0)
+    poke(c.io.slave_drive_output, 0)
     peek(c.reads_finished)
     peek(c.writes_finished)
     peek(c.reads_performed)
@@ -130,7 +130,7 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
     // Fill first buffer
     println("Filling slice 1")
     for(i <- 0 until c.cols*c.row_length){
-        poke(c.io.request_read, true)
+        poke(c.io.slave_read_input, true)
         println()
         poke(c.io.data_in, (i+1))
         peek(c.current)
@@ -138,10 +138,10 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         peek(c.writes_finished)
         peek(c.reads_performed)
         peek(c.writes_performed)
-        peek(c.io.request_write)
-        peek(c.io.request_read)
-        peek(c.io.request_input)
-        peek(c.io.request_output)
+        peek(c.io.slave_read_input)
+        peek(c.io.slave_drive_output)
+        peek(c.io.slave_can_read_input)
+        peek(c.io.slave_can_drive_output)
         println("Slice 1")
         peek(c.slice1.io)
         println("Slice 2")
@@ -152,7 +152,7 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         step(1)
     }
     println("\nSlice 1 filled!\n")
-    poke(c.io.request_read, false)
+    poke(c.io.slave_read_input, false)
     peek(c.current)
     peek(c.reads_finished)
     peek(c.writes_finished)
@@ -180,8 +180,8 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
     // Extract one buffer, fill the other
     println("\nExtracting written data from buffer 1, filling buffer 2 \n")
     for(i <- 0 until c.cols*c.row_length + 1){
-        poke(c.io.request_write, true)
-        poke(c.io.request_read, true)
+        poke(c.io.slave_read_input, true)
+        poke(c.io.slave_drive_output, true)
         poke(c.io.data_in, (i+1) + 256)
         println()
         peek(c.current)
@@ -189,10 +189,10 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         peek(c.writes_finished)
         peek(c.reads_performed)
         peek(c.writes_performed)
-        peek(c.io.request_write)
-        peek(c.io.request_read)
-        peek(c.io.request_input)
-        peek(c.io.request_output)
+        peek(c.io.slave_read_input)
+        peek(c.io.slave_drive_output)
+        peek(c.io.slave_can_read_input)
+        peek(c.io.slave_can_drive_output)
         println("Slice 1")
         peek(c.slice1.io)
         println("Slice 2")
@@ -202,5 +202,5 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         println()
         step(1)
     }
-    poke(c.io.request_read, false)
+    poke(c.io.slave_drive_output, false)
 }
