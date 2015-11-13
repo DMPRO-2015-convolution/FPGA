@@ -17,7 +17,7 @@ object DaisyMain {
         
         // chiselMainTest(args, () => Module(new RowBuffer(10, 24, 1))) { c => new RowBufferTest(c) }
 
-        chiselMainTest(args, () => Module(new SliceBuffer(4, 24, 2))) { c => new SliceBufferTest(c) }
+        chiselMainTest(args, () => Module(new SliceBuffer(3, 24, 2))) { c => new SliceBufferTest(c) }
         // chiselMainTest(args, () => Module(new MinimalBRAM())) { c => new InputTest(c) }
     }
 }
