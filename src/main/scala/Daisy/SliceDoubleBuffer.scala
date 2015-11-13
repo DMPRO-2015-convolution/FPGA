@@ -18,8 +18,8 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
         val request_write = Bool(INPUT)   // parent requests the sdb to write data
         val request_read = Bool(INPUT)    // parent requests to read data from sdb
 
-        val request_input = Bool(OUTPUT)
-        val request_output = Bool(OUTPUT)
+        val request_input = Bool(OUTPUT)  // input can be fed to sdb via request read
+        val request_output = Bool(OUTPUT) // output can be extracted from sbd with request write
 
         val data_out = UInt(OUTPUT, data_width)
         val error = Bool(OUTPUT)
@@ -138,6 +138,10 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         peek(c.writes_finished)
         peek(c.reads_performed)
         peek(c.writes_performed)
+        peek(c.io.request_write)
+        peek(c.io.request_read)
+        peek(c.io.request_input)
+        peek(c.io.request_output)
         println("Slice 1")
         peek(c.slice1.io)
         println("Slice 2")
@@ -185,6 +189,10 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         peek(c.writes_finished)
         peek(c.reads_performed)
         peek(c.writes_performed)
+        peek(c.io.request_write)
+        peek(c.io.request_read)
+        peek(c.io.request_input)
+        peek(c.io.request_output)
         println("Slice 1")
         peek(c.slice1.io)
         println("Slice 2")
