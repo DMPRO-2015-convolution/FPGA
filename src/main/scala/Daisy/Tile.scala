@@ -3,6 +3,7 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
+// TODO add instruction specific module
 class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, rows: Int) extends Module{
 
     val kernel_dim = rows
@@ -32,6 +33,6 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
 
 }
 
-
-class CoreTest(c: Tile) extends Tester(c) {
+class TileTest(c: Tile) extends Tester(c) {
 }
+

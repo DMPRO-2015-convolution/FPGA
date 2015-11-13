@@ -87,9 +87,6 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         val kernel_out = SInt(OUTPUT, width=data_width)
         val valid_out = Bool(OUTPUT)
 
-        val dbg_accumulators_out = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
-        val dbg_multipliers_in  = Vec.fill(n_ALUs){ UInt(OUTPUT, width=data_width) }
-        val dbg_kernel_out  = Vec.fill(n_ALUs){ SInt(OUTPUT, width=data_width) }
     } 
 
     val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
@@ -113,8 +110,6 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     daisy_chain(io.selector_shift, shift_enablers)
     daisy_chain(io.accumulator_flush, flush_signals)
     
-    // wire_all(flush_signals, accumulators
-
     // Wire flush enablers
     // wire_all(accumulators, flush_signals, (x: Accumulator) => x.io.flush)
     for(i <- 0 until (n_ALUs)){
@@ -139,6 +134,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         multipliers(i).pixel_in := selectors(i).data_out
         accumulators(i).pixel_in := multipliers(i).data_out
     }
+
     // Since the kernel chain is cyclic it is needed outside this scope
     io.kernel_out := multipliers(n_ALUs - 1).kernel_out
 
@@ -146,15 +142,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     io.data_out := UInt(0)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
-
-        io.dbg_accumulators_out(i) := accumulators(i).data_out
-        io.dbg_multipliers_in(i) := multipliers(i).pixel_in
     }
-
-    for(i <- 0 until n_ALUs){
-        io.dbg_kernel_out(i) := multipliers(i).kernel_out
-    }
-
 
 
     def daisy_chain[T <: Data](input: T, elements: Vec[T]){

@@ -4,10 +4,9 @@ import Chisel._
 
 import scala.collection.mutable.ListBuffer
 
-class Orchestrator(cols: Int, rows: Int)  extends Module {
+class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
     val io = new Bundle {
-        val reset = Bool(INPUT)
         val active = Bool(INPUT)
 
         val read_row  = Vec.fill(rows){ Bool(OUTPUT) }
@@ -18,7 +17,7 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
         val ALU_shift = Bool(OUTPUT)
     }
 
-    val period = rows
+    val period = cols
 
     // How long after being input to one row should a register be input to the next row?
     val row_time = (cols - rows)
@@ -73,14 +72,19 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     val ping_delay = 1
 
     // We have no more use for fixed timings, so we collect the timings congruent to the periond
-    rowreads.map(_ - ping_delay).map(_%period)
-    rowmuxes.map(_ - ping_delay).map(_%period)
+    rowreads = rowreads.map(_ - ping_delay)
+    rowreads = rowreads.map(_ % period)
+
+    rowmuxes = rowmuxes.map(_ - ping_delay)
+    rowmuxes = rowmuxes.map(_ % period)
+
     first_valid_shift_mux_shift = (first_valid_shift_mux_shift - ping_delay) % (rows)
 
 
     // We now have everything we need to create the grid control state machine
-    val time = Reg(init=(UInt(0)))
+    val time = Reg(init=(UInt(0, 8)))
 
+    println("Period of system: %d".format(period))
 
     // count
     when(io.active){
@@ -93,12 +97,14 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     
     // Ping row read and mux
     for(i <- 0 until rows){
+        println("Adding row read at time %d".format(rowreads(i)))
         when(time === UInt(rowreads(i))){
             io.read_row(i) := Bool(true)
         }.otherwise{
             io.read_row(i) := Bool(false)
         }
 
+        println("Adding row mux at time %d".format(rowmuxes(i)))
         when(time === UInt(rowmuxes(i))){
             io.mux_row(i) := Bool(true)
         }.otherwise{
@@ -107,17 +113,30 @@ class Orchestrator(cols: Int, rows: Int)  extends Module {
     }
 
     // Ping shift mux
+    io.shift_mux := Bool(false)
     for(i <- 0 until period){
         if(i%rows == first_valid_shift_mux_shift){
+            println("At time %d the shift muxes will ping".format(i))
             when(time === UInt(i)){
                 io.shift_mux := Bool(true)
-            }.otherwise{
-                io.shift_mux := Bool(false)
             }
         }
     }
+
+    io.accumulator_flush := Bool(false)
+    io.ALU_shift := Bool(false)
 }
 
 
+class OrchestratorTest(c: Orchestrator) extends Tester(c) {
 
+    // Simply does a run and sees what happens
+    poke(c.io.active, true)
 
+    for(i <- 0 until c.cols){
+        peek(c.io.shift_mux)
+        peek(c.time)
+        step(1)
+    }
+
+}

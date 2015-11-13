@@ -32,7 +32,9 @@ class IOhandler(img_width: Int, input_data_width: Int, data_width: Int, kernel_d
         input_buffer.io.data_in := UInt(57005)
     }
 
+
     io.data_out := UInt(57005)
+    input_buffer.io.slave_drive_output := Bool(false)
 
     when(input_buffer.io.slave_can_drive_output){
         io.data_out := input_buffer.io.data_out 

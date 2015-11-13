@@ -44,6 +44,7 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
         is (s0){ balancer := io.data_in(0) }
         is (s1){ balancer := io.data_in(1) }
         is (s2){ balancer := io.data_in(2) }
+        is (sleep) { balancer := UInt(57005) }
     }
 
     io.dbg_enable := state

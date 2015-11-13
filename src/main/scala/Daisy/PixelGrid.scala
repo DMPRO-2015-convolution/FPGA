@@ -19,7 +19,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     val pixel_rows = Vec.fill(rows){ Module(new PixelArray(data_width, cols)).io }
     val input_tree = Vec.fill(3){ Reg(init=UInt(0, width = data_width)) }
-    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=((i + 1) % 3))).io
+    val shift_muxes = for(i <- 0 until 3) yield Module(new ShiftMux3(data_width, 3, default=((i + 1) % 3)))
 
     // Wire input into input tree
     // wire input into first row input tree
@@ -45,15 +45,15 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     
     // Wire shift signals to secondary muxes
     for(i <- 0 until 3){
-        shift_muxes(i).shift := io.shift_mux
-        shift_muxes(i).active := io.active
+        shift_muxes(i).io.shift := io.shift_mux
+        shift_muxes(i).io.active := io.active
     }
 
     // Wire data from primary muxes to secondary muxes
     for(i <- 0 until 3){
         for(j <- 0 until 3){
-            shift_muxes(i).data_in(j) := pixel_rows(i).data_out(j)
-            io.data_out(i) := shift_muxes(i).data_out 
+            shift_muxes(i).io.data_in(j) := pixel_rows(i).data_out(j)
+            io.data_out(i) := shift_muxes(i).io.data_out 
         }
     }
 }

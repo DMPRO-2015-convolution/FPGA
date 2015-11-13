@@ -3,7 +3,7 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
-class Processor(data_width: Int, cols: Int, rows: Int) extends Module{
+class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
 
     val io = new Bundle {
 
@@ -21,12 +21,13 @@ class Processor(data_width: Int, cols: Int, rows: Int) extends Module{
     val kernel_control = Module(new KernelController(data_width, rows))
     val ALUs = Module(new ALUrow(data_width, cols, rows))
 
-
     conveyor.io.read_row := control.io.read_row
     conveyor.io.mux_row := control.io.mux_row
-    
-    for(i <- 0 until 3 ) { 
-        ALUs.io.data_in(2-i) := conveyor.io.data_out(i)
+    conveyor.io.data_in := io.data_in
+    conveyor.io.shift_mux := control.io.shift_mux
+
+    for(i <- 0 until rows ) { 
+        ALUs.io.data_in( (rows - 1) - i ) := conveyor.io.data_out(i)
     }
 
     ALUs.io.selector_shift := control.io.ALU_shift
@@ -38,6 +39,35 @@ class Processor(data_width: Int, cols: Int, rows: Int) extends Module{
     kernel_control.io.active := io.active
     conveyor.io.active := io.active
     ALUs.io.active := io.active
+    control.io.active := io.active
 
     io.data_out := ALUs.io.data_out
+    io.data_ready := Bool(true)
+}
+
+class ConveyorTest(c: Processor) extends Tester(c) {
+
+    poke(c.io.active, true)
+
+    poke(c.io.input_ready, true)
+
+    for(cycle <- 0 until 6){
+        for(i <- 0 until c.cols){
+            poke(c.io.data_in, (i%c.cols)+1)
+            peek(c.conveyor.io.data_out)
+            println("\nPixel row 1")
+            peek(c.conveyor.shift_muxes(0).state)
+            peek(c.conveyor.pixel_rows(0).data_out)
+            println("\nPixel row 2")
+            peek(c.conveyor.shift_muxes(1).state)
+            peek(c.conveyor.pixel_rows(1).data_out)
+            println("\nPixel row 3")
+            peek(c.conveyor.shift_muxes(2).state)
+            peek(c.conveyor.pixel_rows(2).data_out)
+            println()
+            step(1)
+            println()
+        }
+    }
+
 }
