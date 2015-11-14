@@ -55,10 +55,6 @@ module vtc_demo (
   input  wire SYS_CLK,
 
   input  wire [3:0] SW,
-  
-  input wire [7:0] red_data;
-  input wire [7:0] green_data;
-  input wire [7:0] blue_data;
 
   output wire [3:0] TMDS,
   output wire [3:0] TMDSB,
@@ -585,8 +581,13 @@ reg [7:0] red_data, green_data, blue_data;
       active_pixel = 24'hx;
     end
   end
-
+  
+  
   assign {red_data, green_data, blue_data} = active_pixel;
+  
+
+
+
   hdcolorbar clrbar(
     .i_clk_74M(pclk),
     .i_rst(reset),
@@ -598,10 +599,44 @@ reg [7:0] red_data, green_data, blue_data;
     .o_g(green_data),
     .o_b(blue_data)
   );
+
 `else
+////////////////////////////////////////////////////////////////
+  // Generate BRAM with picture
+  // Load new pixel info on every rising edge
+  ////////////////////////////////////////////////////////////////
+  wire write_enable;
+  reg [13:0] addr = 0;
+  wire [23:0] data_in;
+  wire [23:0] data_out;
+
+  assign write_enable = 1'b0;
+
+  bram stoker (
+	.clka(pclk),
+	.wea(write_enable), // Bus [0 : 0]
+	.addra(addr), // Bus [13 : 0]
+	.dina(data_in), // Bus [23 : 0]
+	.douta(data_out)); // Bus [23 : 0]
+
+  //reg [16:0] addr = 16'b0000;
+
+   always @ (posedge pclk)
+    begin
+    addr <= 1 ^ addr;
+	// if ( addr > 2 ) begin
+	//addr <= 0;
+	// end
+     red_data <= data_out[23:16];
+     blue_data <= data_out[15:8];
+     green_data <= data_out[7:0];
+     addr <= addr + 1;
+    end
 
 
 `endif
+
+
   ////////////////////////////////////////////////////////////////
   // DVI Encoder
   ////////////////////////////////////////////////////////////////
