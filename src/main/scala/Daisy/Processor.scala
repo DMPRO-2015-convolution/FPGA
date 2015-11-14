@@ -3,7 +3,7 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
-class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
+class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) extends Module{
 
     val io = new Bundle {
 
@@ -19,12 +19,13 @@ class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
     val conveyor = Module(new PixelGrid(data_width, cols, rows))
     val control = Module(new Orchestrator(cols, rows))
     val kernel_control = Module(new KernelController(data_width, rows))
-    val ALUs = Module(new ALUrow(data_width, cols, rows))
+    val ALUs = Module(new ALUrow(data_width, cols, rows, kernel_dim))
 
     conveyor.io.read_row := control.io.read_row
     conveyor.io.mux_row := control.io.mux_row
     conveyor.io.data_in := io.data_in
     conveyor.io.shift_mux := control.io.shift_mux
+    conveyor.io.active := io.active
 
     for(i <- 0 until rows ) { 
         ALUs.io.data_in( (rows - 1) - i ) := conveyor.io.data_out(i)
@@ -33,12 +34,13 @@ class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
     ALUs.io.selector_shift := control.io.ALU_shift
     ALUs.io.accumulator_flush := control.io.accumulator_flush
     ALUs.io.kernel_in := kernel_control.io.kernel_out
-    kernel_control.io.kernel_in  := ALUs.io.kernel_out
-    kernel_control.io.data_in := io.data_in 
-
-    kernel_control.io.active := io.active
-    conveyor.io.active := io.active
+    ALUs.io.freeze_kernels := kernel_control.io.freeze_kernels
     ALUs.io.active := io.active
+
+    kernel_control.io.kernel_in := io.data_in
+    kernel_control.io.active := io.active
+    kernel_control.io.kernel_valid := io.input_ready
+
     control.io.active := io.active
 
     io.ALU_data_out := ALUs.io.data_out

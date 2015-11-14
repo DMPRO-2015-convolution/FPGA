@@ -3,7 +3,6 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
-// TODO add instruction specific module
 class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, rows: Int) extends Module{
 
     val kernel_dim = rows
@@ -21,22 +20,26 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
     }
 
     val InputHandler = Module(new InputHandler(img_width, input_data_width, data_width, kernel_dim))
-    val Processor = Module(new Processor(data_width, cols, rows))
+    val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
     val Controller = Module(new TileController(data_width, img_width, kernel_dim, 30))
     val OutputHandler = Module(new OutputHandler(data_width, img_width, img_height, kernel_dim))
-    // insert output handler
     
+
+    // Input handler takes an input stream from any source and width and translates to data_width
     InputHandler.io.input_ready := io.input_valid
     InputHandler.io.data_in := io.data_in
 
+    // Processor processes data. Incredible
     Processor.io.data_in := InputHandler.io.data_out
 
-    Controller.io.ALU_Input := Processor.io.ALU_data_out
-    Controller.io.ALU_Input_valid := Processor.io.ALU_data_is_valid
-    Controller.io.conveyor_is_fed := InputHandler.io.data_ready
+    // Controller takes the output of the processor and checks if it is valid
+    Controller.io.processor_input_is_valid := InputHandler.io.data_ready
+    Controller.io.ALU_output := Processor.io.ALU_data_out
+    Controller.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
 
-    OutputHandler.io.data_in := Controller.io.ALU_output
-    OutputHandler.io.input_valid := Controller.io.ALU_output_is_valid
+    // Output handler recieves data from the controller, aswell as a valid bit
+    OutputHandler.io.input_valid := Controller.io.processor_output_is_valid
+    OutputHandler.io.data_in := Controller.io.processor_output
 }
 
 

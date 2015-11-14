@@ -7,6 +7,8 @@ class Multiplier(data_width: Int) extends Module {
     val io = new Bundle { 
         val pixel_in = UInt(INPUT, data_width)
         val kernel_in = SInt(INPUT, data_width)
+        val active = Bool(INPUT)
+        val freeze_kernels = Bool(INPUT)
 
         val data_out = SInt(OUTPUT, data_width) 
         val kernel_out = SInt(OUTPUT, data_width)
@@ -18,15 +20,17 @@ class Multiplier(data_width: Int) extends Module {
     val color2 = io.pixel_in(15,8)
     val color3 = io.pixel_in(23,16)
 
-    kernel := io.kernel_in
-    io.kernel_out := kernel
+    io.kernel_out := UInt(57005)
+    when(io.active && !io.freeze_kernels){
+        kernel := io.kernel_in
+        io.kernel_out := kernel
+    }
 
     io.data_out := UInt(0)
 
-    // TODO recouple kernel input
-    io.data_out(7, 0) := color1
-    io.data_out(15, 8) := color2
-    io.data_out(23, 16) := color3
+    io.data_out(7, 0) := color1*kernel
+    io.data_out(15, 8) := color2*kernel
+    io.data_out(23, 16) := color3*kernel
 }
 
 
@@ -73,9 +77,10 @@ class Accumulator(data_width: Int) extends Module {
 }
 
 
-class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
+class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Module{
 
-    val n_ALUs = cols - 2  
+    val mantle_width = kernel_dim/2
+    val n_ALUs = cols - mantle_width  
 
     val io = new Bundle { 
         val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
@@ -83,6 +88,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         val accumulator_flush = Bool(INPUT)
         val selector_shift = Bool(INPUT)
         val active = Bool(INPUT)
+        val freeze_kernels = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
@@ -121,12 +127,14 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     // Wire kernel chain
     multipliers(0).kernel_in := io.kernel_in
     multipliers(0).pixel_in := selectors(0).data_out
+    multipliers(0).freeze_kernels := io.freeze_kernels
     accumulators(0).pixel_in := multipliers(0).data_out
     
     for(i <- 1 until n_ALUs){
         multipliers(i).kernel_in := multipliers(i-1).kernel_out    
         multipliers(i).pixel_in := selectors(i).data_out
         accumulators(i).pixel_in := multipliers(i).data_out
+        multipliers(i).freeze_kernels := io.freeze_kernels
     }
 
     // Since the kernel chain is cyclic it is needed outside this scope
