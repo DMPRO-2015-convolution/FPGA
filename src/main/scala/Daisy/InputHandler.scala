@@ -4,8 +4,6 @@ import Chisel._
 import TidbitsOCM._
 
 // This module serves as the entry point for data for daisy.
-// When needed data unpacking schemes may be implemented here.
-// In its current incarnation input data width must equal data width
 
 // input buffer supports two way handshakes for determining data validity
 // currently this is only performed for input
@@ -19,6 +17,9 @@ class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kerne
         val data_out = UInt(OUTPUT, data_width)
         val data_ready = Bool(OUTPUT)
 
+        // val read_buf = Bool(OUTPUT)
+        // val write_buf = Bool(OUTPUT)
+        
     }
 
     val input_buffer = Module(new SliceDoubleBuffer(img_width, data_width, kernel_dim))
@@ -41,5 +42,5 @@ class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kerne
         input_buffer.io.slave_drive_output := Bool(true)
     }
 
-
+    io.data_ready := input_buffer.io.slave_drive_output
 }
