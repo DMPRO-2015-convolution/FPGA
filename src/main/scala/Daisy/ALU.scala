@@ -117,13 +117,6 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
         accumulators(i).flush := flush_signals(i)
     }
 
-    // wire valid output
-    io.valid_out := Bool(false)
-    for(i <- 0 until n_ALUs){
-        when(accumulators(i).valid_out){
-            io.valid_out := Bool(true)
-        }
-    }
 
     // Wire kernel chain
     multipliers(0).kernel_in := io.kernel_in
@@ -140,9 +133,13 @@ class ALUrow(data_width: Int, cols: Int, rows: Int) extends Module{
     io.kernel_out := multipliers(n_ALUs - 1).kernel_out
 
 
-    io.data_out := UInt(0)
+    io.data_out := UInt(57005)
+    io.valid_out := Bool(false)
     for(i <- 0 until n_ALUs){
-        when(flush_signals(i)){ io.data_out := accumulators(i).data_out }
+        when(flush_signals(i)){
+            io.data_out := accumulators(i).data_out
+            io.valid_out := Bool(true)
+        }
     }
 
 
