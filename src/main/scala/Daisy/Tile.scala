@@ -21,6 +21,7 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
 
     val IOhandler = Module(new IOhandler(img_width, input_data_width, data_width, kernel_dim))
     val Processor = Module(new Processor(data_width, cols, rows))
+    val Controller = Module(new TileController(data_width, img_width, kernel_dim, 30))
     // insert output handler
     
 

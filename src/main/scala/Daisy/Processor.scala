@@ -12,8 +12,8 @@ class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
         val input_ready = Bool(INPUT)
         val data_in = UInt(INPUT, data_width)
 
-        val data_out = UInt(OUTPUT, data_width)
-        val data_ready = Bool(OUTPUT)
+        val ALU_data_out = UInt(OUTPUT, data_width)
+        val ALU_data_is_valid = Bool(OUTPUT)
     }
 
     val conveyor = Module(new PixelGrid(data_width, cols, rows))
@@ -41,8 +41,8 @@ class Processor(data_width: Int, val cols: Int, rows: Int) extends Module{
     ALUs.io.active := io.active
     control.io.active := io.active
 
-    io.data_out := ALUs.io.data_out
-    io.data_ready := Bool(true)
+    io.ALU_data_out := ALUs.io.data_out
+    io.ALU_data_is_valid := ALUs.io.valid_out
 }
 
 class ConveyorTest(c: Processor) extends Tester(c) {
