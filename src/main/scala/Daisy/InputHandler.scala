@@ -9,7 +9,7 @@ import TidbitsOCM._
 
 // input buffer supports two way handshakes for determining data validity
 // currently this is only performed for input
-class IOhandler(img_width: Int, input_data_width: Int, data_width: Int, kernel_dim: Int) extends Module{
+class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kernel_dim: Int) extends Module{
 
     val io = new Bundle {
 

@@ -19,19 +19,23 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
         val output_valid = Bool(OUTPUT)
     }
 
-    val IOhandler = Module(new IOhandler(img_width, input_data_width, data_width, kernel_dim))
+    val InputHandler = Module(new InputHandler(img_width, input_data_width, data_width, kernel_dim))
     val Processor = Module(new Processor(data_width, cols, rows))
     val Controller = Module(new TileController(data_width, img_width, kernel_dim, 30))
+    val OutputHandler = Module(new OutputHandler(data_width, img_width))
     // insert output handler
     
+    InputHandler.io.input_ready := io.input_valid
+    InputHandler.io.data_in := io.data_in
 
-    IOhandler.io.input_ready := io.input_valid
-    IOhandler.io.data_in := io.data_in
+    Processor.io.data_in := InputHandler.io.data_out
 
-    Processor.io.data_in := IOhandler.io.data_out
+    Controller.io.ALU_Input := Processor.io.ALU_data_out
+    Controller.io.ALU_Input_valid := Processor.io.ALU_data_is_valid
+    Controller.io.conveyor_is_fed := InputHandler.io.data_ready
 
-    io.output_valid := Bool(true)
-
+    OutputHandler.io.data_in := Controller.io.ALU_output
+    OutputHandler.io.input_valid := Controller.io.ALU_output_is_valid
 }
 
 class TileTest(c: Tile) extends Tester(c) {

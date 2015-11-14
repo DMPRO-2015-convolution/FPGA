@@ -22,7 +22,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
     println("calculated outputs per slice to be %d".format(valid_outputs_per_slice))
 
     val io = new Bundle {
-        val active = Bool(INPUT)
+        // val active = Bool(INPUT)
         val conveyor_is_fed = Bool(INPUT)
         val ALU_Input_valid = Bool(INPUT)
         val ALU_Input = UInt(INPUT, data_width)
