@@ -2,81 +2,7 @@ package Core
 
 import Chisel._
 
-class Multiplier(data_width: Int) extends Module {
-
-    val io = new Bundle { 
-        val pixel_in = UInt(INPUT, data_width)
-        val kernel_in = SInt(INPUT, data_width)
-        val active = Bool(INPUT)
-        val freeze_kernels = Bool(INPUT)
-
-        val data_out = SInt(OUTPUT, data_width) 
-        val kernel_out = SInt(OUTPUT, data_width)
-    } 
-
-    val kernel = Reg(UInt(width=data_width))
-
-    val color1 = io.pixel_in(7,0)
-    val color2 = io.pixel_in(15,8)
-    val color3 = io.pixel_in(23,16)
-
-    io.kernel_out := UInt(57005)
-    when(io.active && !io.freeze_kernels){
-        kernel := io.kernel_in
-        io.kernel_out := kernel
-    }
-
-    io.data_out := UInt(0)
-
-    io.data_out(7, 0) := color1*kernel
-    io.data_out(15, 8) := color2*kernel
-    io.data_out(23, 16) := color3*kernel
-}
-
-
-class Accumulator(data_width: Int) extends Module {
-
-    val io = new Bundle { 
-        val pixel_in = SInt(INPUT, data_width)
-        val flush = Bool(INPUT)
-        val active = Bool(INPUT)
-
-        val data_out = UInt(OUTPUT, data_width) 
-        val valid_out = Bool(OUTPUT)
-    } 
-
-    // val accumulator = Reg(SInt(init=0, width=data_width))
-    val accumulator = Reg(init=SInt(0, data_width))
-    when(io.flush){
-        accumulator := io.pixel_in
-    }
-    .otherwise{
-        accumulator := accumulator + io.pixel_in
-    }
-    
-
-    val color1 = io.pixel_in(7,0)
-    val color2 = io.pixel_in(15,8)
-    val color3 = io.pixel_in(23,16)
-
-    when(io.active){
-        when(io.flush){ 
-            accumulator(7, 0) := color1
-            accumulator(15, 8) := color2
-            accumulator(23, 16) := color3
-
-        }.otherwise{
-            accumulator(7, 0) := accumulator(7, 0) + color1
-            accumulator(15, 8) := accumulator(15, 8) + color2
-            accumulator(23, 16) := accumulator(23, 16) + color3
-        }
-    }
-
-    io.data_out := accumulator
-
-}
-
-
+// TODO: parametrise!
 class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Module{
 
     val mantle_width = kernel_dim/2
@@ -87,8 +13,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift = Bool(INPUT)
-        val active = Bool(INPUT)
-        val freeze_kernels = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
@@ -96,56 +21,58 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
 
     } 
 
-    val multipliers = Vec.fill(n_ALUs){ Module(new Multiplier(data_width)).io }
-    val accumulators = Vec.fill(n_ALUs){ Module(new Accumulator(data_width)).io }
-
+    val mappers = Vec.fill(n_ALUs){ Module(new Mapper(data_width)).io }
+    val reducers = Vec.fill(n_ALUs){ Module(new Reducer(data_width)).io }
     val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux3(data_width, 3, 0)).io }
+
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
     
-    
+
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
             selectors(i).data_in(j) := io.data_in(j)
-            selectors(i).active := io.active
+            selectors(i).stall := io.stall
         }
-        multipliers(i).pixel_in := selectors(i).data_out 
+        mappers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)
     }
 
     daisy_chain(io.selector_shift, shift_enablers)
     daisy_chain(io.accumulator_flush, flush_signals)
     
+
     // Wire flush enablers
-    // wire_all(accumulators, flush_signals, (x: Accumulator) => x.io.flush)
     for(i <- 0 until (n_ALUs)){
-        accumulators(i).flush := flush_signals(i)
+        reducers(i).flush := flush_signals(i)
     }
 
 
     // Wire kernel chain
-    multipliers(0).kernel_in := io.kernel_in
-    multipliers(0).pixel_in := selectors(0).data_out
-    multipliers(0).freeze_kernels := io.freeze_kernels
-    accumulators(0).pixel_in := multipliers(0).data_out
+    mappers(0).kernel_in := io.kernel_in
+    mappers(0).pixel_in := selectors(0).data_out
+    mappers(0).stall := io.stall
+    reducers(0).mapped_pixel := mappers(0).mapped_pixel
     
     for(i <- 1 until n_ALUs){
-        multipliers(i).kernel_in := multipliers(i-1).kernel_out    
-        multipliers(i).pixel_in := selectors(i).data_out
-        accumulators(i).pixel_in := multipliers(i).data_out
-        multipliers(i).freeze_kernels := io.freeze_kernels
+        mappers(i).kernel_in := mappers(i-1).kernel_out    
+        mappers(i).pixel_in := selectors(i).data_out
+        reducers(i).mapped_pixel := mappers(i).mapped_pixel
+        mappers(i).stall := io.stall
     }
 
+
     // Since the kernel chain is cyclic it is needed outside this scope
-    io.kernel_out := multipliers(n_ALUs - 1).kernel_out
+    io.kernel_out := mappers(n_ALUs - 1).kernel_out
 
 
+    // Get output, or DEAD when none available
     io.data_out := UInt(57005)
     io.valid_out := Bool(false)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){
-            io.data_out := accumulators(i).data_out
+            io.data_out := reducers(i).data_out
             io.valid_out := Bool(true)
         }
     }
@@ -157,11 +84,4 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
             elements(i) := elements(i-1)
         }
     }
-
-    // def wire_all[T <: Data](inputs: Vec[T], outputs: Vec[T], f: T => T){
-    // // def wire_all[T <: Data](inputs: Vec[T], outputs: Vec[T]){
-    //     for(i <- 0 until inputs.length){
-    //         f(inputs(i)) := outputs(i)
-    //     }
-    // }
 }

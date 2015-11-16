@@ -12,7 +12,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
         val mux_row = Vec.fill(rows){ Bool(INPUT) }
         val shift_mux = Bool(INPUT)
 
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val data_out = Vec.fill(3){ UInt(OUTPUT, data_width) }
     }
@@ -26,7 +26,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     for(i <- 0 until 3){ input_tree(i) := io.data_in  }
     for(i <- 0 until 3){ 
         pixel_rows(0).data_in(i) := input_tree(i)
-        pixel_rows(i).active := io.active
+        pixel_rows(i).stall := io.stall
     }
 
     // Wire io between rows
@@ -46,7 +46,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     // Wire shift signals to secondary muxes
     for(i <- 0 until 3){
         shift_muxes(i).io.shift := io.shift_mux
-        shift_muxes(i).io.active := io.active
+        shift_muxes(i).io.stall := io.stall
     }
 
     // Wire data from primary muxes to secondary muxes

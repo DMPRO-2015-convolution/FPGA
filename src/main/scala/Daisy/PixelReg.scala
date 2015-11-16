@@ -6,7 +6,7 @@ class PixelReg(data_width: Int)  extends Module {
     val io = new Bundle { 
         val data_in = UInt(INPUT, data_width) 
         val enable_in = Bool(INPUT)
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
@@ -20,7 +20,7 @@ class PixelReg(data_width: Int)  extends Module {
     // Wire read enable
     io.enable_out := enable
 
-    when(io.active){
+    when(!io.stall){
         enable := io.enable_in
     }
 

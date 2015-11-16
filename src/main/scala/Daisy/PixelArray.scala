@@ -10,7 +10,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
         val data_in = Vec.fill(n_column_groups){UInt(INPUT, data_width)}
         val ping_read = Bool(INPUT)
         val ping_mux = Bool(INPUT)
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val data_out = Vec.fill(n_column_groups){UInt(OUTPUT, data_width)}
 
@@ -29,9 +29,9 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     primary_muxes(1).enable_in := primary_muxes(0).enable_out
     primary_muxes(2).enable_in := primary_muxes(1).enable_out
 
-    primary_muxes(0).active := io.active
-    primary_muxes(1).active := io.active
-    primary_muxes(2).active := io.active
+    primary_muxes(0).stall := io.stall
+    primary_muxes(1).stall := io.stall
+    primary_muxes(2).stall := io.stall
 
     // wire pixel read read enable chain
     pixels(0).enable_in := io.ping_read
@@ -46,7 +46,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     // wire input tree to pixels
     for (i <- 0 until cols){
        pixels(i).data_in := io.data_in(i/3)
-       pixels(i).active := io.active
+       pixels(i).stall := io.stall
     }
 
 

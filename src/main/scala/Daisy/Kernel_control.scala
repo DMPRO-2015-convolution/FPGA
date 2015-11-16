@@ -11,7 +11,7 @@ class KernelController(data_width: Int, kernel_dim: Int) extends Module {
         val kernel_valid = Bool(INPUT)
         val kernel_in = UInt(INPUT, data_width)
 
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val kernel_out = UInt(OUTPUT, data_width)
         val freeze_kernels = Bool(OUTPUT)

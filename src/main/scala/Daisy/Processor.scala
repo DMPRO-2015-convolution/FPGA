@@ -7,7 +7,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
     val io = new Bundle {
 
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val input_ready = Bool(INPUT)
         val data_in = UInt(INPUT, data_width)
@@ -25,7 +25,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     conveyor.io.mux_row := processor_control.io.mux_row
     conveyor.io.data_in := io.data_in
     conveyor.io.shift_mux := processor_control.io.shift_mux
-    conveyor.io.active := io.active
+    conveyor.io.stall := io.stall
 
     for(i <- 0 until rows ) { 
         ALUs.io.data_in( (rows - 1) - i ) := conveyor.io.data_out(i)
@@ -34,14 +34,14 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     ALUs.io.selector_shift := processor_control.io.ALU_shift
     ALUs.io.accumulator_flush := processor_control.io.accumulator_flush
     ALUs.io.kernel_in := kernel_control.io.kernel_out
-    ALUs.io.freeze_kernels := kernel_control.io.freeze_kernels
-    ALUs.io.active := io.active
+    ALUs.io.stall := kernel_control.io.stall
+    ALUs.io.stall := io.stall
 
     kernel_control.io.kernel_in := io.data_in
-    kernel_control.io.active := io.active
+    kernel_control.io.stall := io.stall
     kernel_control.io.kernel_valid := io.input_ready
 
-    processor_control.io.active := io.active
+    processor_control.io.stall := io.stall
 
     io.ALU_data_out := ALUs.io.data_out
     io.ALU_data_is_valid := ALUs.io.valid_out
@@ -49,7 +49,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
 class ConveyorTest(c: Processor) extends Tester(c) {
 
-    poke(c.io.active, true)
+    poke(c.io.stall, true)
     poke(c.io.input_ready, true)
 
     for(cycle <- 0 until 6){
@@ -74,7 +74,7 @@ class ConveyorTest(c: Processor) extends Tester(c) {
 
 class ProcessorTest(c: Processor) extends Tester(c) {
 
-    poke(c.io.active, true)
+    poke(c.io.stall, true)
     poke(c.io.input_ready, true)
 
     for(cycle <- 0 until 6){

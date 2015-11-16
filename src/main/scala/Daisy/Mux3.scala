@@ -6,7 +6,7 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
     val io = new Bundle { 
         val data_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
         val enable_in = Bool(INPUT)
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width) 
         val enable_out = Bool(OUTPUT)
@@ -27,7 +27,7 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
 
     io.enable_out := Bool(false)
 
-    when(io.active){
+    when(!io.stall){
         when(state === sleep){
         }otherwise{
             when(state === s2){

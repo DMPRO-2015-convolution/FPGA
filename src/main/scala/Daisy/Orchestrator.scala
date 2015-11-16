@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
     val io = new Bundle {
-        val active = Bool(INPUT)
+        val stall = Bool(INPUT)
 
         val read_row  = Vec.fill(rows){ Bool(OUTPUT) }
         val mux_row = Vec.fill(rows){ Bool(OUTPUT) }
@@ -90,7 +90,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     println("Period of system: %d".format(period))
 
     // count
-    when(io.active){
+    when(!io.stall){
         when(time === UInt(period - 1)){
             time := UInt(0)
         }.otherwise{
@@ -142,7 +142,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 class OrchestratorTest(c: Orchestrator) extends Tester(c) {
 
     // Simply does a run and sees what happens
-    poke(c.io.active, true)
+    poke(c.io.stall, false)
 
     for(i <- 0 until c.cols){
         peek(c.io.shift_mux)
