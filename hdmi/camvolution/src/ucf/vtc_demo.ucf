@@ -65,9 +65,8 @@ NET "LED<3>"        LOC = "U18" | IOSTANDARD = LVCMOS33;
 # SYSCLK Input
 ##############################################################################
 Net SYS_CLK TNM_NET = SYS_CLK;
-TIMESPEC TS_SYS_CLK = PERIOD SYS_CLK 66666.7 kHz;
-NET "SYS_CLK"       LOC = "L12" | IOSTANDARD = LVCMOS33;
-#NET "SYS_CLK"       LOC = "L15";
+TIMESPEC TS_SYS_CLK = PERIOD SYS_CLK 120000.0 kHz;
+NET "SYS_CLK"       LOC = "C9" | IOSTANDARD = LVCMOS33;
 
 ##############################################################################
 # Mechanical Switches (SW)
@@ -122,24 +121,26 @@ TIMESPEC "TS_ramra" = FROM "bramra" TO "fddbgrp" TS_PCLK;
 ############################
 # TMDS pairs on the top
 ############################
-#NET "TMDS(0)"  	LOC = "C7" | IOSTANDARD = TMDS_33 ; # Blue
-#NET "TMDSB(0)"  LOC = "A7" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(1)"  	LOC = "D8" | IOSTANDARD = TMDS_33 ; # Red
-#NET "TMDSB(1)"  LOC = "C8" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(2)"  	LOC = "B6" | IOSTANDARD = TMDS_33 ; # Green
-#NET "TMDSB(2)"  LOC = "A6" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(3)"  	LOC = "B8" | IOSTANDARD = TMDS_33 ; # Clock
-#NET "TMDSB(3)"  LOC = "A8" | IOSTANDARD = TMDS_33 ;
 
-NET "TMDS(0)"  	LOC = "B9" | IOSTANDARD = TMDS_33 ; # Blue
-NET "TMDSB(0)"  LOC = "A9" | IOSTANDARD = TMDS_33 ;
+# HDMI output 1
+#NET "TMDS(0)"  	 LOC = "B3" | IOSTANDARD = TMDS_33 ; # Blue
+#NET "TMDSB(0)"    LOC = "A3" | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(1)"  	 LOC = "D6" | IOSTANDARD = TMDS_33 ; # Red
+#NET "TMDSB(1)"    LOC = "C6" | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(2)"  	 LOC = "B2" | IOSTANDARD = TMDS_33 ; # Green
+#NET "TMDSB(2)"    LOC = "A2" | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(3)"  	 LOC = "B4" | IOSTANDARD = TMDS_33 ; # Clock
+#NET "TMDSB(3)"    LOC = "A4" | IOSTANDARD = TMDS_33 ;
+
+# HDMI output 2
+NET "TMDS(0)"  	LOC = "C10" | IOSTANDARD = TMDS_33 ; # Blue
+NET "TMDSB(0)"    LOC = "A10" | IOSTANDARD = TMDS_33 ;
 NET "TMDS(1)"  	LOC = "D11" | IOSTANDARD = TMDS_33 ; # Red
-NET "TMDSB(1)"  LOC = "C11" | IOSTANDARD = TMDS_33 ;
-NET "TMDS(2)"  	LOC = "C10" | IOSTANDARD = TMDS_33 ; # Green
-NET "TMDSB(2)"  LOC = "A10" | IOSTANDARD = TMDS_33 ;
-NET "TMDS(3)"  	LOC = "G9" | IOSTANDARD = TMDS_33 ; # Clock
-NET "TMDSB(3)"  LOC = "F9" | IOSTANDARD = TMDS_33 ;
-#NET "TEST_CLK"  LOC = "T5" | IOSTANDARD = LVCMOS33;
+NET "TMDSB(1)"    LOC = "C11" | IOSTANDARD = TMDS_33 ;
+NET "TMDS(2)"  	LOC = "B9"  | IOSTANDARD = TMDS_33 ; # Green
+NET "TMDSB(2)"    LOC = "A9"  | IOSTANDARD = TMDS_33 ;
+NET "TMDS(3)"  	LOC = "G9"  | IOSTANDARD = TMDS_33 ; # Clock
+NET "TMDSB(3)"    LOC = "F9"  | IOSTANDARD = TMDS_33 ;
 
 
 ##############################################################################

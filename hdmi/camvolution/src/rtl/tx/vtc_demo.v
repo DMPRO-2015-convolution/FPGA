@@ -67,7 +67,6 @@ module vtc_demo (
   // Create global clock and synchronous system reset.                //
   //******************************************************************//
 
-  // input clock in example: 100mhz
   wire          locked;
   wire          reset;
  
@@ -84,12 +83,11 @@ module vtc_demo (
   wire        locked_int;
   wire [7:0]  status_int;
   
- // assign TEST_CLK = sysclk;
 
   DCM_SP
   #(.CLKDV_DIVIDE          (),
-    .CLKFX_DIVIDE          (4),
-    .CLKFX_MULTIPLY        (3),
+    .CLKFX_DIVIDE          (12),
+    .CLKFX_MULTIPLY        (5),
     .CLKIN_DIVIDE_BY_2     ("FALSE"),
     .CLKIN_PERIOD          (15.0),
     .CLKOUT_PHASE_SHIFT    ("NONE"),
@@ -129,8 +127,6 @@ module vtc_demo (
 
   BUFG clk50m_bufgbufg (.I(sysclk_50), .O(clk50m_bufg));
 
-	
-  //assign TEST_CLK = clk50m_bufg;
 
   wire pclk_lckd;
 
