@@ -21,7 +21,7 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
 
     val InputHandler = Module(new InputHandler(img_width, input_data_width, data_width, kernel_dim))
     val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
-    val Controller = Module(new TileController(data_width, img_width, kernel_dim, 30))
+    val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, 30))
     val OutputHandler = Module(new OutputHandler(data_width, img_width, img_height, kernel_dim))
     
 
@@ -33,13 +33,13 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
     Processor.io.data_in := InputHandler.io.data_out
 
     // Controller takes the output of the processor and checks if it is valid
-    Controller.io.processor_input_is_valid := InputHandler.io.data_ready
-    Controller.io.ALU_output := Processor.io.ALU_data_out
-    Controller.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
+    SystemControl.io.processor_input_is_valid := InputHandler.io.data_ready
+    SystemControl.io.ALU_output := Processor.io.ALU_data_out
+    SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
 
     // Output handler recieves data from the controller, aswell as a valid bit
-    OutputHandler.io.input_valid := Controller.io.processor_output_is_valid
-    OutputHandler.io.data_in := Controller.io.processor_output
+    OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
+    OutputHandler.io.data_in := SystemControl.io.processor_output
 }
 
 
