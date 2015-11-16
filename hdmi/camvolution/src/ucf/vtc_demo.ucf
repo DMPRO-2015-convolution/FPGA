@@ -123,24 +123,24 @@ TIMESPEC "TS_ramra" = FROM "bramra" TO "fddbgrp" TS_PCLK;
 ############################
 
 # HDMI output 1
-#NET "TMDS(0)"  	 LOC = "B3" | IOSTANDARD = TMDS_33 ; # Blue
-#NET "TMDSB(0)"    LOC = "A3" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(1)"  	 LOC = "D6" | IOSTANDARD = TMDS_33 ; # Red
-#NET "TMDSB(1)"    LOC = "C6" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(2)"  	 LOC = "B2" | IOSTANDARD = TMDS_33 ; # Green
-#NET "TMDSB(2)"    LOC = "A2" | IOSTANDARD = TMDS_33 ;
-#NET "TMDS(3)"  	 LOC = "B4" | IOSTANDARD = TMDS_33 ; # Clock
-#NET "TMDSB(3)"    LOC = "A4" | IOSTANDARD = TMDS_33 ;
+NET "TMDS(1)"  	 LOC = "B3" | IOSTANDARD = TMDS_33 ; # Red
+NET "TMDSB(1)"    LOC = "A3" | IOSTANDARD = TMDS_33 ;
+NET "TMDS(2)"  	 LOC = "D6" | IOSTANDARD = TMDS_33 ; # Green
+NET "TMDSB(2)"    LOC = "C6" | IOSTANDARD = TMDS_33 ;
+NET "TMDS(0)"  	 LOC = "B2" | IOSTANDARD = TMDS_33 ; # Blue
+NET "TMDSB(0)"    LOC = "A2" | IOSTANDARD = TMDS_33 ;
+NET "TMDS(3)"  	 LOC = "B4" | IOSTANDARD = TMDS_33 ; # Clock
+NET "TMDSB(3)"    LOC = "A4" | IOSTANDARD = TMDS_33 ;
 
 # HDMI output 2
-NET "TMDS(0)"  	LOC = "C10" | IOSTANDARD = TMDS_33 ; # Blue
-NET "TMDSB(0)"    LOC = "A10" | IOSTANDARD = TMDS_33 ;
-NET "TMDS(1)"  	LOC = "D11" | IOSTANDARD = TMDS_33 ; # Red
-NET "TMDSB(1)"    LOC = "C11" | IOSTANDARD = TMDS_33 ;
-NET "TMDS(2)"  	LOC = "B9"  | IOSTANDARD = TMDS_33 ; # Green
-NET "TMDSB(2)"    LOC = "A9"  | IOSTANDARD = TMDS_33 ;
-NET "TMDS(3)"  	LOC = "G9"  | IOSTANDARD = TMDS_33 ; # Clock
-NET "TMDSB(3)"    LOC = "F9"  | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(1)"  	LOC = "C10" | IOSTANDARD = TMDS_33 ; # Red
+#NET "TMDSB(1)"    LOC = "A10" | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(2)"  	LOC = "D11"  | IOSTANDARD = TMDS_33 ; # Green
+#NET "TMDSB(2)"    LOC = "C11"  | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(0)"  	LOC = "B9" | IOSTANDARD = TMDS_33 ; # Blue
+#NET "TMDSB(0)"    LOC = "A9" | IOSTANDARD = TMDS_33 ;
+#NET "TMDS(3)"  	LOC = "G9"  | IOSTANDARD = TMDS_33 ; # Clock
+#NET "TMDSB(3)"    LOC = "F9"  | IOSTANDARD = TMDS_33 ;
 
 
 ##############################################################################

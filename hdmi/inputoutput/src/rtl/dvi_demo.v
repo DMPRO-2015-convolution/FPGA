@@ -53,14 +53,12 @@
 
 module dvi_demo (
   input wire        rstbtn_n,    //The pink reset button
-  input wire        clk100,      //100 MHz osicallator
+  input wire        clk120,      //120 MHz osicallator
   input wire [3:0]  RX0_TMDS,
   input wire [3:0]  RX0_TMDSB,
 
   output wire [3:0] TX0_TMDS,
   output wire [3:0] TX0_TMDSB,
-
-  input  wire [1:0] SW,
 
   output wire [7:0] LED
 );
@@ -69,9 +67,52 @@ module dvi_demo (
   // 25 MHz and switch debouncers
   ////////////////////////////////////////////////////
   wire clk25, clk25m;
+  
+  wire [1:0] SW;
+  
+  assign SW[0] = 1'b1;
+  assign SW[1] = 1'b1;
 
-  BUFIO2 #(.DIVIDE_BYPASS("FALSE"), .DIVIDE(5))
-  sysclk_div (.DIVCLK(clk25m), .IOCLK(), .SERDESSTROBE(), .I(clk100));
+  DCM_SP
+  #(.CLKDV_DIVIDE          (),
+    .CLKFX_DIVIDE          (24),
+    .CLKFX_MULTIPLY        (5),
+    .CLKIN_DIVIDE_BY_2     ("FALSE"),
+    .CLKIN_PERIOD          (8.3),
+    .CLKOUT_PHASE_SHIFT    ("NONE"),
+    .CLK_FEEDBACK          (),
+    .DESKEW_ADJUST         ("SYSTEM_SYNCHRONOUS"),
+    .PHASE_SHIFT           (0),
+    .STARTUP_WAIT          ("FALSE"))
+  dcm_sp_inst
+    // Input clock
+   (.CLKIN                 (clk120),
+    .CLKFB                 (),
+    // Output clocks
+    .CLK0                  (),
+    .CLK90                 (),
+    .CLK180                (),
+    .CLK270                (),
+    .CLK2X                 (),
+    .CLK2X180              (),
+    .CLKFX                 (clk25m),
+    .CLKFX180              (),
+    .CLKDV                 (),
+    // Ports for dynamic phase shift
+    .PSCLK                 (1'b0),
+    .PSEN                  (1'b0),
+    .PSINCDEC              (1'b0),
+    .PSDONE                (),
+    // Other control and status signals
+    .LOCKED                (locked_int),
+    .STATUS                (status_int),
+
+    .RST                   (RSTBTN),
+    // Unused pin- tie low
+    .DSSEN                 (1'b0));
+
+ // BUFIO2 #(.DIVIDE_BYPASS("FALSE"), .DIVIDE(5))
+ // sysclk_div (.DIVCLK(clk25m), .IOCLK(), .SERDESSTROBE(), .I(clk120));
 
   BUFG clk25_buf (.I(clk25m), .O(clk25));
 
@@ -159,6 +200,9 @@ module dvi_demo (
     .green       (rx0_green),
     .blue        (rx0_blue)); 
 
+  wire rx0_bufpll_lock;
+  BUFPLL #(.DIVIDE(5)) rx0_ioclk_buf (.PLLIN(rx0_pllclk0), .GCLK(rx0_pclkx2), .LOCKED(rx0_plllckd),
+           .IOCLK(rx0_pclkx10), .SERDESSTROBE(rx0_serdesstrobe), .LOCK(rx0_bufpll_lock));
   // TMDS output
 `ifdef DIRECTPASS
   wire rstin         = rx0_reset;
@@ -301,7 +345,7 @@ module dvi_demo (
   // This BUFGMUX directly selects between two RX PLL pclk outputs
   // This way we have a matched skew between the RX pclk clocks and the TX pclk
   //
-  BUFGMUX tx0_bufg_pclk (.S(select[0]), .I1(rx1_pllclk1), .I0(rx0_pllclk1), .O(tx0_pclk));
+  BUFGMUX tx0_bufg_pclk (.S(select[0]), .I1(rx0_pllclk1), .I0(rx0_pllclk1), .O(tx0_pclk));
 
   //
   // This BUFG is needed in order to deskew between PLL clkin and clkout
