@@ -13,7 +13,7 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
     val total_writes = row_length*cols
 
     val io = new Bundle {
-        val data_in = UInt(INPUT, data_width)
+        val data_in = UInt(INPUT, input_data_width)
 
         val slave_read_input = Bool(INPUT)        // master requests the sdb to write data
         val slave_drive_output = Bool(INPUT)      // master requests to read data from sdb
@@ -21,12 +21,12 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
         val slave_can_read_input = Bool(OUTPUT)   // slave can be fed data
         val slave_can_drive_output = Bool(OUTPUT) // slave has valid output data
 
-        val data_out = UInt(OUTPUT, data_width)
+        val data_out = UInt(OUTPUT, pixel_data_width)
         val error = Bool(OUTPUT)
     }
 
-    val slice1 = Module(new SliceBuffer(row_length, data_width, kernel_dim))
-    val slice2 = Module(new SliceBuffer(row_length, data_width, kernel_dim))
+    val slice1 = Module(new SliceBuffer(row_length, pixel_data_width, kernel_dim))
+    val slice2 = Module(new SliceBuffer(row_length, pixel_data_width, kernel_dim))
 
     val reads_finished = Reg(init=Bool(false))
     val writes_finished = Reg(init=Bool(true))

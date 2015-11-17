@@ -18,19 +18,19 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
         val reset = Bool(INPUT)
         val active = Bool(INPUT) //Not used, but wired
 
-        val data_out = UInt(OUTPUT, data_width)
+        val data_out = UInt(OUTPUT, pixel_data_width)
         val output_valid = Bool(OUTPUT)
     }
 
-    val InputHandler = Module(new InputHandler(img_width, input_data_width, data_width, kernel_dim))
-    val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
-    val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, 30))
-    val OutputHandler = Module(new OutputHandler(data_width, img_width, img_height, kernel_dim))
+    val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
+    val Processor = Module(new Processor(pixel_data_width, cols, rows, kernel_dim))
+    val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 30))
+    val OutputHandler = Module(new OutputHandler(pixel_data_width, img_width, img_height, kernel_dim))
     
 
     // Input handler takes an input stream from any source and width and translates to data_width
-    InputHandler.io.input_ready := io.input_valid
-    InputHandler.io.data_in := io.data_in
+    InputHandler.io.input_ready := io.hdmi_input_valid
+    InputHandler.io.data_in := io.hdmi_data_in
 
     // Processor processes data. Incredible
     Processor.io.data_in := InputHandler.io.data_out
@@ -55,102 +55,102 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
 // A test to measure input tolerance to slack
 class InputTest(c: Tile) extends Tester(c) {
     
-    poke(c.io.input_valid, false) 
-    poke(c.io.reset, false) 
-    poke(c.io.active, true) 
-    step(1)
+    // poke(c.io.input_valid, false) 
+    // poke(c.io.reset, false) 
+    // poke(c.io.active, true) 
+    // step(1)
 
-    // Feed data for a slice, see what happens
-    for(i <- 0 until ((90*7)/6) - 1){
-        if(i%7 == 0){
-            poke(c.io.data_in, 57005)
-            poke(c.io.input_valid, false)
-        }
-        else{
-            poke(c.io.data_in, i)
-            poke(c.io.input_valid, true)
-        }
-        if(i%20 == 0){
-            println("After %d cycles we have:".format(i))
-            peek(c.InputHandler.input_buffer.current)
-            println("For reads we have:")
-            peek(c.InputHandler.input_buffer.reads_performed)
-            peek(c.InputHandler.input_buffer.reads_finished)
-            println("For writes we have:")
-            peek(c.InputHandler.input_buffer.writes_performed)
-            peek(c.InputHandler.input_buffer.writes_finished)
-        }
-        step(1)
-    }
+    // // Feed data for a slice, see what happens
+    // for(i <- 0 until ((90*7)/6) - 1){
+    //     if(i%7 == 0){
+    //         poke(c.io.data_in, 57005)
+    //         poke(c.io.input_valid, false)
+    //     }
+    //     else{
+    //         poke(c.io.data_in, i)
+    //         poke(c.io.input_valid, true)
+    //     }
+    //     if(i%20 == 0){
+    //         println("After %d cycles we have:".format(i))
+    //         peek(c.InputHandler.input_buffer.current)
+    //         println("For reads we have:")
+    //         peek(c.InputHandler.input_buffer.reads_performed)
+    //         peek(c.InputHandler.input_buffer.reads_finished)
+    //         println("For writes we have:")
+    //         peek(c.InputHandler.input_buffer.writes_performed)
+    //         peek(c.InputHandler.input_buffer.writes_finished)
+    //     }
+    //     step(1)
+    // }
 
-    println()
-    println("Initial feeding done, transition")
-    poke(c.io.input_valid, false)
-    
-    for(i <- 0 until 20){
-        peek(c.InputHandler.input_buffer.current)
-        println("For reads we have:")
-        peek(c.InputHandler.input_buffer.reads_performed)
-        peek(c.InputHandler.input_buffer.reads_finished)
-        println("For writes we have:")
-        peek(c.InputHandler.input_buffer.writes_performed)
-        peek(c.InputHandler.input_buffer.writes_finished)
-        println()
-        peek(c.InputHandler.input_buffer.io.data_out)
-        println()
-        step(1)
-        println()
-    }
+    // println()
+    // println("Initial feeding done, transition")
+    // poke(c.io.input_valid, false)
+    // 
+    // for(i <- 0 until 20){
+    //     peek(c.InputHandler.input_buffer.current)
+    //     println("For reads we have:")
+    //     peek(c.InputHandler.input_buffer.reads_performed)
+    //     peek(c.InputHandler.input_buffer.reads_finished)
+    //     println("For writes we have:")
+    //     peek(c.InputHandler.input_buffer.writes_performed)
+    //     peek(c.InputHandler.input_buffer.writes_finished)
+    //     println()
+    //     peek(c.InputHandler.input_buffer.io.data_out)
+    //     println()
+    //     step(1)
+    //     println()
+    // }
 
-    println("Performing next slice feed")
-    for(i <- 0 until ((70*7)/6) - 1){
-        if(i%7 == 0){
-            poke(c.io.data_in, 57005)
-            poke(c.io.input_valid, false)
-        }
-        else{
-            poke(c.io.data_in, i)
-            poke(c.io.input_valid, true)
-        }
-        if(i%20 == 0){
-            println("After %d cycles we have:".format(i))
-            peek(c.InputHandler.input_buffer.current)
-            println("For reads we have:")
-            peek(c.InputHandler.input_buffer.reads_performed)
-            peek(c.InputHandler.input_buffer.reads_finished)
-            println("For writes we have:")
-            peek(c.InputHandler.input_buffer.writes_performed)
-            peek(c.InputHandler.input_buffer.writes_finished)
-        }
-        step(1)
-    }
+    // println("Performing next slice feed")
+    // for(i <- 0 until ((70*7)/6) - 1){
+    //     if(i%7 == 0){
+    //         poke(c.io.data_in, 57005)
+    //         poke(c.io.input_valid, false)
+    //     }
+    //     else{
+    //         poke(c.io.data_in, i)
+    //         poke(c.io.input_valid, true)
+    //     }
+    //     if(i%20 == 0){
+    //         println("After %d cycles we have:".format(i))
+    //         peek(c.InputHandler.input_buffer.current)
+    //         println("For reads we have:")
+    //         peek(c.InputHandler.input_buffer.reads_performed)
+    //         peek(c.InputHandler.input_buffer.reads_finished)
+    //         println("For writes we have:")
+    //         peek(c.InputHandler.input_buffer.writes_performed)
+    //         peek(c.InputHandler.input_buffer.writes_finished)
+    //     }
+    //     step(1)
+    // }
 
-    println()
-    println("Monitoring transition")
-    poke(c.io.input_valid, true)
-    
-    for(i <- 0 until 60){
-        if(i%2 == 0){
-            poke(c.io.data_in, 57005)
-            poke(c.io.input_valid, false)
-        }
-        else{
-            poke(c.io.data_in, i)
-            poke(c.io.input_valid, true)
-        }
-        peek(c.InputHandler.input_buffer.current)
-        println("For reads we have:")
-        peek(c.InputHandler.input_buffer.reads_performed)
-        peek(c.InputHandler.input_buffer.reads_finished)
-        println("For writes we have:")
-        peek(c.InputHandler.input_buffer.writes_performed)
-        peek(c.InputHandler.input_buffer.writes_finished)
-        println()
-        peek(c.InputHandler.input_buffer.io.data_out)
-        println()
-        step(1)
-        println()
-    }
+    // println()
+    // println("Monitoring transition")
+    // poke(c.io.input_valid, true)
+    // 
+    // for(i <- 0 until 60){
+    //     if(i%2 == 0){
+    //         poke(c.io.data_in, 57005)
+    //         poke(c.io.input_valid, false)
+    //     }
+    //     else{
+    //         poke(c.io.data_in, i)
+    //         poke(c.io.input_valid, true)
+    //     }
+    //     peek(c.InputHandler.input_buffer.current)
+    //     println("For reads we have:")
+    //     peek(c.InputHandler.input_buffer.reads_performed)
+    //     peek(c.InputHandler.input_buffer.reads_finished)
+    //     println("For writes we have:")
+    //     peek(c.InputHandler.input_buffer.writes_performed)
+    //     peek(c.InputHandler.input_buffer.writes_finished)
+    //     println()
+    //     peek(c.InputHandler.input_buffer.io.data_out)
+    //     println()
+    //     step(1)
+    //     println()
+    // }
 
 }
 

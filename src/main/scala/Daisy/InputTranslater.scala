@@ -127,10 +127,10 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
             inputs_finished := UInt(1)
 
             when(~current){
-                buffer1(input_width - 1, 0) := io.input_data
+                buffer1( (total_inputs*input_width) - 1, (total_inputs - 1)*input_width) := io.input_data
             }
             .otherwise{
-                buffer2(input_width - 1, 0) := io.input_data
+                buffer2( (total_inputs*input_width) - 1, (total_inputs - 1)*input_width) := io.input_data
             }
         }
     }

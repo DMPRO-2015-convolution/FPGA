@@ -21,7 +21,7 @@ class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kerne
 
     }
 
-    val input_buffer = Module(new SliceDoubleBuffer(img_width, data_width, kernel_dim))
+    val input_buffer = Module(new SliceDoubleBuffer(img_width, input_data_width, data_width, kernel_dim))
 
 
     io.data_out := UInt(57005)
