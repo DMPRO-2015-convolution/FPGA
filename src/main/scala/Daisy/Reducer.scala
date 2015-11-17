@@ -8,6 +8,9 @@ import Chisel._
 class Reducer(data_width: Int) extends Module {
 
     val io = new Bundle { 
+
+        val get_reduce_instruction = Bool(INPUT)
+
         val mapped_pixel = SInt(INPUT, data_width)
         val flush = Bool(INPUT)
         val stall = Bool(INPUT)
@@ -16,20 +19,19 @@ class Reducer(data_width: Int) extends Module {
         val valid_out = Bool(OUTPUT)
     } 
 
+    val instruction = Reg(UInt(0, 24))
     val accumulator = Reg(init=SInt(0, data_width))
-    when(io.flush){
-        accumulator := io.mapped_pixel
-    }
-    .otherwise{
-        accumulator := accumulator + io.mapped_pixel
-    }
 
     val color1 = io.mapped_pixel(7,0)
     val color2 = io.mapped_pixel(15,8)
     val color3 = io.mapped_pixel(23,16)
 
     when(!io.stall){
-        when(io.flush){ 
+        
+        when(io.get_reduce_instruction){
+            instruction := io.mapped_pixel
+        }
+        .elsewhen(io.flush){ 
             accumulator(7, 0) := color1
             accumulator(15, 8) := color2
             accumulator(23, 16) := color3

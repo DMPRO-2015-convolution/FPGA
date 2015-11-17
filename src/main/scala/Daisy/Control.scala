@@ -23,7 +23,10 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
     println("calculated outputs per slice to be %d".format(valid_outputs_per_slice))
 
     val io = new Bundle {
-        // val active = Bool(INPUT)
+
+        val control_data_in = UInt(INPUT, control_data_width)
+        val control_input_valid = Bool(INPUT)
+
         val processor_input_is_valid = Bool(INPUT)
 
         val ALU_output_is_valid = Bool(INPUT)
@@ -31,6 +34,15 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
 
         val processor_output_is_valid = Bool(OUTPUT)
         val processor_output = UInt(OUTPUT, data_width)
+
+        val processor_sleep = Bool(OUTPUT)
+
+        val stage = new Bundle {
+            val data_stage = Bool(OUTPUT)
+            val kernel_stage = Bool(OUTPUT)
+            val reduce_stage = Bool(OUTPUT)
+            val map_stage = Bool(OUTPUT)
+        }
     }
 
     val valid_processor_input_count = Reg(init=UInt(0, 32))
@@ -49,9 +61,14 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
   
     io.processor_output := UInt(57005)
     io.processor_output_is_valid := Bool(false)
+    io.stage.data_stage := Bool(false)
+    io.processor_sleep := Bool(true)
 
     when(state === data_mode){
-        when(io.processor_output_is_valid){
+        io.stage.data_stage := Bool(true)
+        when(io.processor_input_is_valid){
+            
+            io.processor_sleep := Bool(false)
 
             // 1:
             when(valid_processor_input_count < UInt(first_valid_output)){
@@ -84,6 +101,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
         when(valid_processor_output_count === UInt(valid_outputs_per_slice)){
             valid_processor_input_count := UInt(0)
             valid_processor_output_count := UInt(0)
+            io.processor_sleep := Bool(true)
         }
     }
 
@@ -91,13 +109,43 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
     val programming_stage = Reg(init=UInt(kernel))
     val kernel_count = Reg(UInt(32))
 
+    // In control mode we perform three operations:
+    //
+    // #1 - Fill kernels
+    // #2 - Choose reduce operator
+    // #3 - Choose map operator
+    
+    io.stage.kernel_stage := Bool(false)
+    io.stage.reduce_stage := Bool(false)
+    io.stage.map_stage := Bool(false)
+
     when(state === control_mode){
+
         
         when(programming_stage === kernel){
-            when(kernel_count < UInt(total_kernels)){
-                kernel_count := kernel_count + UInt(1)
+            io.stage.kernel_stage := Bool(true)
+            when(io.processor_input_is_valid){
+                when(kernel_count < UInt(total_kernels)){
+                    kernel_count := kernel_count + UInt(1)
+                }
+                when(kernel_count === UInt(total_kernels - 1)){
+                    programming_stage := reduce
+                }
             }
-            when(kernel_count === UInt(total_kernels - 1)){
+        }
+
+        when(programming_stage === reduce){
+            io.stage.reduce_stage := Bool(true)
+            when(io.processor_input_is_valid){
+                programming_stage := map
+            }
+        }
+
+        when(programming_stage === reduce){
+            io.stage.map_stage := Bool(true)
+            when(io.processor_input_is_valid){
+                io.stage.map_stage := Bool(true)
+                state := data_mode
             }
         }
     }

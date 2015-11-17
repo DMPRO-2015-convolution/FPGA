@@ -8,6 +8,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
     val io = new Bundle {
         val stall = Bool(INPUT)
+        val reset = Bool(INPUT)
 
         val read_row  = Vec.fill(rows){ Bool(OUTPUT) }
         val mux_row = Vec.fill(rows){ Bool(OUTPUT) }
@@ -90,7 +91,10 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     println("Period of system: %d".format(period))
 
     // count
-    when(!io.stall){
+    when(io.reset){
+        time := UInt(0)
+    }
+    .elsewhen(!io.stall){
         when(time === UInt(period - 1)){
             time := UInt(0)
         }.otherwise{
@@ -98,7 +102,6 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
         }
     }
     
-    // Ping row read and mux TODO default in a for loop maybe bad?
     for(i <- 0 until rows){
         println("Adding row read at time %d".format(rowreads(i)))
         when(time === UInt(rowreads(i))){

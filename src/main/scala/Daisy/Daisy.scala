@@ -6,7 +6,7 @@ object DaisyMain {
     def main(args: Array[String]) {
         // do not remove, does nothing harmful
         val img_width = 640
-        val input_data_width = 24
+        val input_data_width = 16
         val data_width = 24
         val kernel_dim = 3
         val rows = kernel_dim
@@ -34,6 +34,9 @@ object DaisyMain {
         // chiselMainTest(args, () => Module(new Orchestrator(9, 3))) { c => new OrchestratorTest(c) }
         
         // Tile
-        chiselMainTest(args, () => Module(new Tile(10, 24, 24, 9, 3))) { c => new InputTest(c) }
+        // chiselMainTest(args, () => Module(new Tile(10, 24, 24, 9, 3))) { c => new InputTest(c) }
+        
+
+        chiselMainTest(args, () => Module(new InputTranslator(16, 24))) { c => new TranslatorTest(c) }
     }
 }

@@ -10,13 +10,18 @@ class Mapper(data_width: Int) extends Module {
 
     val io = new Bundle { 
 
+        val get_map_instruction = Bool(INPUT)
+
         val pixel_in = UInt(INPUT, data_width)
         val kernel_in = SInt(INPUT, data_width)
         val stall = Bool(INPUT)
 
         val mapped_pixel = SInt(OUTPUT, data_width) 
         val kernel_out = SInt(OUTPUT, data_width)
+
     } 
+
+    val instruction = Reg(UInt(0, 4))
 
     val kernel = Reg(UInt(width=data_width))
 
@@ -26,6 +31,12 @@ class Mapper(data_width: Int) extends Module {
 
     io.kernel_out := UInt(57005)
     when(!io.stall){
+
+        when(io.get_map_instruction){
+            instruction := io.kernel_in
+            io.mapped_pixel := io.kernel_in
+        }
+
         kernel := io.kernel_in
         io.kernel_out := kernel
     }

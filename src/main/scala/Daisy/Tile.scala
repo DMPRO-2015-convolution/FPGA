@@ -3,14 +3,17 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
-class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, rows: Int) extends Module{
+class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_data_width: Int, cols: Int, rows: Int) extends Module{
 
     val kernel_dim = rows
     val img_height = 480
 
     val io = new Bundle {
-        val data_in = UInt(INPUT, data_width)
-        val input_valid = Bool(INPUT)
+        val control_data_in = UInt(INPUT, control_data_width)
+        val control_input_valid = Bool(INPUT)
+
+        val hdmi_data_in = UInt(INPUT, HDMI_data_width)
+        val hdmi_input_valid = Bool(INPUT)
 
         val reset = Bool(INPUT)
         val active = Bool(INPUT) //Not used, but wired
@@ -31,8 +34,14 @@ class Tile(img_width: Int, input_data_width: Int, data_width: Int, cols: Int, ro
 
     // Processor processes data. Incredible
     Processor.io.data_in := InputHandler.io.data_out
+    Processor.io.processor_sleep := SystemControl.io.processor_sleep
+    Processor.io.stage.data_stage := SystemControl.io.stage.data_stage
+    Processor.io.stage.kernel_stage := SystemControl.io.stage.kernel_stage
+    Processor.io.stage.reduce_stage := SystemControl.io.stage.reduce_stage
+    Processor.io.stage.map_stage := SystemControl.io.stage.map_stage
 
-    // Controller takes the output of the processor and checks if it is valid
+    // Controller checks input and output for the processor, determining validity.
+    // Handles instructing the processor
     SystemControl.io.processor_input_is_valid := InputHandler.io.data_ready
     SystemControl.io.ALU_output := Processor.io.ALU_data_out
     SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
@@ -144,16 +153,6 @@ class InputTest(c: Tile) extends Tester(c) {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
 
 class TileTest(c: Tile) extends Tester(c) {
 }

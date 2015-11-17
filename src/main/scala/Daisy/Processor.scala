@@ -9,8 +9,16 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
         val stall = Bool(INPUT)
 
-        val input_ready = Bool(INPUT)
+        val input_valid = Bool(INPUT)
         val data_in = UInt(INPUT, data_width)
+        val processor_sleep = Bool(INPUT)
+
+        val stage = new Bundle {
+            val data_stage = Bool(INPUT)
+            val kernel_stage = Bool(INPUT)
+            val reduce_stage = Bool(INPUT)
+            val map_stage = Bool(INPUT)
+        }
 
         val ALU_data_out = UInt(OUTPUT, data_width)
         val ALU_data_is_valid = Bool(OUTPUT)
@@ -34,12 +42,11 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     ALUs.io.selector_shift := processor_control.io.ALU_shift
     ALUs.io.accumulator_flush := processor_control.io.accumulator_flush
     ALUs.io.kernel_in := kernel_control.io.kernel_out
-    ALUs.io.stall := kernel_control.io.stall
-    ALUs.io.stall := io.stall
+    ALUs.io.stall := (kernel_control.io.stall_alu || io.stall)
 
-    kernel_control.io.kernel_in := io.data_in
+    kernel_control.io.kernel_in := ALUs.io.kernel_out
     kernel_control.io.stall := io.stall
-    kernel_control.io.kernel_valid := io.input_ready
+    kernel_control.io.kernel_stage := io.stage.kernel_stage
 
     processor_control.io.stall := io.stall
 
@@ -50,7 +57,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 class ConveyorTest(c: Processor) extends Tester(c) {
 
     poke(c.io.stall, true)
-    poke(c.io.input_ready, true)
+    poke(c.io.input_valid, true)
 
     for(cycle <- 0 until 6){
         for(i <- 0 until c.cols){
@@ -75,7 +82,7 @@ class ConveyorTest(c: Processor) extends Tester(c) {
 class ProcessorTest(c: Processor) extends Tester(c) {
 
     poke(c.io.stall, true)
-    poke(c.io.input_ready, true)
+    poke(c.io.input_valid, true)
 
     for(cycle <- 0 until 6){
         for(i <- 0 until c.cols){

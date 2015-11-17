@@ -6,7 +6,7 @@ import Chisel._
 import TidbitsOCM._
 
 
-class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
+class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_width: Int, kernel_dim: Int) extends Module {
 
     val cols = kernel_dim*kernel_dim
     val total_reads = row_length*cols

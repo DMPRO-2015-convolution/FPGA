@@ -15,10 +15,13 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         val selector_shift = Bool(INPUT)
         val stall = Bool(INPUT)
 
+        val map_stage = Bool(INPUT)
+        val reduce_stage = Bool(INPUT)
+        val valid_input = Bool(INPUT)
+
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
         val valid_out = Bool(OUTPUT)
-
     } 
 
     val mappers = Vec.fill(n_ALUs){ Module(new Mapper(data_width)).io }
@@ -27,7 +30,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
 
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
-    
+
 
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
@@ -54,12 +57,14 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     mappers(0).pixel_in := selectors(0).data_out
     mappers(0).stall := io.stall
     reducers(0).mapped_pixel := mappers(0).mapped_pixel
+    reducers(0).stall := io.stall
     
     for(i <- 1 until n_ALUs){
         mappers(i).kernel_in := mappers(i-1).kernel_out    
         mappers(i).pixel_in := selectors(i).data_out
         reducers(i).mapped_pixel := mappers(i).mapped_pixel
         mappers(i).stall := io.stall
+        reducers(i).stall := io.stall
     }
 
 
