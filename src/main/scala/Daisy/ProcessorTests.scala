@@ -77,6 +77,7 @@ class ProcessorInitTest(c: Processor) extends Tester(c) {
         peek(c.processor_control.io.alu_stall)
         peek(c.processor_control.io.load_kernel)
         peek(c.processor_control.io.load_instruction)
+        peek(c.processor_control.io.dbg_kernel_skew)
         peek(c.kernel_buffer.io)
         println("Instruction stage")
         for(i <- 0 until 7){
@@ -106,6 +107,7 @@ class ProcessorInitTest(c: Processor) extends Tester(c) {
         peek(c.processor_control.io.alu_stall)
         peek(c.processor_control.io.load_kernel)
         peek(c.processor_control.io.load_instruction)
+        peek(c.processor_control.io.dbg_kernel_skew)
         peek(c.kernel_buffer.io)
         println("Instruction stage")
         for(i <- 0 until 7){
@@ -135,6 +137,7 @@ class ProcessorInitTest(c: Processor) extends Tester(c) {
         peek(c.processor_control.io.alu_stall)
         peek(c.processor_control.io.load_kernel)
         peek(c.processor_control.io.load_instruction)
+        peek(c.processor_control.io.dbg_kernel_skew)
         peek(c.kernel_buffer.io)
         println("Instruction stage")
         for(i <- 0 until 7){
