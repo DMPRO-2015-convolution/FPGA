@@ -13,7 +13,7 @@ class KernelBuffer(data_width: Int, kernel_dim: Int) extends Module {
         val data_in = UInt(INPUT, data_width)
         val stall = Bool(INPUT)
 
-        val kernel_load = Bool(INPUT)
+        val load_kernel = Bool(INPUT)
         val kernel_out = UInt(OUTPUT, data_width)
     }
 
@@ -29,7 +29,7 @@ class KernelBuffer(data_width: Int, kernel_dim: Int) extends Module {
     io.kernel_out := UInt(57005)
     
     // When in instruction mode we want to feed the kernel chain
-    when(io.kernel_load){
+    when(io.load_kernel){
         when(!io.stall){
             kernel_count := kernel_count + UInt(1)
             kernel_buffer(0) := io.data_in

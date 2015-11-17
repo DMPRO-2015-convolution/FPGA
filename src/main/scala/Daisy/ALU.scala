@@ -15,9 +15,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         val selector_shift = Bool(INPUT)
         val stall = Bool(INPUT)
 
-        val map_stage = Bool(INPUT)
-        val reduce_stage = Bool(INPUT)
-        val valid_input = Bool(INPUT)
+        val load_instruction = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
         val kernel_out = SInt(OUTPUT, width=data_width)
@@ -56,8 +54,10 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     mappers(0).kernel_in := io.kernel_in
     mappers(0).pixel_in := selectors(0).data_out
     mappers(0).stall := io.stall
+    mappers(0).load_instruction := io.load_instruction
     reducers(0).mapped_pixel := mappers(0).mapped_pixel
     reducers(0).stall := io.stall
+    reducers(0).load_instruction := io.load_instruction
     
     for(i <- 1 until n_ALUs){
         mappers(i).kernel_in := mappers(i-1).kernel_out    
@@ -65,6 +65,8 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         reducers(i).mapped_pixel := mappers(i).mapped_pixel
         mappers(i).stall := io.stall
         reducers(i).stall := io.stall
+        reducers(i).load_instruction := io.load_instruction
+        mappers(i).load_instruction := io.load_instruction
     }
 
 

@@ -16,31 +16,29 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
         val processor_sleep = Bool(INPUT)
 
         val alu_stall = Bool(OUTPUT)
-        val kernel_load = Bool(OUTPUT)
-        val instruction_configure = Bool(OUTPUT)
+        val load_kernel = Bool(OUTPUT)
+        val load_instruction = Bool(OUTPUT)
     }
 
     val stage = Reg(init=UInt(0, 32))
 
     io.alu_stall := Bool(false)
-    io.kernel_load := Bool(false)
-    io.instruction_configure := Bool(false)
+    io.load_kernel := Bool(false)
+    io.load_instruction := Bool(false)
 
+    // Let instruction propagate first, then load kernels
     when(io.programming_mode){
         when(io.input_valid){
-
+            
+            io.load_kernel := Bool(true)
             io.alu_stall := Bool(false) 
+            io.load_instruction := Bool(true)
 
-            when(stage === UInt(total_kernels)){
-                io.instruction_configure := Bool(true)
+            when(stage >= UInt(cols)){
+                io.load_instruction := Bool(false)
             }
-            .otherwise{
-                io.kernel_load := Bool(true)
-            }
-
             stage := stage + UInt(1)
         }
         io.alu_stall := Bool(true) 
     }
-
 }

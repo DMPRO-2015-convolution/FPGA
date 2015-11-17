@@ -9,7 +9,7 @@ class Reducer(data_width: Int) extends Module {
 
     val io = new Bundle { 
 
-        val get_reduce_instruction = Bool(INPUT)
+        val load_instruction = Bool(INPUT)
 
         val mapped_pixel = SInt(INPUT, data_width)
         val flush = Bool(INPUT)
@@ -28,8 +28,8 @@ class Reducer(data_width: Int) extends Module {
 
     when(!io.stall){
         
-        when(io.get_reduce_instruction){
-            instruction := io.mapped_pixel
+        when(io.load_instruction){
+            instruction := io.mapped_pixel(7, 4)
         }
         .elsewhen(io.flush){ 
             accumulator(7, 0) := color1
