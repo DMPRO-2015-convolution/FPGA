@@ -2,7 +2,6 @@ package Core
 
 import Chisel._
 
-// TODO: parametrise!
 class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Module{
 
     val mantle_width = kernel_dim/2

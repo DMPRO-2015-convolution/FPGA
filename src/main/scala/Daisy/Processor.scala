@@ -51,6 +51,8 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     processor_control.io.programming_mode := io.processor_configure
     processor_control.io.processor_sleep := io.processor_sleep
 
+    data_control.io.reset := io.processor_sleep
+
     io.ALU_data_out := ALUs.io.data_out
     io.ALU_data_is_valid := ALUs.io.valid_out
 }

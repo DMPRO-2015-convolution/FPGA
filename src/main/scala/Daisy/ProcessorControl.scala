@@ -41,4 +41,8 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
         }
         io.alu_stall := Bool(true) 
     }
+    
+    when(io.processor_sleep){
+        io.alu_stall := Bool(true)
+    }
 }

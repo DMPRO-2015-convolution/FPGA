@@ -7,7 +7,6 @@ import scala.collection.mutable.ListBuffer
 class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
     val io = new Bundle {
-        val stall = Bool(INPUT)
         val reset = Bool(INPUT)
 
         val read_row  = Vec.fill(rows){ Bool(OUTPUT) }
@@ -94,7 +93,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     when(io.reset){
         time := UInt(0)
     }
-    .elsewhen(!io.stall){
+    .otherwise{
         when(time === UInt(period - 1)){
             time := UInt(0)
         }.otherwise{
@@ -103,18 +102,24 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     }
     
     for(i <- 0 until rows){
-        println("Adding row read at time %d".format(rowreads(i)))
-        when(time === UInt(rowreads(i))){
-            io.read_row(i) := Bool(true)
-        }.otherwise{
-            io.read_row(i) := Bool(false)
-        }
 
-        println("Adding row mux at time %d".format(rowmuxes(i)))
-        when(time === UInt(rowmuxes(i))){
-            io.mux_row(i) := Bool(true)
-        }.otherwise{
-            io.mux_row(i) := Bool(false)
+        io.read_row(i) := Bool(false)
+        io.mux_row(i) := Bool(false)
+
+        when(!io.reset){
+            println("Adding row read at time %d".format(rowreads(i)))
+            when(time === UInt(rowreads(i))){
+                io.read_row(i) := Bool(true)
+            }.otherwise{
+                io.read_row(i) := Bool(false)
+            }
+
+            println("Adding row mux at time %d".format(rowmuxes(i)))
+            when(time === UInt(rowmuxes(i))){
+                io.mux_row(i) := Bool(true)
+            }.otherwise{
+                io.mux_row(i) := Bool(false)
+            }
         }
     }
 
@@ -123,14 +128,17 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     // Ping secondary mux shifts
     io.shift_mux := Bool(false)
     io.ALU_shift := Bool(false)
-    for(i <- 0 until rows){
-        println("At time %d the shift muxes will be pinged".format(first_valid_shift_mux_shift + (i*rows)))
-        when(time === UInt(first_valid_shift_mux_shift + (i*rows))){
-            io.shift_mux := Bool(true)
-        }
-        println("At time %d the ALU select muxes will be pinged".format(first_ALU_shift + (i*rows)))
-        when(time === UInt(first_ALU_shift + (i*rows))){
-            io.ALU_shift := Bool(true)
+
+    when(!io.reset){
+        for(i <- 0 until rows){
+            println("At time %d the shift muxes will be pinged".format(first_valid_shift_mux_shift + (i*rows)))
+            when(time === UInt(first_valid_shift_mux_shift + (i*rows))){
+                io.shift_mux := Bool(true)
+            }
+            println("At time %d the ALU select muxes will be pinged".format(first_ALU_shift + (i*rows)))
+            when(time === UInt(first_ALU_shift + (i*rows))){
+                io.ALU_shift := Bool(true)
+            }
         }
     }
             
@@ -145,7 +153,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 class OrchestratorTest(c: Orchestrator) extends Tester(c) {
 
     // Simply does a run and sees what happens
-    poke(c.io.stall, false)
+    poke(c.io.reset, false)
 
     for(i <- 0 until c.cols){
         peek(c.io.shift_mux)

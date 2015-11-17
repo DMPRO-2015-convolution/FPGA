@@ -30,7 +30,6 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
         val processor_control_input = UInt(OUTPUT, control_data_width)
         val processor_control_input_valid = Bool(OUTPUT)
 
-
         val processor_input_is_valid = Bool(INPUT)
 
         val ALU_output_is_valid = Bool(INPUT)
