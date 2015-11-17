@@ -35,6 +35,9 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     // Processor processes data. Incredible
     Processor.io.pixel_in := InputHandler.io.data_out
     Processor.io.processor_sleep := SystemControl.io.processor_sleep
+    Processor.io.processor_configure := SystemControl.io.processor_configure
+    Processor.io.input_valid := SystemControl.io.processor_control_input_valid
+    Processor.io.control_data_in := SystemControl.io.processor_control_input
 
     // Controller checks input and output for the processor, determining validity.
     // Handles instructing the processor
