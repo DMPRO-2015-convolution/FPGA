@@ -4,7 +4,7 @@ import Chisel._
 import TidbitsOCM._
 
 // Processor controller decides when the processor should reset, and sends control signals
-// to the computation units
+// to the computation units. Keeps track of kernel skew and instructions
 class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: Int) extends Module{
 
     val total_kernels = kernel_dims*kernel_dims
@@ -51,7 +51,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
             io.alu_stall := Bool(true)
         }
     }
-    .elsewhen(io.processor_sleep){
+    .elsewhen(io.processor_sleep && kernel_skew === UInt(0)){
         io.alu_stall := Bool(true)
     }
     .otherwise{

@@ -148,5 +148,23 @@ class ProcessorInitTest(c: Processor) extends Tester(c) {
         step(1)
         println()
     }
-
+    println()
+    println()
+    println("Preparing to run")
+    println()
+    println()
+    for(i <- 0 until 20){
+        poke(c.io.processor_sleep, true)
+        for(i <- 0 until 7){
+            peek(c.ALUs.mappers(i).dbg_kernel)
+            peek(c.ALUs.mappers(i).dbg_instr)
+        }
+        println()
+        println()
+        peek(c.processor_control.io.dbg_kernel_skew)
+        println()
+        println()
+        step(1)
+        println()
+    }
 }
