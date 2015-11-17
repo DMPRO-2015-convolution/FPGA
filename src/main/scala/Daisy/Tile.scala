@@ -24,7 +24,7 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
 
     val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
     val Processor = Module(new Processor(pixel_data_width, cols, rows, kernel_dim))
-    val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 30))
+    val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
     val OutputHandler = Module(new OutputHandler(pixel_data_width, img_width, img_height, kernel_dim))
     
 

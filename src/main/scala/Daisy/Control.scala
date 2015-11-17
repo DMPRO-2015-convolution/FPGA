@@ -8,7 +8,7 @@ import TidbitsOCM._
 // because there is a significant time delay between valid input and output.
 //
 // It is also responsible for handling programming of kernel values and operators
-class TileController(control_data_width: Int, pixel_data_width: Int, img_width: Int, kernel_dim: Int, remnant_outputs: Int) extends Module {
+class TileController(control_data_width: Int, pixel_data_width: Int, img_width: Int, kernel_dim: Int, remnant_outputs: Int, first_valid_output: Int) extends Module {
 
     val mantle_width = (kernel_dim - 1)/2
     val valid_rows_per_slice = (kernel_dim*kernel_dim) - 2*mantle_width
@@ -16,7 +16,6 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
     val valid_outputs_per_slice = valid_rows_per_slice*valid_cols_per_slice
     val drain_time = remnant_outputs
-    val first_valid_output = 30
 
     val total_kernels = kernel_dim*kernel_dim
     

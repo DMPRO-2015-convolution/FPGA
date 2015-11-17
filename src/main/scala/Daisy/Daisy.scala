@@ -13,7 +13,7 @@ object DaisyMain {
         val kernel_dim = 3
         val rows = kernel_dim
         val cols = kernel_dim*kernel_dim
-        chiselMainTest(args, () => Module(new Tile(img_width, control_data_width, pixel_data_width, HDMI_data_width, cols, rows))) { c => new TileTest(c) }
+        // chiselMainTest(args, () => Module(new Tile(img_width, control_data_width, pixel_data_width, HDMI_data_width, cols, rows))) { c => new TileTest(c) }
 
         // chiselMainTest(args, () => Module(new PixelGrid(24, 9, 3))) { c => new PixelGridTest(c) }
 
@@ -30,8 +30,12 @@ object DaisyMain {
         // chiselMainTest(args, () => Module(new SliceDoubleBuffer(3, 24, 2))) { c => new DoubleBufferTest(c) }
         
         // processor
-        // chiselMainTest(args, () => Module(new Processor(24, 9, 3))) { c => new ConveyorTest(c) }
-        // chiselMainTest(args, () => Module(new Processor(24, 9, 3))) { c => new ProcessorTest(c) }
+        // chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ConveyorTest(c) }
+
+        // chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorTest(c) }
+
+        chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorInitTest(c) }
+
 
         // chiselMainTest(args, () => Module(new Orchestrator(9, 3))) { c => new OrchestratorTest(c) }
         
