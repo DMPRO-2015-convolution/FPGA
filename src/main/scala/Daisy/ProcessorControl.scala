@@ -5,6 +5,7 @@ import TidbitsOCM._
 
 // Processor controller decides when the processor should reset, and sends control signals
 // to the computation units
+// TODO Implement kernel skew correction
 class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: Int) extends Module{
 
     val total_kernels = kernel_dims*kernel_dims
@@ -21,6 +22,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
     }
 
     val stage = Reg(init=UInt(0, 32))
+    val kernel_skew = Reg(init=UInt(0, 8))
 
     io.alu_stall := Bool(false)
     io.load_kernel := Bool(false)
@@ -31,7 +33,6 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
         when(io.input_valid){
             
             io.load_kernel := Bool(true)
-            io.alu_stall := Bool(false) 
             io.load_instruction := Bool(true)
 
             when(stage >= UInt(cols)){
@@ -39,10 +40,13 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
             }
             stage := stage + UInt(1)
         }
-        io.alu_stall := Bool(true) 
+        .otherwise{
+            io.alu_stall := Bool(true)
+        }
     }
-    
-    when(io.processor_sleep){
+    .elsewhen(io.processor_sleep){
         io.alu_stall := Bool(true)
     }
+
+    
 }

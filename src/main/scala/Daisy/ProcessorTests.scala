@@ -60,26 +60,90 @@ class ProcessorInitTest(c: Processor) extends Tester(c) {
     step(1)
     peek(c.processor_control.io)
 
+    println()
     println("Commencing instruction loading")
     poke(c.io.processor_configure, true)
-    for(i <- 0 until 21){
+    for(i <- 0 until 19){
         if(i%2 == 1){
-            poke(c.io.pixel_in, i)
+            poke(c.io.control_data_in, 1)
             poke(c.io.input_valid, true)
         }
         else{
-            poke(c.io.pixel_in, i)
+            poke(c.io.control_data_in, 0)
             poke(c.io.input_valid, false)
         }
-        println()
+        println("controller stage")
         peek(c.processor_control.stage)
         peek(c.processor_control.io.alu_stall)
         peek(c.processor_control.io.load_kernel)
         peek(c.processor_control.io.load_instruction)
+        peek(c.kernel_buffer.io)
+        println("Instruction stage")
+        for(i <- 0 until 7){
+            peek(c.ALUs.mappers(i).dbg_kernel)
+            peek(c.ALUs.mappers(i).dbg_instr)
+        }
         println()
         step(1)
         println()
     }
 
+    println()
+    println()
+    println("Commencing kernel loading")
+    poke(c.io.processor_configure, true)
+    for(i <- 0 until 20){
+        if(i%2 == 1){
+            poke(c.io.control_data_in, i + 1)
+            poke(c.io.input_valid, true)
+        }
+        else{
+            poke(c.io.control_data_in, 0)
+            poke(c.io.input_valid, false)
+        }
+        println("controller stage")
+        peek(c.processor_control.stage)
+        peek(c.processor_control.io.alu_stall)
+        peek(c.processor_control.io.load_kernel)
+        peek(c.processor_control.io.load_instruction)
+        peek(c.kernel_buffer.io)
+        println("Instruction stage")
+        for(i <- 0 until 7){
+            peek(c.ALUs.mappers(i).dbg_kernel)
+            peek(c.ALUs.mappers(i).dbg_instr)
+        }
+        println()
+        step(1)
+        println()
+    }
+    println()
+    println()
+    println("Taking a look")
+    poke(c.io.processor_sleep, false)
+    poke(c.io.processor_configure, false)
+    for(i <- 0 until 19){
+        if(i%2 == 1){
+            poke(c.io.control_data_in, i + 1)
+            poke(c.io.input_valid, true)
+        }
+        else{
+            poke(c.io.control_data_in, 0)
+            poke(c.io.input_valid, false)
+        }
+        println("controller stage")
+        peek(c.processor_control.stage)
+        peek(c.processor_control.io.alu_stall)
+        peek(c.processor_control.io.load_kernel)
+        peek(c.processor_control.io.load_instruction)
+        peek(c.kernel_buffer.io)
+        println("Instruction stage")
+        for(i <- 0 until 7){
+            peek(c.ALUs.mappers(i).dbg_kernel)
+            peek(c.ALUs.mappers(i).dbg_instr)
+        }
+        println()
+        step(1)
+        println()
+    }
 
 }
