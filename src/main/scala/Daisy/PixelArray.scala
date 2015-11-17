@@ -7,7 +7,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     val n_column_groups = cols/3
 
     val io = new Bundle {
-        val data_in = Vec.fill(n_column_groups){UInt(INPUT, data_width)}
+        val pixel_in = Vec.fill(n_column_groups){UInt(INPUT, data_width)}
         val ping_read = Bool(INPUT)
         val ping_mux = Bool(INPUT)
         val stall = Bool(INPUT)
@@ -45,14 +45,14 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
 
     // wire input tree to pixels
     for (i <- 0 until cols){
-       pixels(i).data_in := io.data_in(i/3)
+       pixels(i).pixel_in := io.pixel_in(i/3)
        pixels(i).stall := io.stall
     }
 
 
     // Wire pixel data out to primary muxes
     for (i <- 0 until cols){
-        primary_muxes(i/3).data_in(i%3) := pixels(i).data_out
+        primary_muxes(i/3).pixel_in(i%3) := pixels(i).data_out
     }
     // Wire mux out data to pixelArray out
     for (i <- 0 until n_column_groups){
@@ -81,9 +81,9 @@ class PixelArrayTest(c: PixelArray) extends Tester(c) {
             poke(c.io.ping_read, false)
             poke(c.io.ping_mux, false)
         }
-        poke(c.io.data_in(0), i)
-        poke(c.io.data_in(1), i)
-        poke(c.io.data_in(2), i)
+        poke(c.io.pixel_in(0), i)
+        poke(c.io.pixel_in(1), i)
+        poke(c.io.pixel_in(2), i)
         peek(c.io.data_out(0))
         peek(c.io.data_out(1))
         peek(c.io.data_out(2))

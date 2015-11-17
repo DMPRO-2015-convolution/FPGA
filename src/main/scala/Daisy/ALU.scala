@@ -9,7 +9,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     val n_ALUs = cols - mantle_width  
 
     val io = new Bundle { 
-        val data_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
+        val pixel_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
         val kernel_in = SInt(INPUT, width=data_width)
         val accumulator_flush = Bool(INPUT)
         val selector_shift = Bool(INPUT)
@@ -35,7 +35,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     // Wire ALU selectors
     for(i <- 0 until n_ALUs){
         for(j <- 0 until 3){
-            selectors(i).data_in(j) := io.data_in(j)
+            selectors(i).pixel_in(j) := io.pixel_in(j)
             selectors(i).stall := io.stall
         }
         mappers(i).pixel_in := selectors(i).data_out 

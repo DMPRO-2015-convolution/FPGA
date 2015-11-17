@@ -10,15 +10,8 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
         val stall = Bool(INPUT)
 
         val input_valid = Bool(INPUT)
-        val data_in = UInt(INPUT, data_width)
+        val pixel_in = UInt(INPUT, data_width)
         val processor_sleep = Bool(INPUT)
-
-        val stage = new Bundle {
-            val data_stage = Bool(INPUT)
-            val kernel_stage = Bool(INPUT)
-            val reduce_stage = Bool(INPUT)
-            val map_stage = Bool(INPUT)
-        }
 
         val ALU_data_out = UInt(OUTPUT, data_width)
         val ALU_data_is_valid = Bool(OUTPUT)
@@ -31,12 +24,12 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
     conveyor.io.read_row := processor_control.io.read_row
     conveyor.io.mux_row := processor_control.io.mux_row
-    conveyor.io.data_in := io.data_in
+    conveyor.io.pixel_in := io.pixel_in
     conveyor.io.shift_mux := processor_control.io.shift_mux
     conveyor.io.stall := io.stall
 
     for(i <- 0 until rows ) { 
-        ALUs.io.data_in( (rows - 1) - i ) := conveyor.io.data_out(i)
+        ALUs.io.pixel_in( (rows - 1) - i ) := conveyor.io.data_out(i)
     }
 
     ALUs.io.selector_shift := processor_control.io.ALU_shift
@@ -46,7 +39,6 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
     kernel_control.io.kernel_in := ALUs.io.kernel_out
     kernel_control.io.stall := io.stall
-    kernel_control.io.kernel_stage := io.stage.kernel_stage
 
     processor_control.io.stall := io.stall
 
@@ -61,7 +53,7 @@ class ConveyorTest(c: Processor) extends Tester(c) {
 
     for(cycle <- 0 until 6){
         for(i <- 0 until c.cols){
-            poke(c.io.data_in, (i%c.cols)+1)
+            poke(c.io.pixel_in, (i%c.cols)+1)
             peek(c.conveyor.io.data_out)
             println("\nPixel row 1")
             peek(c.conveyor.shift_muxes(0).state)
@@ -86,7 +78,7 @@ class ProcessorTest(c: Processor) extends Tester(c) {
 
     for(cycle <- 0 until 6){
         for(i <- 0 until c.cols){
-            poke(c.io.data_in, (i%c.cols)+1)
+            poke(c.io.pixel_in, (i%c.cols)+1)
             peek(c.conveyor.io.data_out)
             peek(c.ALUs.io)
             peek(c.ALUs.selectors(0).dbg_state)

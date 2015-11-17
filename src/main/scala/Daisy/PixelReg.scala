@@ -4,7 +4,7 @@ import Chisel._
  
 class PixelReg(data_width: Int)  extends Module { 
     val io = new Bundle { 
-        val data_in = UInt(INPUT, data_width) 
+        val pixel_in = UInt(INPUT, data_width) 
         val enable_in = Bool(INPUT)
         val stall = Bool(INPUT)
 
@@ -27,7 +27,7 @@ class PixelReg(data_width: Int)  extends Module {
     io.data_out := data
 
     when (enable){
-        data := io.data_in
+        data := io.pixel_in
     }
 } 
 
@@ -35,7 +35,7 @@ class PixelRegTest(c: PixelReg, data_width: Int) extends Tester(c) {
     println("PixelRegTest")
     for(i <- 0 until 20){
         step(1)
-        poke(c.io.data_in, i)
+        poke(c.io.pixel_in, i)
         peek(c.io.data_out)
         peek(c.io.enable_out)
         if(i%9 == 0){

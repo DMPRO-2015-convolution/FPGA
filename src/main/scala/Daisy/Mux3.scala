@@ -4,7 +4,7 @@ import Chisel._
 
 class Mux3(data_width: Int, regs_in: Int) extends Module {
     val io = new Bundle { 
-        val data_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
+        val pixel_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
         val enable_in = Bool(INPUT)
         val stall = Bool(INPUT)
 
@@ -41,9 +41,9 @@ class Mux3(data_width: Int, regs_in: Int) extends Module {
     
 
     switch (state) {
-        is (s0){ balancer := io.data_in(0) }
-        is (s1){ balancer := io.data_in(1) }
-        is (s2){ balancer := io.data_in(2) }
+        is (s0){ balancer := io.pixel_in(0) }
+        is (s1){ balancer := io.pixel_in(1) }
+        is (s2){ balancer := io.pixel_in(2) }
         is (sleep) { balancer := UInt(57005) }
     }
 
@@ -54,7 +54,7 @@ class Mux3Test(c: Mux3, data_width: Int, regs_in: Int) extends Tester(c) {
     println("Mux3 Test")
     for(i <- 0 until 18){
         step(1)
-        poke(c.io.data_in(i%3), i)
+        poke(c.io.pixel_in(i%3), i)
         peek(c.io.data_out)
         peek(c.io.dbg_enable)
         if(i%9 == 0){

@@ -7,7 +7,7 @@ import scala.io.Source
 
 class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     val io = new Bundle {
-        val data_in = UInt(INPUT, data_width)
+        val pixel_in = UInt(INPUT, data_width)
         val read_row = Vec.fill(rows){ Bool(INPUT) }
         val mux_row = Vec.fill(rows){ Bool(INPUT) }
         val shift_mux = Bool(INPUT)
@@ -23,16 +23,16 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
 
     // Wire input into input tree
     // wire input into first row input tree
-    for(i <- 0 until 3){ input_tree(i) := io.data_in  }
+    for(i <- 0 until 3){ input_tree(i) := io.pixel_in  }
     for(i <- 0 until 3){ 
-        pixel_rows(0).data_in(i) := input_tree(i)
+        pixel_rows(0).pixel_in(i) := input_tree(i)
         pixel_rows(i).stall := io.stall
     }
 
     // Wire io between rows
     for(i <- 1 until cols/3){
         for(j <- 0 until rows){
-            pixel_rows(i).data_in(j) := pixel_rows(i-1).data_out(j)
+            pixel_rows(i).pixel_in(j) := pixel_rows(i-1).data_out(j)
         }
     }
 
@@ -52,7 +52,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     // Wire data from primary muxes to secondary muxes
     for(i <- 0 until 3){
         for(j <- 0 until 3){
-            shift_muxes(i).io.data_in(j) := pixel_rows(i).data_out(j)
+            shift_muxes(i).io.pixel_in(j) := pixel_rows(i).data_out(j)
             io.data_out(i) := shift_muxes(i).io.data_out 
         }
     }

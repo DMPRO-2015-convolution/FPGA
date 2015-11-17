@@ -4,7 +4,7 @@ import Chisel._
 
 class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
     val io = new Bundle { 
-        val data_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
+        val pixel_in = Vec.fill(regs_in){ UInt(INPUT, data_width) }
         val shift = Bool(INPUT)
         val stall = Bool(INPUT)
 
@@ -28,9 +28,9 @@ class ShiftMux3(data_width: Int, regs_in: Int, default: Int) extends Module {
     }
 
     switch (state) {
-        is (s0){ balancer := io.data_in(0) }
-        is (s1){ balancer := io.data_in(1) }
-        is (s2){ balancer := io.data_in(2) }
+        is (s0){ balancer := io.pixel_in(0) }
+        is (s1){ balancer := io.pixel_in(1) }
+        is (s2){ balancer := io.pixel_in(2) }
     }
 
     io.dbg_state := state

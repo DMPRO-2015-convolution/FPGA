@@ -8,6 +8,7 @@ import TidbitsOCM._
 // Endianness will fug shit up!
 // Only works if output_width > Input_width
 // Dont judge me, I know it looks shit
+// Also I think the output is still wrong and works backwards. ex dee
 class InputTranslator(input_width: Int, output_width: Int) extends Module{
 
 
@@ -96,10 +97,10 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
 
             when(outputs_performed === UInt(i)){
                 when(current){
-                    io.output_data := buffer2((i+1)*output_width - 1, (i)*output_width)
+                    io.output_data := buffer2( (i+1)*output_width - 1, (i)*output_width)
                 }
                 .otherwise{
-                    io.output_data := buffer1((i+1)*output_width - 1, (i)*output_width)
+                    io.output_data := buffer1( (i+1)*output_width - 1, (i)*output_width)
                 }
             }
         }

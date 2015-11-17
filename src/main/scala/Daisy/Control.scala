@@ -26,6 +26,8 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
         val control_data_in = UInt(INPUT, control_data_width)
         val control_input_valid = Bool(INPUT)
+        val processor_control_input = UInt(OUTPUT, control_data_width)
+        val processor_control_input_valid = Bool(OUTPUT)
 
         val processor_input_is_valid = Bool(INPUT)
 
@@ -36,13 +38,7 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
         val processor_output = UInt(OUTPUT, pixel_data_width)
 
         val processor_sleep = Bool(OUTPUT)
-
-        val stage = new Bundle {
-            val data_stage = Bool(OUTPUT)
-            val kernel_stage = Bool(OUTPUT)
-            val reduce_stage = Bool(OUTPUT)
-            val map_stage = Bool(OUTPUT)
-        }
+        val processor_configure = Bool(OUTPUT)
     }
 
     val valid_processor_input_count = Reg(init=UInt(0, 32))
@@ -61,11 +57,9 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
   
     io.processor_output := UInt(57005)
     io.processor_output_is_valid := Bool(false)
-    io.stage.data_stage := Bool(false)
     io.processor_sleep := Bool(true)
 
     when(state === data_mode){
-        io.stage.data_stage := Bool(true)
         when(io.processor_input_is_valid){
             
             io.processor_sleep := Bool(false)
@@ -105,46 +99,27 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
         }
     }
 
-    val kernel :: reduce :: map :: Nil = Enum(UInt(), 3)
-    val programming_stage = Reg(init=UInt(kernel))
-    val kernel_count = Reg(UInt(32))
 
-    // In control mode we perform three operations:
-    //
-    // #1 - Fill kernels
-    // #2 - Choose reduce operator
-    // #3 - Choose map operator
-    
-    io.stage.kernel_stage := Bool(false)
-    io.stage.reduce_stage := Bool(false)
-    io.stage.map_stage := Bool(false)
+    val stage = Reg(init=UInt(0, 32))
+    val total_stages = total_kernels + 2
+
+    val translator = Module(new InputTranslator(control_data_width, pixel_data_width))
+
+    translator.io.input_valid := io.control_input_valid
+    translator.io.input_data := io.control_data_in
+    io.processor_control_input := translator.io.output_data
+    io.processor_configure := Bool(false)
+    io.processor_control_input_valid := Bool(false)
 
     when(state === control_mode){
-
         
-        when(programming_stage === kernel){
-            io.stage.kernel_stage := Bool(true)
-            when(io.processor_input_is_valid){
-                when(kernel_count < UInt(total_kernels)){
-                    kernel_count := kernel_count + UInt(1)
-                }
-                when(kernel_count === UInt(total_kernels - 1)){
-                    programming_stage := reduce
-                }
-            }
-        }
+        io.processor_configure := Bool(true)
 
-        when(programming_stage === reduce){
-            io.stage.reduce_stage := Bool(true)
-            when(io.processor_input_is_valid){
-                programming_stage := map
-            }
-        }
+        when(translator.io.output_valid){
+            io.processor_control_input_valid := Bool(true)
+            stage := stage + UInt(1)
 
-        when(programming_stage === reduce){
-            io.stage.map_stage := Bool(true)
-            when(io.processor_input_is_valid){
-                io.stage.map_stage := Bool(true)
+            when(stage === UInt(total_stages - 1)){
                 state := data_mode
             }
         }
