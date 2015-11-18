@@ -192,7 +192,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     poke(c.io.processor_sleep, false)
     for(i <- 0 until 27){
         poke(c.io.pixel_in, 0)
-        peek(c.io.ALU_data_out)
+        // peek(c.io.ALU_data_out)
         step(1)
     }
 
@@ -226,7 +226,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         println()
         poke(c.io.pixel_in, (i%9)+1)
         peek(c.processor_control.io.dbg_kernel_skew)
-        peek(c.io.ALU_data_out)
+        // peek(c.io.ALU_data_out)
         println("Accumulator values")
         // println()
         // println()
@@ -273,7 +273,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         println()
         println()
         println()
-        peek(c.io.ALU_data_out)
+        // peek(c.io.ALU_data_out)
         println()
         println()
         step(1)

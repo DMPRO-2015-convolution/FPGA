@@ -42,8 +42,9 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     // Controller checks input and output for the processor, determining validity.
     // Handles instructing the processor
     SystemControl.io.processor_input_is_valid := InputHandler.io.data_ready
-    SystemControl.io.ALU_output := Processor.io.ALU_data_out
+    // SystemControl.io.ALU_output := Processor.io.ALU_data_out
     SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
+    // SystemControl.io.ALU_output := UInt(1)
     SystemControl.io.control_data_in := io.control_data_in
     SystemControl.io.control_input_valid := io.control_input_valid
 

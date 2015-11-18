@@ -52,6 +52,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     data_control.io.reset := io.processor_sleep
 
     io.ALU_data_out := ALUs.io.data_out
+    // io.ALU_data_out := UInt(1234)
     io.ALU_data_is_valid := ALUs.io.valid_out
 
 
