@@ -11,7 +11,6 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     val cols = kernel_dim*kernel_dim
     val row_length_c = row_length
 
-    println("SliceBuffer Total writes: %d".format(row_length))
     
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)

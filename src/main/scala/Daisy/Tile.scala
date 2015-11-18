@@ -8,6 +8,7 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     val kernel_dim = rows
     val img_height = 480
 
+
     val io = new Bundle {
         val control_data_in = UInt(INPUT, control_data_width)
         val control_input_valid = Bool(INPUT)
@@ -42,15 +43,13 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     // Controller checks input and output for the processor, determining validity.
     // Handles instructing the processor
     SystemControl.io.processor_input_is_valid := InputHandler.io.data_ready
-    // SystemControl.io.ALU_output := Processor.io.ALU_data_out
     SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
-    // SystemControl.io.ALU_output := UInt(1)
     SystemControl.io.control_data_in := io.control_data_in
     SystemControl.io.control_input_valid := io.control_input_valid
 
     // Output handler recieves data from the controller, aswell as a valid bit
     OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
-    OutputHandler.io.data_in := SystemControl.io.processor_output
+    // OutputHandler.io.data_in <> Processor.io.ALU_data_out
 }
 
 class TileTest(c: Tile) extends Tester(c) {

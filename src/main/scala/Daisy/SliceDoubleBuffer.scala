@@ -12,7 +12,6 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
     val total_reads = row_length*cols
     val total_writes = row_length*cols
 
-    println("SliceDoubleBuffer Total writes: %d".format(total_writes))
 
     val io = new Bundle {
         val data_in = UInt(INPUT, input_data_width)

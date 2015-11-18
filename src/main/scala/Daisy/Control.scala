@@ -32,10 +32,8 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
         val processor_input_is_valid = Bool(INPUT)
 
         val ALU_output_is_valid = Bool(INPUT)
-        val ALU_output = UInt(INPUT, pixel_data_width)
 
         val processor_output_is_valid = Bool(OUTPUT)
-        val processor_output = UInt(OUTPUT, pixel_data_width)
 
         val processor_sleep = Bool(OUTPUT)
         val processor_configure = Bool(OUTPUT)
@@ -55,7 +53,6 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
     //    validity is decided by ALU
     // #4 Valid data is not being fed, the controller should wait 
   
-    io.processor_output := UInt(57005)
     io.processor_output_is_valid := Bool(false)
     io.processor_sleep := Bool(true)
 
@@ -73,7 +70,6 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
             .otherwise{
                 // We test whether the ALUs produce valid output
                 when(io.ALU_output_is_valid){
-                    io.processor_output := io.ALU_output
                     io.processor_output_is_valid := Bool(true)
                     valid_processor_output_count := valid_processor_output_count + UInt(1)
                 }
@@ -84,7 +80,6 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
             // 3
             when(valid_processor_output_count < UInt(valid_outputs_per_slice)){
                 when(io.ALU_output_is_valid){
-                    io.processor_output := io.ALU_output
                     io.processor_output_is_valid := Bool(true)
                     valid_processor_output_count := valid_processor_output_count + UInt(1)
                 }
