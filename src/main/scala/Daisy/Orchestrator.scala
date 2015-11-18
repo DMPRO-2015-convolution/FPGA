@@ -41,7 +41,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     val first_valid_row_out = conveyor_start + read_delay + read_delay
     val conveyor_done = conveyor_start + cycle_time
     val data_out = conveyor_done + ALU_delay
-    val first_ALU_shift = 0
+    val first_ALU_shift = 2
 
     println("Time of first data in tree:\t\t\t\t%d".format(data_in_tree))
     println("Time of conveyor being ready:\t\t\t\t%d".format(conveyor_rdy))
@@ -66,7 +66,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     }
 
     // The shift mux has a shorter period, T % rows
-    var first_valid_shift_mux_shift = first_valid_row_out + rows
+    var first_valid_shift_mux_shift = first_valid_row_out + rows + 1
 
     // In order to hit the timings we need to take into account the fact that
     // all elements perform their action when they have the key, not when

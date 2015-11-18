@@ -19,6 +19,8 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
         val load_kernel = Bool(OUTPUT)
         val load_instruction = Bool(OUTPUT)
 
+        val reset = Bool(OUTPUT)
+
         val dbg_kernel_skew = UInt(OUTPUT, 32)
     }
 
@@ -28,6 +30,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
     io.alu_stall := Bool(false)
     io.load_kernel := Bool(false)
     io.load_instruction := Bool(false)
+    io.reset := Bool(false)
 
     // Let instruction propagate first, then load kernels
     when(io.programming_mode){

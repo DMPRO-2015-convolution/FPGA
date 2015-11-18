@@ -18,7 +18,7 @@ class PixelArray(data_width: Int, cols: Int) extends Module {
     }
 
     val pixels = Vec.fill(cols){ Module(new PixelReg(data_width)).io } 
-    val primary_muxes = Vec.fill(n_column_groups) { Module(new Mux3(data_width, n_column_groups)).io }
+    val primary_muxes = Vec.fill(n_column_groups) { Module(new Mux(data_width, n_column_groups)).io }
     
 
     // Wire control chains
