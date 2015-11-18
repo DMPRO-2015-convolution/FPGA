@@ -3,11 +3,16 @@ package Core
 import Chisel._
 import TidbitsOCM._
 
-class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_data_width: Int, cols: Int, rows: Int) extends Module{
+class Tile( img_width: Int, 
+            control_data_width: Int, 
+            pixel_data_width: Int,
+            HDMI_data_width: Int, 
+            output_data_width: Int,
+            cols: Int, 
+            rows: Int) extends Module{
 
     val kernel_dim = rows
     val img_height = 480
-
 
     val io = new Bundle {
         val control_data_in = UInt(INPUT, control_data_width)
@@ -25,7 +30,7 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
     val Processor = Module(new Processor(pixel_data_width, cols, rows, kernel_dim))
     val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
-    val OutputHandler = Module(new OutputHandler(pixel_data_width, img_width, img_height, kernel_dim))
+    val OutputHandler = Module(new OutputHandler(img_width, pixel_data_width, output_data_width, img_width, img_height, kernel_dim))
     
 
     // Input handler takes an input stream from any source and width and translates to data_width

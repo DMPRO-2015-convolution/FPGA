@@ -9,7 +9,7 @@ import TidbitsOCM._
 // Only works if output_width > Input_width
 // Dont judge me, I know it looks shit
 // Also I think the output is still wrong and works backwards. ex dee
-class InputTranslator(input_width: Int, output_width: Int) extends Module{
+class WidthTranslator(input_width: Int, output_width: Int) extends Module{
 
 
     // From rosetta code
@@ -146,7 +146,7 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
     }
 }
 
-class TranslatorTest(c: InputTranslator) extends Tester(c) {
+class TranslatorTest(c: WidthTranslator) extends Tester(c) {
     
     poke(c.io.input_valid, false)
     step(1)
