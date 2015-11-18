@@ -30,11 +30,10 @@ object DaisyMain {
         // chiselMainTest(args, () => Module(new SliceDoubleBuffer(3, 24, 2))) { c => new DoubleBufferTest(c) }
         
         // processor
-        // chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ConveyorTest(c) }
+        
+        chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorRunTest(c) }
 
-        // chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorTest(c) }
-
-        chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorInitTest(c) }
+        // chiselMainTest(args, () => Module(new Processor(24, 9, 3, 3))) { c => new ProcessorInitTest(c) }
 
 
         // chiselMainTest(args, () => Module(new Orchestrator(9, 3))) { c => new OrchestratorTest(c) }

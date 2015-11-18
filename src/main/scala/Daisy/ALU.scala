@@ -5,7 +5,7 @@ import Chisel._
 class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Module{
 
     val mantle_width = kernel_dim/2
-    val n_ALUs = cols - mantle_width  
+    val n_ALUs = cols - mantle_width*2  
 
     val io = new Bundle { 
         val pixel_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }

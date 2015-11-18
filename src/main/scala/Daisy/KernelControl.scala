@@ -15,6 +15,9 @@ class KernelBuffer(data_width: Int, kernel_dim: Int) extends Module {
 
         val load_kernel = Bool(INPUT)
         val kernel_out = UInt(OUTPUT, data_width)
+
+        val dbg_kernel0 = UInt(OUTPUT, data_width)
+        val dbg_kernel1 = UInt(OUTPUT, data_width)
     }
 
     val kernel_buffer = Vec.fill(inactive_kernels){ Reg(init=SInt(0, width=data_width)) }
@@ -42,4 +45,6 @@ class KernelBuffer(data_width: Int, kernel_dim: Int) extends Module {
         kernel_buffer(0) := io.kernel_in
     }
  
+    io.dbg_kernel0 := kernel_buffer(0)
+    io.dbg_kernel1 := kernel_buffer(1)
 }

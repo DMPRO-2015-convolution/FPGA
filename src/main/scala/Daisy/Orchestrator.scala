@@ -15,6 +15,8 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
         val accumulator_flush = Bool(OUTPUT)
         val ALU_shift = Bool(OUTPUT)
+
+        val dbg_counter = UInt(OUTPUT)
     }
 
     val period = cols
@@ -86,6 +88,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
 
     // We now have everything we need to create the grid control state machine
     val time = Reg(init=(UInt(0, 8)))
+    io.dbg_counter := time
 
     println("Period of system: %d".format(period))
 

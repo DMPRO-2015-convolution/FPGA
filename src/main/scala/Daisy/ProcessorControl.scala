@@ -51,7 +51,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
             io.alu_stall := Bool(true)
         }
     }
-    .elsewhen(io.processor_sleep && kernel_skew === UInt(0)){
+    .elsewhen(io.processor_sleep && (kernel_skew === UInt(0))){
         io.alu_stall := Bool(true)
     }
     .otherwise{
