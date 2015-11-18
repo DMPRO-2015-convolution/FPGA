@@ -23,7 +23,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
 
     val mappers = Vec.fill(n_ALUs){ Module(new Mapper(data_width)).io }
     val reducers = Vec.fill(n_ALUs){ Module(new Reducer(data_width)).io }
-    val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux(data_width, 3, 0)).io }
+    val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux(data_width, rows, 0)).io }
 
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }

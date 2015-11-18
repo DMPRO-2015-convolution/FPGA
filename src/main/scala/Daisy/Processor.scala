@@ -31,7 +31,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
     conveyor.io.stall       :=   processor_control.io.alu_stall
 
     for(i <- 0 until rows ) { 
-        ALUs.io.pixel_in( (rows - 1) - i ) := conveyor.io.data_out(i)
+        ALUs.io.pixel_in((rows - 1) - i ) := conveyor.io.data_out(i)
     }
 
     ALUs.io.selector_shift := data_control.io.ALU_shift

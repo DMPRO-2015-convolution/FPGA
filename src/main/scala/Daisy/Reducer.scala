@@ -17,6 +17,8 @@ class Reducer(data_width: Int) extends Module {
 
         val data_out = UInt(OUTPUT, data_width) 
         val valid_out = Bool(OUTPUT)
+
+        val dbg_flush = Bool(OUTPUT)
     } 
 
     val instruction = Reg(UInt(0, 24))
@@ -45,4 +47,5 @@ class Reducer(data_width: Int) extends Module {
 
     io.data_out := accumulator
 
+    io.valid_out := io.flush
 }
