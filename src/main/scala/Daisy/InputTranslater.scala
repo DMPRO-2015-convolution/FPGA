@@ -68,11 +68,9 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
         when(io.input_valid){
             when(inputs_performed === UInt(i)){
                 when(current){
-                    // buffer1(  (i+1)*input_width - 1, (i)*input_width) := io.input_data
                     buffer1(  (total_inputs - i)*input_width - 1, (total_inputs - i - 1)*input_width) := io.input_data
                 }
                 .otherwise{
-                    // buffer2(  (i+1)*input_width - 1, (i)*input_width) := io.input_data
                     buffer2(  (total_inputs - i)*input_width - 1, (total_inputs - i - 1)*input_width) := io.input_data
                 }
             }
@@ -91,7 +89,7 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
 
 
 
-    for(i <- 0 until total_outputs){
+    for(i <- 1 until total_outputs){
         when(!outputs_finished){
             io.output_valid := Bool(true)
 
@@ -107,8 +105,9 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
     }
 
     when(!outputs_finished){
-        when(outputs_performed === UInt(total_outputs - 1)){
+        when(outputs_performed === UInt(total_outputs)){
             outputs_finished := Bool(true)
+            io.output_valid := Bool(false)
         }
         .otherwise{
             outputs_performed := outputs_performed + UInt(1)
@@ -125,7 +124,7 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
         inputs_finished := Bool(false)
         
         when(io.input_valid){
-            inputs_finished := UInt(1)
+            inputs_performed := UInt(1)
 
             when(~current){
                 buffer1( (total_inputs*input_width) - 1, (total_inputs - 1)*input_width) := io.input_data
@@ -133,6 +132,16 @@ class InputTranslator(input_width: Int, output_width: Int) extends Module{
             .otherwise{
                 buffer2( (total_inputs*input_width) - 1, (total_inputs - 1)*input_width) := io.input_data
             }
+        }
+
+        outputs_performed := UInt(1)
+        io.output_valid := Bool(true)
+
+        when(current){
+            io.output_data := buffer1( output_width - 1, 0)
+        }
+        .otherwise{
+            io.output_data := buffer2( output_width - 1, 0)
         }
     }
 }

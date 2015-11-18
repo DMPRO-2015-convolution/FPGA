@@ -107,6 +107,7 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
     translator.io.input_valid := io.control_input_valid
     translator.io.input_data := io.control_data_in
+
     io.processor_control_input := translator.io.output_data
     io.processor_configure := Bool(false)
     io.processor_control_input_valid := Bool(false)
@@ -118,6 +119,7 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
         when(translator.io.output_valid){
             io.processor_control_input_valid := Bool(true)
             stage := stage + UInt(1)
+            io.processor_sleep := Bool(false)
 
             when(stage === UInt(total_stages - 1)){
                 state := data_mode
