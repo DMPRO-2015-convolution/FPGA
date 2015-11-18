@@ -12,6 +12,8 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
     val total_reads = row_length*cols
     val total_writes = row_length*cols
 
+    println("SliceDoubleBuffer Total writes: %d".format(total_writes))
+
     val io = new Bundle {
         val data_in = UInt(INPUT, input_data_width)
 
@@ -116,91 +118,4 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
 
 
 class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
-    
-    // Inspect initial state
-    poke(c.io.data_in, 0)
-    poke(c.io.slave_read_input, 0)
-    poke(c.io.slave_drive_output, 0)
-    peek(c.reads_finished)
-    peek(c.writes_finished)
-    peek(c.reads_performed)
-    peek(c.writes_performed)
-    peek(c.io)
-
-    // Fill first buffer
-    println("Filling slice 1")
-    for(i <- 0 until c.cols*c.row_length){
-        poke(c.io.slave_read_input, true)
-        println()
-        poke(c.io.data_in, (i+1))
-        peek(c.current)
-        peek(c.reads_finished)
-        peek(c.writes_finished)
-        peek(c.reads_performed)
-        peek(c.writes_performed)
-        peek(c.io.slave_read_input)
-        peek(c.io.slave_drive_output)
-        peek(c.io.slave_can_read_input)
-        peek(c.io.slave_can_drive_output)
-        println("Slice 1")
-        peek(c.slice1.io)
-        println("Slice 2")
-        peek(c.slice2.io)
-        println()
-        peek(c.io.data_out)
-        println()
-        step(1)
-    }
-    println("\nSlice 1 filled!\n")
-    poke(c.io.slave_read_input, false)
-    peek(c.current)
-    peek(c.reads_finished)
-    peek(c.writes_finished)
-    peek(c.reads_performed)
-    peek(c.writes_performed)
-    println()
-    peek(c.io.data_out)
-    println()
-
-    step(1)
-    // Check state
-    println("\nChecking state after filling slice 1\n")
-    peek(c.io)
-    peek(c.reads_finished)
-    peek(c.writes_finished)
-    peek(c.reads_performed)
-    peek(c.writes_performed)
-    peek(c.slice1.io)
-    peek(c.slice2.io)
-    peek(c.current)
-    println()
-    peek(c.io.data_out)
-    println()
-
-    // Extract one buffer, fill the other
-    println("\nExtracting written data from buffer 1, filling buffer 2 \n")
-    for(i <- 0 until c.cols*c.row_length + 1){
-        poke(c.io.slave_read_input, true)
-        poke(c.io.slave_drive_output, true)
-        poke(c.io.data_in, (i+1) + 256)
-        println()
-        peek(c.current)
-        peek(c.reads_finished)
-        peek(c.writes_finished)
-        peek(c.reads_performed)
-        peek(c.writes_performed)
-        peek(c.io.slave_read_input)
-        peek(c.io.slave_drive_output)
-        peek(c.io.slave_can_read_input)
-        peek(c.io.slave_can_drive_output)
-        println("Slice 1")
-        peek(c.slice1.io)
-        println("Slice 2")
-        peek(c.slice2.io)
-        println()
-        peek(c.io.data_out)
-        println()
-        step(1)
-    }
-    poke(c.io.slave_drive_output, false)
-}
+} 

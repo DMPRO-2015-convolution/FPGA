@@ -10,6 +10,8 @@ import TidbitsOCM._
 // This stack only serves to buffer slices of our image which is done with two buffers
 // thus we dont need to take too many precautions.
 class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
+
+    println("RowBuffer with %d entries".format(entries))
     
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)

@@ -101,7 +101,7 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
 
     val stage = Reg(init=UInt(0, 32))
-    val total_stages = total_kernels + 2
+    val total_stages = total_kernels*2 + 2
 
     val translator = Module(new InputTranslator(control_data_width, pixel_data_width))
 

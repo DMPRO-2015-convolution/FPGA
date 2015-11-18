@@ -30,6 +30,7 @@ class Tile(img_width: Int, control_data_width: Int, pixel_data_width: Int, HDMI_
     // Input handler takes an input stream from any source and width and translates to data_width
     InputHandler.io.input_ready := io.hdmi_input_valid
     InputHandler.io.data_in := io.hdmi_data_in
+    InputHandler.io.data_mode := ~SystemControl.io.processor_configure
 
     // Processor processes data. Incredible
     Processor.io.pixel_in := InputHandler.io.data_out

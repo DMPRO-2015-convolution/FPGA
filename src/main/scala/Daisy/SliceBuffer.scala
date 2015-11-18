@@ -10,6 +10,8 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     val cols = kernel_dim*kernel_dim
     val row_length_c = row_length
+
+    println("SliceBuffer Total writes: %d".format(row_length))
     
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
@@ -29,6 +31,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     // Maintain push row
     when(push_top === UInt(row_length - 1)){
+        push_top := UInt(0)
         when(push_row < UInt(cols)){
             push_row := push_row + UInt(1)
         }.otherwise{
