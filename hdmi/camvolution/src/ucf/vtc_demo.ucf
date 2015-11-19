@@ -80,8 +80,8 @@ NET "SW<3>"         LOC = "C17" | IOSTANDARD = LVCMOS33 ;
 ##############################################################################
 # Debug Port # JA1
 ##############################################################################
-NET "DEBUG[0]" LOC = "F15" | IOSTANDARD = LVCMOS33;
-NET "DEBUG[1]" LOC = "F16" | IOSTANDARD = LVCMOS33;
+#NET "DEBUG[0]" LOC = "F15" | IOSTANDARD = LVCMOS33;
+#NET "DEBUG[1]" LOC = "F16" | IOSTANDARD = LVCMOS33;
 
 ##############################################################################
 # DCM/PLL/BUFPLL positions
