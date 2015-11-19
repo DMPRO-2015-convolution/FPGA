@@ -17,11 +17,12 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
     
     val io = new Bundle {
 
-        val input_valid = Bool(INPUT)
         val data_in = UInt(INPUT, pixel_data_width)
+        val input_valid = Bool(INPUT)
 
         val request_output = Bool(INPUT)
         val output_ready = Bool(OUTPUT)
+
         val data_out = UInt(OUTPUT, output_data_width)
 
     }
@@ -29,37 +30,22 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
     val translator = Module(new twentyfour_sixteen())
     translator.io.req_in := Bool(false)
     translator.io.req_out := Bool(false)
+    val output_buffer = Module(new SliceReverseBuffer(row_length: Int, pixel_data_width: Int, kernel_dim))
+    output_buffer.io.enqueue := Bool(false)
+    output_buffer.io.dequeue := Bool(false)
+
 
     val chip_sel = Reg(init=Bool(false)) 
 
-    val queue_start = Reg(init=UInt(row_length, 32))
-    val queue_end = Reg(init=UInt(row_length, 32))
-
-    val bram = Module(new DualPortBRAM(addrBits=log2Up(entries), dataBits=pixel_data_width)).io 
-
-    val writePort = bram.ports(0)
-    val readPort = bram.ports(1)
-
-    writePort.req.writeData := io.data_in
-    writePort.req.writeEn := Bool(false)
-    writePort.req.addr := queue_start
-
-    readPort.req.writeData := UInt(0)
-    readPort.req.writeEn := Bool(false)
-    readPort.req.addr := queue_end
-
-
     when(io.input_valid){
-        queue_start := queue_start - UInt(1)
-        writePort.req.writeEn := Bool(true)
+        output_buffer.io.enqueue := Bool(true)
     }
 
     when(translator.io.rdy_in){
         translator.io.req_in := Bool(true)
-        queue_end := queue_end - UInt(1)
     }
 
-    translator.io.d_in := readPort.rsp.readData
+    translator.io.d_in := output_buffer.io.data_out
     translator.io.req_out := io.request_output
 
     io.data_out := translator.io.d_out

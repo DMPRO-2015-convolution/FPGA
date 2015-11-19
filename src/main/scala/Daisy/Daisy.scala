@@ -49,6 +49,6 @@ object DaisyMain {
         
         // chiselMainTest(args, () => Module(new sixteen_twentyfour() )) { c => new Translator1624Test(c) }
         // chiselMainTest(args, () => Module(new twentyfour_sixteen() )) { c => new Translator2416Test(c) }
-        chiselMainTest(args, () => Module(new OutputHandler(100, 24, 16, 100, 3) )) { c => new Translator2416Test(c) }
+        // chiselMainTest(args, () => Module(new OutputHandler(100, 24, 16, 100, 3) )) { c => new Translator2416Test(c) }
     }
 }

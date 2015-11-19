@@ -30,7 +30,7 @@ class Tile( img_width: Int,
     val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
     val Processor = Module(new Processor(pixel_data_width, cols, rows, kernel_dim))
     val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
-    val OutputHandler = Module(new OutputHandler(img_width, pixel_data_width, output_data_width, img_width, img_height, kernel_dim))
+    val OutputHandler = Module(new OutputHandler(img_width, pixel_data_width, output_data_width, img_height, kernel_dim))
     
 
     // Input handler takes an input stream from any source and width and translates to data_width
