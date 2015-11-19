@@ -113,7 +113,7 @@ module dvi_decoder (
   wire rxclkint;
   IBUFDS  #(.IOSTANDARD("TMDS_33"), .DIFF_TERM("FALSE")
   ) ibuf_rxclk (.I(tmdsclk_p), .IB(tmdsclk_n), .O(rxclkint));
- 
+
   wire rxclk;
 
   BUFIO2 #(.DIVIDE_BYPASS("TRUE"), .DIVIDE(1))

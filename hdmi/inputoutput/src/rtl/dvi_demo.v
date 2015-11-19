@@ -67,52 +67,15 @@ module dvi_demo (
   // 25 MHz and switch debouncers
   ////////////////////////////////////////////////////
   wire clk25, clk25m;
-  
+
+
   wire [1:0] SW;
-  
+
   assign SW[0] = 1'b1;
   assign SW[1] = 1'b1;
 
-  DCM_SP
-  #(.CLKDV_DIVIDE          (),
-    .CLKFX_DIVIDE          (24),
-    .CLKFX_MULTIPLY        (5),
-    .CLKIN_DIVIDE_BY_2     ("FALSE"),
-    .CLKIN_PERIOD          (8.3),
-    .CLKOUT_PHASE_SHIFT    ("NONE"),
-    .CLK_FEEDBACK          (),
-    .DESKEW_ADJUST         ("SYSTEM_SYNCHRONOUS"),
-    .PHASE_SHIFT           (0),
-    .STARTUP_WAIT          ("FALSE"))
-  dcm_sp_inst
-    // Input clock
-   (.CLKIN                 (clk120),
-    .CLKFB                 (),
-    // Output clocks
-    .CLK0                  (),
-    .CLK90                 (),
-    .CLK180                (),
-    .CLK270                (),
-    .CLK2X                 (),
-    .CLK2X180              (),
-    .CLKFX                 (clk25m),
-    .CLKFX180              (),
-    .CLKDV                 (),
-    // Ports for dynamic phase shift
-    .PSCLK                 (1'b0),
-    .PSEN                  (1'b0),
-    .PSINCDEC              (1'b0),
-    .PSDONE                (),
-    // Other control and status signals
-    .LOCKED                (locked_int),
-    .STATUS                (status_int),
-
-    .RST                   (RSTBTN),
-    // Unused pin- tie low
-    .DSSEN                 (1'b0));
-
- // BUFIO2 #(.DIVIDE_BYPASS("FALSE"), .DIVIDE(5))
- // sysclk_div (.DIVCLK(clk25m), .IOCLK(), .SERDESSTROBE(), .I(clk120));
+  BUFIO2 #(.DIVIDE_BYPASS("FALSE"), .DIVIDE(6))
+  sysclk_div (.DIVCLK(clk25m), .IOCLK(), .SERDESSTROBE(), .I(clk120));
 
   BUFG clk25_buf (.I(clk25m), .O(clk25));
 
@@ -198,11 +161,9 @@ module dvi_demo (
     .sdout       (rx0_sdata),
     .red         (rx0_red),
     .green       (rx0_green),
-    .blue        (rx0_blue)); 
+    .blue        (rx0_blue));
 
-  wire rx0_bufpll_lock;
-  BUFPLL #(.DIVIDE(5)) rx0_ioclk_buf (.PLLIN(rx0_pllclk0), .GCLK(rx0_pclkx2), .LOCKED(rx0_plllckd),
-           .IOCLK(rx0_pclkx10), .SERDESSTROBE(rx0_serdesstrobe), .LOCK(rx0_bufpll_lock));
+  
   // TMDS output
 `ifdef DIRECTPASS
   wire rstin         = rx0_reset;
@@ -307,9 +268,9 @@ module dvi_demo (
   wire         tx0_pll_reset;
 
   assign tx0_de           = rx0_de;
-  assign tx0_blue         = rx0_blue;
-  assign tx0_green        = rx0_green;
-  assign tx0_red          = rx0_red;
+  //assign tx0_blue         = rx0_blue;
+  //assign tx0_green        = rx0_green;
+  //assign tx0_red          = rx0_red;
   assign tx0_hsync        = rx0_hsync;
   assign tx0_vsync        = rx0_vsync;
   assign tx0_pll_reset    = rx0_reset;
@@ -366,6 +327,11 @@ module dvi_demo (
            .IOCLK(tx0_pclkx10), .SERDESSTROBE(tx0_serdesstrobe), .LOCK(tx0_bufpll_lock));
 
   assign tx0_reset = ~tx0_bufpll_lock;
+
+assign tx0_blue = 8'b11111111;
+assign tx0_red = 8'b10101010;
+assign tx0_green = 8'b01010101;
+
 
   dvi_encoder_top dvi_tx0 (
     .pclk        (tx0_pclk),
