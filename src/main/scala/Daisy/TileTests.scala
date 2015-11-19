@@ -125,7 +125,7 @@ class InputTest(c: Tile) extends Tester(c) {
 
     def load_row(value: Int): Unit = {
         var loads = 0
-        while(loads < 640){
+        while(loads < 60){
             if(r.nextInt(5) == 1){
                 loads = loads + 1
                 poke(c.io.hdmi_data_in, value)
@@ -144,7 +144,7 @@ class InputTest(c: Tile) extends Tester(c) {
 
 
     def inspect_input_buffer(): Unit = {
-        println("Taking a peak at input büffer")
+        println("Taking a peak at input buffer")
         peek(c.InputHandler.input_buffer.reads_finished)
         peek(c.InputHandler.input_buffer.writes_finished)
         peek(c.InputHandler.input_buffer.reads_performed)
@@ -160,19 +160,48 @@ class InputTest(c: Tile) extends Tester(c) {
         println()
     }
 
-    def run_output(): Unit = {
-        for(i <- 0 until 60){
+    def run_output(runs: Int): Unit = {
+        for(i <- 0 until runs){
+            if(i%4 == 0){ poke(c.io.request_processed_data, true) }
+            else{ poke(c.io.request_processed_data, false) }
             println()
             println("OUTPUT STEP %d".format(i))
             inspect_run() 
-            inspect_input_buffer() 
             println()
-            peek(c.Processor.io)
+            peek(c.io)
+            peek(c.Processor.io.ALU_data_out)
+            peek(c.SystemControl.io.processor_output_is_valid)
+            inspect_output_buffer()
             step(1)
             println()
         }
     }
+
+    def inspect_output_buffer(): Unit = {
+        println("Taking a look at output")
+        peek(c.OutputHandler.io)
+    }
+
+    def extract_output(): Unit = {
+        for(i <- 0 until 400){
+            if(i%4 == 0){
+                poke(c.io.request_processed_data, true)
+                peek(c.io.data_out)
+                peek(c.OutputHandler.io)
+            }else{
+                poke(c.io.request_processed_data, false)
+                peek(c.OutputHandler.io)
+            }
+            step(1)
+            
+        }
+    }
     
+    step(1)
+    peek(c.io.dbg_rdy_for_output)
+    peek(c.io.dbg_rdy_for_input)
+    step(1)
+    poke(c.io.request_processed_data, false)
     default()
     inspect_control()
     input_program()
@@ -180,9 +209,7 @@ class InputTest(c: Tile) extends Tester(c) {
     println("REACTORS: ONLINE\n\nWEAPONS: ONLINE\n\nALL SYSTEMS NOMINAL\n\n")
     inspect_kernels()
     inspect_control()
-    // load_row_small(1)
     load_row(1)
-    // load_row_small(2)
     load_row(2)
     load_row(3)
     load_row(4)
@@ -193,6 +220,17 @@ class InputTest(c: Tile) extends Tester(c) {
     load_row(9)
     inspect_control()
     inspect_input_buffer()
-    run_output()       
+    // inspect_output_buffer()
+    peek(c.io.dbg_rdy_for_output)
+    peek(c.io.dbg_rdy_for_input)
+    run_output(50)       
+
+    poke(c.io.request_processed_data, true)
+    peek(c.io)
+    step(1)
+    // extract_output()
+
+
+
 
 }

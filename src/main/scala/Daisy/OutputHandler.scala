@@ -28,6 +28,19 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
 
         val data_out = UInt(OUTPUT, output_data_width)
 
+        val dbg_output_buffer = new Bundle {
+
+            val can_enqueue = Bool(OUTPUT)
+            val can_dequeue = Bool(OUTPUT)
+
+            val data_out = UInt(OUTPUT, output_data_width)
+
+            val buf1 = UInt(OUTPUT, 32)
+            val buf2 = UInt(OUTPUT, 32)
+
+            val enq_row = UInt(OUTPUT, 32)
+            val deq_row = UInt(OUTPUT, 32)
+        }
     }
 
     val translator = Module(new twentyfour_sixteen())
@@ -38,6 +51,7 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
     output_buffer.io.dequeue := Bool(false)
     output_buffer.io.data_in := io.data_in
 
+    // io.ready_for_input := Bool(false)
     io.ready_for_input := output_buffer.io.can_enqueue
     io.output_ready := output_buffer.io.can_dequeue
 
@@ -57,6 +71,16 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
 
     io.data_out := translator.io.d_out
     io.output_valid := translator.io.rdy_out
+
+
+    io.dbg_output_buffer.can_enqueue := output_buffer.io.can_enqueue
+    io.dbg_output_buffer.can_dequeue := output_buffer.io.can_dequeue
+    io.dbg_output_buffer.data_out := output_buffer.io.data_out
+    io.dbg_output_buffer.buf1 := translator.io.dbg_buf1
+    io.dbg_output_buffer.buf2 := translator.io.dbg_buf2
+    io.dbg_output_buffer.enq_row := output_buffer.io.dbg_enq_row
+    io.dbg_output_buffer.deq_row := output_buffer.io.dbg_deq_row
+
 }
 
 class OutputHandlerTest(c: OutputHandler) extends Tester(c) {

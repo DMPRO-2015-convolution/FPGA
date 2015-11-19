@@ -23,9 +23,14 @@ class Tile( img_width: Int,
 
         val reset = Bool(INPUT)
 
-        val data_out = UInt(OUTPUT, pixel_data_width)
+        val data_out = UInt(OUTPUT, output_data_width)
         val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
+        
+        val request_processed_data = Bool(INPUT)
+
+        val dbg_rdy_for_output = Bool(OUTPUT)
+        val dbg_rdy_for_input = Bool(OUTPUT)
     }
 
     val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
@@ -38,6 +43,7 @@ class Tile( img_width: Int,
     InputHandler.io.input_ready := io.hdmi_input_valid
     InputHandler.io.data_in := io.hdmi_data_in
     InputHandler.io.data_mode := ~SystemControl.io.processor_configure
+    InputHandler.io.output_buffer_ready := OutputHandler.io.ready_for_input
 
     // Processor processes data. Incredible
     Processor.io.pixel_in := InputHandler.io.data_out
@@ -57,10 +63,14 @@ class Tile( img_width: Int,
     // Output handler recieves data from the controller, aswell as a valid bit
     OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
     OutputHandler.io.data_in := Processor.io.ALU_data_out
+    OutputHandler.io.request_output := io.request_processed_data 
 
     io.data_out := OutputHandler.io.data_out
     io.output_valid := OutputHandler.io.output_valid
     io.output_ready := OutputHandler.io.output_ready
+
+    io.dbg_rdy_for_output := OutputHandler.io.output_ready
+    io.dbg_rdy_for_input := OutputHandler.io.ready_for_input
 }
 
 class TileTest(c: Tile) extends Tester(c) {

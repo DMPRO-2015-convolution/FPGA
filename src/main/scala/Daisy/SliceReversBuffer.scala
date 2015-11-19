@@ -23,12 +23,17 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         val can_dequeue = Bool(OUTPUT)
 
         val data_out = UInt(OUTPUT, data_width)
+
+        val dbg_enq_row = UInt(OUTPUT, 32)
+        val dbg_deq_row = UInt(OUTPUT, 32)
     }
 
     val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
       
     val enqueue_row = Reg(init=UInt(0, 32))
     val dequeue_row  = Reg(init=UInt(0, 32))
+    io.dbg_enq_row := enqueue_row
+    io.dbg_deq_row := dequeue_row
 
     val row_dequeue_count = Reg(init=UInt(0, 32))
 
@@ -109,10 +114,6 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
             enqueues_performed := UInt(0)
         }
     }
-
-    io.can_dequeue := Bool(false)
-    io.can_enqueue := Bool(false)
-
 
     when(mode === deq_mode){
         io.can_dequeue := Bool(true)
