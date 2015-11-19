@@ -1,55 +1,8 @@
-//////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009 Xilinx, Inc.
-// This design is confidential and proprietary of Xilinx, All Rights Reserved.
-//////////////////////////////////////////////////////////////////////////////
-//   ____  ____
-//  /   /\/   /
-// /___/  \  /   Vendor:        Xilinx
-// \   \   \/    Version:       1.0.0
-//  \   \        Filename:      vtc_demo.v
-//  /   /        Date Created:  April 8, 2009
-// /___/   /\    Author:        Bob Feng
-// \   \  /  \
-//  \___\/\___\
-//
-// Devices:   Spartan-6 Generation FPGA
-// Purpose:   SP601 board demo top level
-// Contact:
-// Reference: None
-//
-// Revision History:
-//
-//
-//////////////////////////////////////////////////////////////////////////////
-//
-// LIMITED WARRANTY AND DISCLAIMER. These designs are provided to you "as is".
-// Xilinx and its licensors make and you receive no warranties or conditions,
-// express, implied, statutory or otherwise, and Xilinx specifically disclaims
-// any implied warranties of merchantability, non-infringement, or fitness for
-// a particular purpose. Xilinx does not warrant that the functions contained
-// in these designs will meet your requirements, or that the operation of
-// these designs will be uninterrupted or error free, or that defects in the
-// designs will be corrected. Furthermore, Xilinx does not warrant or make any
-// representations regarding use or the results of the use of the designs in
-// terms of correctness, accuracy, reliability, or otherwise.
-//
-// LIMITATION OF LIABILITY. In no event will Xilinx or its licensors be liable
-// for any loss of data, lost profits, cost or procurement of substitute goods
-// or services, or for any special, incidental, consequential, or indirect
-// damages arising from the use or operation of the designs or accompanying
-// documentation, however caused and on any theory of liability. This
-// limitation will apply even if Xilinx has been advised of the possibility
-// of such damage. This limitation shall apply not-withstanding the failure
-// of the essential purpose of any limited remedies herein.
-//
-//////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2009 Xilinx, Inc.
-// This design is confidential and proprietary of Xilinx, All Rights Reserved.
-//////////////////////////////////////////////////////////////////////////////
-
 `timescale 1 ps / 1 ps
 
-module vtc_demo (
+`define SIMULATION;
+//
+module hdmi (
   input  wire RSTBTN,
 
   input  wire SYS_CLK,
@@ -58,8 +11,7 @@ module vtc_demo (
 
   output wire [3:0] TMDS,
   output wire [3:0] TMDSB,
-  output wire [3:0] LED,
-  output wire [1:0] DEBUG
+  output wire [3:0] LED
 );
 
   //******************************************************************//
@@ -68,7 +20,6 @@ module vtc_demo (
 
   wire          locked;
   wire          reset;
-
 
   wire          clk50m, clk50m_bufg;
 
@@ -121,17 +72,15 @@ module vtc_demo (
     // Unused pin- tie low
     .DSSEN                 (1'b0));
 
- // BUFIO2 #(.DIVIDE_BYPASS("TRUE")) // takes a GCLK input and generates divclk, ioclk and serdesstrobe
- // sysclk_div (.DIVCLK(clk50m), .IOCLK(), .SERDESSTROBE(), .I(sysclk_50));
 
   BUFG clk50m_bufgbufg (.I(sysclk_50), .O(clk50m_bufg));
 
 
   wire pclk_lckd;
 
-//`ifdef SIMULATION
-//  assign pwrup = 1'b0;
-//`else
+`ifdef SIMULATION
+  assign pwrup = 1'b0;
+`else
   SRL16E #(.INIT(16'h1)) pwrup_0 (
     .Q(pwrup),
     .A0(1'b1),
@@ -142,7 +91,7 @@ module vtc_demo (
     .CLK(clk50m_bufg),
     .D(1'b0)
   );
-//`endif
+`endif
 
   //////////////////////////////////////
   /// Switching screen formats
@@ -211,10 +160,10 @@ module vtc_demo (
   defparam SRL16E_0.INIT = 16'h0;
 
   parameter SW_VGA       = 4'b0000;
- // parameter SW_SVGA      = 4'b0001;
- // parameter SW_XGA       = 4'b0011;
- // parameter SW_HDTV720P  = 4'b0010;
- // parameter SW_SXGA      = 4'b1000;
+//  parameter SW_SVGA      = 4'b0001;
+//  parameter SW_XGA       = 4'b0011;
+//  parameter SW_HDTV720P  = 4'b0010;
+//  parameter SW_SXGA      = 4'b1000;
 
   reg [7:0] pclk_M, pclk_D;
   always @ (posedge clk50m_bufg)
@@ -222,31 +171,31 @@ module vtc_demo (
     if(switch) begin
       pclk_M <= 8'd2 - 8'd1;
       pclk_D <= 8'd4 - 8'd1;
-//      case (sws_sync_q)
+  //    case (sws_sync_q)
 //        SW_VGA: //25 MHz pixel clock
 //        begin
 //          pclk_M <= 8'd2 - 8'd1;
 //          pclk_D <= 8'd4 - 8'd1;
 //        end
-//
+
 //        SW_SVGA: //40 MHz pixel clock
 //        begin
 //         pclk_M <= 8'd4 - 8'd1;
 //         pclk_D <= 8'd5 - 8'd1;
 //        end
-//
+
 //        SW_XGA: //65 MHz pixel clock
 //        begin
 //          pclk_M <= 8'd13 - 8'd1;
 //          pclk_D <= 8'd10 - 8'd1;
 //        end
-//
+
 //        SW_SXGA: //108 MHz pixel clock
 //        begin
 //          pclk_M <= 8'd54 - 8'd1;
 //          pclk_D <= 8'd25 - 8'd1;
 //        end
-//
+
 //        default: //74.25 MHz pixel clock
 //        begin
 //          pclk_M <= 8'd37 - 8'd1;
@@ -410,8 +359,8 @@ module vtc_demo (
 
   wire  [3:0] sws_clk;      //clk synchronous output
 
-  synchro #(.INITIALIZE("LOGIC0"))
-  clk_sws_3 (.async(SW[3]),.sync(sws_clk[3]),.clk(pclk));
+ synchro #(.INITIALIZE("LOGIC0"))
+ clk_sws_3 (.async(SW[3]),.sync(sws_clk[3]),.clk(pclk));
 
   synchro #(.INITIALIZE("LOGIC0"))
   clk_sws_2 (.async(SW[2]),.sync(sws_clk[2]),.clk(pclk));
@@ -432,9 +381,9 @@ module vtc_demo (
   always @ (*)
   begin
 //    case (sws_clk_sync)
-//      SW_VGA:
+      //SW_VGA:
 //      begin
-        hvsync_polarity = 1'b1;
+        hvsync_polarity = 1'b0;
 
         tc_hsblnk = HPIXELS_VGA - 11'd1;
         tc_hssync = HPIXELS_VGA - 11'd1 + HFNPRCH_VGA;
@@ -444,65 +393,65 @@ module vtc_demo (
         tc_vssync =  VLINES_VGA - 11'd1 + VFNPRCH_VGA;
         tc_vesync =  VLINES_VGA - 11'd1 + VFNPRCH_VGA + VSYNCPW_VGA;
         tc_veblnk =  VLINES_VGA - 11'd1 + VFNPRCH_VGA + VSYNCPW_VGA + VBKPRCH_VGA;
-//      end
+      end
 //
-//      SW_SVGA:
-//      begin
-//        hvsync_polarity = 1'b0;
+ //     SW_SVGA:
+  //    begin
+   //     hvsync_polarity = 1'b0;
 //
-//        tc_hsblnk = HPIXELS_SVGA - 11'd1;
-//        tc_hssync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA;
-//        tc_hesync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA;
+    //    tc_hsblnk = HPIXELS_SVGA - 11'd1;
+     //   tc_hssync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA;
+      //  tc_hesync = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA;
 //        tc_heblnk = HPIXELS_SVGA - 11'd1 + HFNPRCH_SVGA + HSYNCPW_SVGA + HBKPRCH_SVGA;
-//        tc_vsblnk =  VLINES_SVGA - 11'd1;
-//        tc_vssync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA;
-//        tc_vesync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA;
-//        tc_veblnk =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA + VBKPRCH_SVGA;
-//      end
+ //       tc_vsblnk =  VLINES_SVGA - 11'd1;
+  //      tc_vssync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA;
+   //     tc_vesync =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA;
+    //    tc_veblnk =  VLINES_SVGA - 11'd1 + VFNPRCH_SVGA + VSYNCPW_SVGA + VBKPRCH_SVGA;
+   //   end
 //
 //      SW_XGA:
-//      begin
-//        hvsync_polarity = 1'b1;
+ //     begin
+  //      hvsync_polarity = 1'b1;
 //
-//        tc_hsblnk = HPIXELS_XGA - 11'd1;
-//        tc_hssync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA;
-//        tc_hesync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA;
-//        tc_heblnk = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA + HBKPRCH_XGA;
-//        tc_vsblnk =  VLINES_XGA - 11'd1;
-//        tc_vssync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA;
-//        tc_vesync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA;
+ //       tc_hsblnk = HPIXELS_XGA - 11'd1;
+  //      tc_hssync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA;
+   //     tc_hesync = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA;
+    //    tc_heblnk = HPIXELS_XGA - 11'd1 + HFNPRCH_XGA + HSYNCPW_XGA + HBKPRCH_XGA;
+     //   tc_vsblnk =  VLINES_XGA - 11'd1;
+      //  tc_vssync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA;
+       // tc_vesync =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA;
 //        tc_veblnk =  VLINES_XGA - 11'd1 + VFNPRCH_XGA + VSYNCPW_XGA + VBKPRCH_XGA;
-//      end
+ //     end
 //
-//      SW_SXGA:
-//      begin
-//        hvsync_polarity = 1'b0; // positive polarity
+  //    SW_SXGA:
+ //     begin
+  //      hvsync_polarity = 1'b0; // positive polarity
 //
-//        tc_hsblnk = HPIXELS_SXGA - 11'd1;
-//        tc_hssync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA;
-//        tc_hesync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA;
-//        tc_heblnk = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA + HBKPRCH_SXGA;
-//        tc_vsblnk =  VLINES_SXGA - 11'd1;
-//        tc_vssync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA;
-//        tc_vesync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA;
-//        tc_veblnk =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA + VBKPRCH_SXGA;
-//      end
+ //       tc_hsblnk = HPIXELS_SXGA - 11'd1;
+  //      tc_hssync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA;
+   //     tc_hesync = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA;
+    //    tc_heblnk = HPIXELS_SXGA - 11'd1 + HFNPRCH_SXGA + HSYNCPW_SXGA + HBKPRCH_SXGA;
+     //   tc_vsblnk =  VLINES_SXGA - 11'd1;
+ //       tc_vssync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA;
+ //       tc_vesync =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA;
+ //       tc_veblnk =  VLINES_SXGA - 11'd1 + VFNPRCH_SXGA + VSYNCPW_SXGA + VBKPRCH_SXGA;
+  //    end
 //
-//      default: //SW_HDTV720P:
-//      begin
-//        hvsync_polarity = 1'b0;
+  //    default: //SW_HDTV720P:
+   //   begin
+ //       hvsync_polarity = 1'b0;
 //
-//        tc_hsblnk = HPIXELS_HDTV720P - 11'd1;
-//        tc_hssync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P;
-//        tc_hesync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P;
-//        tc_heblnk = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P + HBKPRCH_HDTV720P;
-//        tc_vsblnk =  VLINES_HDTV720P - 11'd1;
-//        tc_vssync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P;
-//        tc_vesync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P;
-//        tc_veblnk =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P + VBKPRCH_HDTV720P;
-//      end
-//    endcase
-  end
+ //       tc_hsblnk = HPIXELS_HDTV720P - 11'd1;
+  //      tc_hssync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P;
+   //     tc_hesync = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P;
+    //    tc_heblnk = HPIXELS_HDTV720P - 11'd1 + HFNPRCH_HDTV720P + HSYNCPW_HDTV720P + HBKPRCH_HDTV720P;
+     //   tc_vsblnk =  VLINES_HDTV720P - 11'd1;
+   //     tc_vssync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P;
+    //    tc_vesync =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P;
+     //   tc_veblnk =  VLINES_HDTV720P - 11'd1 + VFNPRCH_HDTV720P + VSYNCPW_HDTV720P + VBKPRCH_HDTV720P;
+  //    end
+   // endcase
+  //end
 
   wire VGA_HSYNC_INT, VGA_VSYNC_INT;
   wire   [10:0] bgnd_hcount;
@@ -557,30 +506,36 @@ module vtc_demo (
   ///////////////////////////////////
   wire [7:0] red_data, green_data, blue_data;
 
-//`ifdef SIMULATION
-//  reg [23:0] pixel_buffer [1279:0];
-//  reg [23:0] active_pixel;
-//  integer i;
-//  initial begin
-//    for (i = 0; i < 1280; i = i + 1) begin
-//      pixel_buffer[i] = $random(dvi_tb.rx0_seed);
-//    end
+
+`ifdef SIMULATION
+  reg [23:0] pixel_buffer [639:0];
+  reg [23:0] active_pixel;
+  reg [31:0] randint;
+  integer seed;
+  integer i;
+  initial begin
+    for (i = 0; i < 640; i = i + 1) begin
+      //pixel_buffer[i] = $random(seed) % 255;
+      pixel_buffer[i] = i % 255;
+    end
 //
-//    i = 0;
-//  end
+    i = 0;
+  end
 //
-//  always @ (posedge pclk) begin
-//    if(active_q) begin
-//      active_pixel = pixel_buffer[i];
-//      i = i + 1;
-//    end else begin
-//      i = 0;
-//      active_pixel = 24'hx;
-//    end
-//  end
+
+  always @ (posedge pclk) begin
+    if(active_q) begin
+      active_pixel = pixel_buffer[i];
+      i = i + 1;
+    end else begin
+      i = 0;
+      active_pixel = 24'h0;
+    end
+  end
 //
-//  assign {red_data, green_data, blue_data} = active_pixel;
-//`else
+  assign {red_data, green_data, blue_data} = active_pixel;
+`else
+
   hdcolorbar clrbar(
     .i_clk_74M(pclk),
     .i_rst(reset),
@@ -592,7 +547,7 @@ module vtc_demo (
     .o_g(green_data),
     .o_b(blue_data)
   );
-//`endif
+`endif
   ////////////////////////////////////////////////////////////////
   // DVI Encoder
   ////////////////////////////////////////////////////////////////
