@@ -34,25 +34,24 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
         ALUs.io.pixel_in((rows - 1) - i ) := conveyor.io.data_out(i)
     }
 
-    ALUs.io.selector_shift := data_control.io.ALU_shift
-    ALUs.io.accumulator_flush := data_control.io.accumulator_flush
-    ALUs.io.kernel_in := kernel_buffer.io.kernel_out
-    ALUs.io.stall := processor_control.io.alu_stall
-    ALUs.io.load_instruction := processor_control.io.load_instruction 
+    ALUs.io.selector_shift     := data_control.io.ALU_shift
+    ALUs.io.accumulator_flush  := data_control.io.accumulator_flush
+    ALUs.io.kernel_in          := kernel_buffer.io.kernel_out
+    ALUs.io.stall              := processor_control.io.alu_stall
+    ALUs.io.load_instruction   := processor_control.io.load_instruction 
 
-    kernel_buffer.io.kernel_in := ALUs.io.kernel_out
-    kernel_buffer.io.stall := processor_control.io.alu_stall
-    kernel_buffer.io.data_in := io.control_data_in
-    kernel_buffer.io.load_kernel := processor_control.io.load_kernel
+    kernel_buffer.io.kernel_in    := ALUs.io.kernel_out
+    kernel_buffer.io.stall        := processor_control.io.alu_stall
+    kernel_buffer.io.data_in      := io.control_data_in
+    kernel_buffer.io.load_kernel  := processor_control.io.load_kernel
 
-    processor_control.io.input_valid := io.input_valid
+    processor_control.io.input_valid      := io.input_valid
     processor_control.io.programming_mode := io.processor_configure
-    processor_control.io.processor_sleep := io.processor_sleep
+    processor_control.io.processor_sleep  := io.processor_sleep
 
     data_control.io.reset := io.processor_sleep
 
     io.ALU_data_out := ALUs.io.data_out
-    // io.ALU_data_out := UInt(1234)
     io.ALU_data_is_valid := ALUs.io.valid_out
 
 
