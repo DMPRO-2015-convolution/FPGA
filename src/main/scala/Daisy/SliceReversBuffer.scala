@@ -34,8 +34,8 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
     val enqueues_performed = Reg(init=UInt(0, 32))
     val dequeues_performed = Reg(init=UInt(0, 32))
 
-    val enqueues_finished = Reg(Bool(false))
-    val dequeues_finished = Reg(Bool(false))
+    val deq_mode :: enq_mode :: Nil = Enum(UInt(), 2)
+    val mode = Reg(init=enq_mode)
 
     io.data_out := UInt(57005)
 
@@ -79,13 +79,14 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         }
     }
 
+    io.data_out := UInt(57005)
+
     // deq data
     for(i <- 0 until cols){
         when(dequeue_row === UInt(i)){
             row_buffers(i).pop := io.dequeue
             io.data_out := row_buffers(i).data_out
         }.otherwise{
-            io.data_out := UInt(57005)
             row_buffers(i).pop := Bool(false)
         }
     }
@@ -94,7 +95,8 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         dequeues_performed := enqueues_performed + UInt(1)
 
         when(dequeues_performed === UInt(total_dequeues - 1)){
-            dequeues_finished := Bool(true)
+            mode := enq_mode
+            dequeues_performed := UInt(0)
         }
     }
 
@@ -102,20 +104,62 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         enqueues_performed := enqueues_performed + UInt(1)
 
         when(enqueues_performed === UInt(total_enqueues - 1)){
-            enqueues_finished := Bool(true)
+            mode := deq_mode
+            enqueues_performed := UInt(0)
         }
     }
 
-    when(!dequeues_finished){
+    io.can_dequeue := Bool(false)
+    io.can_enqueue := Bool(false)
+
+
+    when(mode === deq_mode){
         io.can_dequeue := Bool(true)
     }
 
-    when(!enqueues_finished){
+    when(mode === enq_mode){
         io.can_enqueue := Bool(true)
     }
+}
 
-    when( dequeues_finished && enqueues_finished ){
-        dequeues_finished := Bool(false)
-        enqueues_finished := Bool(false)
+class SliceReverseBufferTest(c: SliceReverseBuffer) extends Tester(c) {
+
+    
+    poke(c.io.enqueue, true)
+    poke(c.io.dequeue, false)
+
+    for(i <- 0 until 30*7){
+        poke(c.io.data_in, (i%7)+1)
+        peek(c.enqueue_row)
+        peek(c.dequeue_row)
+        peek(c.io.can_enqueue)
+        peek(c.io.can_dequeue)
+        peek(c.mode)
+        step(1)
+    }
+
+    poke(c.io.enqueue, false)
+
+    println("FEED COMPLETE\n")
+    for(i <- 0 until 3){
+        peek(c.enqueue_row)
+        peek(c.dequeue_row)
+        peek(c.io.can_enqueue)
+        peek(c.io.can_dequeue)
+        peek(c.mode)
+        step(1)
+    }
+
+    poke(c.io.dequeue, true)
+
+    println("\n\nSTARTING OUTPUT\n")
+    for(i <- 0 until 30*7){
+        peek(c.enqueue_row)
+        peek(c.dequeue_row)
+        peek(c.io.can_enqueue)
+        peek(c.io.can_dequeue)
+        peek(c.mode)
+        peek(c.io.data_out)
+        step(1)
     }
 }

@@ -46,6 +46,7 @@ object DaisyMain {
         // chiselMainTest(args, () => Module(new InputTranslator(16, 24))) { c => new TranslatorTest(c) }
         
         
+        chiselMainTest(args, () => Module(new SliceReverseBuffer(32, pixel_data_width, 3))) { c => new SliceReverseBufferTest(c) }
         
         // chiselMainTest(args, () => Module(new sixteen_twentyfour() )) { c => new Translator1624Test(c) }
         // chiselMainTest(args, () => Module(new twentyfour_sixteen() )) { c => new Translator2416Test(c) }
