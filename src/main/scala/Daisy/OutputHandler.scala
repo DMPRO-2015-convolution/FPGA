@@ -20,8 +20,11 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
         val data_in = UInt(INPUT, pixel_data_width)
         val input_valid = Bool(INPUT)
 
+        val ready_for_input = Bool(OUTPUT)
+
         val request_output = Bool(INPUT)
         val output_ready = Bool(OUTPUT)
+        val output_valid = Bool(OUTPUT)
 
         val data_out = UInt(OUTPUT, output_data_width)
 
@@ -33,7 +36,10 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
     val output_buffer = Module(new SliceReverseBuffer(row_length: Int, pixel_data_width: Int, kernel_dim))
     output_buffer.io.enqueue := Bool(false)
     output_buffer.io.dequeue := Bool(false)
+    output_buffer.io.data_in := io.data_in
 
+    io.ready_for_input := output_buffer.io.can_enqueue
+    io.output_ready := output_buffer.io.can_dequeue
 
     val chip_sel = Reg(init=Bool(false)) 
 
@@ -41,16 +47,84 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
         output_buffer.io.enqueue := Bool(true)
     }
 
-    when(translator.io.rdy_in){
-        translator.io.req_in := Bool(true)
-    }
-
     translator.io.d_in := output_buffer.io.data_out
     translator.io.req_out := io.request_output
+    
+    when(io.request_output){
+        translator.io.req_in := Bool(true)
+        output_buffer.io.dequeue := translator.io.rdy_in
+    }
 
     io.data_out := translator.io.d_out
+    io.output_valid := translator.io.rdy_out
 }
 
 class OutputHandlerTest(c: OutputHandler) extends Tester(c) {
     
+    poke(c.io.data_in, 0)
+    poke(c.io.input_valid, false)
+    poke(c.io.request_output, false)
+
+    peek(c.io)
+
+    step(1)
+
+    poke(c.io.input_valid, true)
+
+    for(i <- 0 until 30*7){
+        poke(c.io.data_in, ((i%7)+1)*1118481)
+        println()
+        peek(c.io)
+        peek(c.translator.io)
+        peek(c.translator.inputs_finished)
+        peek(c.translator.outputs_finished)
+        step(1)
+    }
+
+    println("\n\nDONERINO\n\n")
+    poke(c.io.request_output, true)
+    poke(c.io.input_valid, false)
+
+    poke(c.io.data_in, 0)
+
+    var outputs = 0
+    var count = 0
+    while(outputs < 30*9*24/16){
+    // while(outputs < 7){
+        count = count + 1
+        if(count % 4 == 0){
+            outputs = outputs + 1
+            poke(c.io.request_output, true)
+            peek(c.io.data_out)
+            peek(c.output_buffer.dequeue_row)
+            peek(c.output_buffer.row_dequeue_count)
+            peek(c.translator.dbg_reads)
+            peek(c.translator.io.dbg_buf1)
+            peek(c.translator.io.dbg_buf2)
+            println()
+            println()
+            println("outputs: %d".format(outputs))
+            println()
+            println()
+        }
+        else{
+            poke(c.io.request_output, false)
+        }
+        step(1)
+    }
 }
+
+    // for(i <- 0 until 6){
+    //     println()
+    //     peek(c.io.data_out)
+    //     peek(c.output_buffer.io)
+    //     println()
+    //     println()
+    //     peek(c.translator.io)
+    //     peek(c.translator.inputs_finished)
+    //     peek(c.translator.outputs_finished)
+    //     println()
+    //     println()
+
+    //     step(1)
+    // }

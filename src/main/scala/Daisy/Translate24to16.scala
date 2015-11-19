@@ -18,6 +18,8 @@ class twentyfour_sixteen() extends Module {
 
         val dbg_buf1 = UInt(OUTPUT)
         val dbg_buf2 = UInt(OUTPUT)
+
+        val dbg_reads = UInt(OUTPUT)
     }
 
     io.rdy_in  := Bool(false)
@@ -28,6 +30,8 @@ class twentyfour_sixteen() extends Module {
 
     io.dbg_buf1 := buffer1
     io.dbg_buf2 := buffer2
+    val dbg_reads = Reg(init=UInt(0, 32))
+    io.dbg_reads := dbg_reads
 
     val inputs_finished = Reg(init=Bool(false))
     val outputs_finished = Reg(init=Bool(true))
@@ -66,6 +70,7 @@ class twentyfour_sixteen() extends Module {
     }
 
     when(io.req_out){
+        dbg_reads := dbg_reads + UInt(1)
         when(current){
             when(outputs_performed === UInt(2)){ io.d_out := buffer2(15, 0)  } 
             when(outputs_performed === UInt(1)){ io.d_out := buffer2(31, 16) } 

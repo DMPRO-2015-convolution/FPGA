@@ -11,6 +11,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
     val cols = kernel_dim*kernel_dim - 2
     val total_enqueues = cols*(row_length - 2)
     val total_dequeues = total_enqueues
+    val deqs_per_row = total_dequeues/7
     
     val io = new Bundle {
         val data_in = UInt(INPUT, data_width)
@@ -42,7 +43,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
     io.can_dequeue := Bool(false)
     io.can_enqueue := Bool(false)
 
-    when(row_dequeue_count === UInt(row_length - (1 + 2) )){
+    when(row_dequeue_count === UInt(deqs_per_row - 1)){
         row_dequeue_count := UInt(0)
         when(dequeue_row < UInt(cols)){
             dequeue_row := dequeue_row + UInt(1)
@@ -52,7 +53,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
     }
 
     when(io.dequeue){
-        when(row_dequeue_count === UInt(row_length - (1 + 2) )){
+        when(row_dequeue_count === UInt(deqs_per_row - 1)){
             row_dequeue_count := UInt(0)
         }.otherwise{
             row_dequeue_count := row_dequeue_count + UInt(1)

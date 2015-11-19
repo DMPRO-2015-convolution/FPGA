@@ -12,6 +12,7 @@ class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kerne
     val io = new Bundle {
 
         val data_mode = Bool(INPUT)
+        val output_buffer_ready = Bool(INPUT)
 
         val input_ready = Bool(INPUT)
         val data_in = UInt(INPUT, input_data_width)
@@ -41,7 +42,7 @@ class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kerne
 
         input_buffer.io.slave_drive_output := Bool(false)
 
-        when(input_buffer.io.slave_can_drive_output){
+        when(input_buffer.io.slave_can_drive_output && io.output_buffer_ready){
             io.data_out := input_buffer.io.data_out 
             input_buffer.io.slave_drive_output := Bool(true)
         }

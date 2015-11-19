@@ -37,6 +37,8 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
         val processor_sleep = Bool(OUTPUT)
         val processor_configure = Bool(OUTPUT)
+
+        val output_buffer_ready = Bool(INPUT)
     }
 
     val valid_processor_input_count = Reg(init=UInt(0, 32))

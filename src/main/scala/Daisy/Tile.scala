@@ -24,6 +24,7 @@ class Tile( img_width: Int,
         val reset = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, pixel_data_width)
+        val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
     }
 
@@ -51,10 +52,15 @@ class Tile( img_width: Int,
     SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
     SystemControl.io.control_data_in := io.control_data_in
     SystemControl.io.control_input_valid := io.control_input_valid
+    SystemControl.io.output_buffer_ready := OutputHandler.io.ready_for_input
 
     // Output handler recieves data from the controller, aswell as a valid bit
     OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
-    // OutputHandler.io.data_in <> Processor.io.ALU_data_out
+    OutputHandler.io.data_in := Processor.io.ALU_data_out
+
+    io.data_out := OutputHandler.io.data_out
+    io.output_valid := OutputHandler.io.output_valid
+    io.output_ready := OutputHandler.io.output_ready
 }
 
 class TileTest(c: Tile) extends Tester(c) {
