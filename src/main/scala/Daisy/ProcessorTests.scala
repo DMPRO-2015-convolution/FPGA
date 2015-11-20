@@ -61,9 +61,9 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
 
     def inspect_reducers(): Unit = {
         for(i <- 0 until 7){
-            peek(c.ALUs.reducers(i).mapped_pixel)
+            peek(c.ALUs.reducers(i).red_in)
             println("---------------------")
-            peek(c.ALUs.reducers(i).data_out)
+            peek(c.ALUs.reducers(i).red_out)
             println("---------------------")
             peek(c.ALUs.reducers(i).flush)
             println("---------------------\n")

@@ -11,41 +11,64 @@ class Reducer(data_width: Int) extends Module {
 
         val load_instruction = Bool(INPUT)
 
-        val mapped_pixel = SInt(INPUT, data_width)
+        val red_in = SInt(INPUT, 8)
+        val green_in = SInt(INPUT, 8)
+        val blue_in = SInt(INPUT, 8)
+
+        val red_out = SInt(OUTPUT, 8)
+        val green_out = SInt(OUTPUT, 8)
+        val blue_out = SInt(OUTPUT, 8)
+
         val flush = Bool(INPUT)
         val stall = Bool(INPUT)
 
-        val data_out = UInt(OUTPUT, data_width) 
         val valid_out = Bool(OUTPUT)
 
         val dbg_flush = Bool(OUTPUT)
     } 
 
-    val instruction = Reg(UInt(0, 24))
+    val instruction = Reg(UInt(0, 4))
     val accumulator = Reg(init=SInt(0, data_width))
 
-    val color1 = io.mapped_pixel(7,0)
-    val color2 = io.mapped_pixel(15,8)
-    val color3 = io.mapped_pixel(23,16)
+    val red = Reg(init=SInt(0, 8))
+    val green = Reg(init=SInt(0, 8))
+    val blue = Reg(init=SInt(0, 8))
 
     when(!io.stall){
         
         when(io.load_instruction){
-            instruction := io.mapped_pixel(7, 4)
+            instruction := io.red_in
         }
         .elsewhen(io.flush){ 
-            accumulator(7, 0) := color1
-            accumulator(15, 8) := color2
-            accumulator(23, 16) := color3
+            red := red
+            green := green
+            blue := blue
 
         }.otherwise{
-            accumulator(7, 0) := accumulator(7, 0) + color1
-            accumulator(15, 8) := accumulator(15, 8) + color2
-            accumulator(23, 16) := accumulator(23, 16) + color3
+            
+            when(instruction === UInt(0)){
+                red := io.red_in            * red
+                green := io.green_in        * green
+                blue := io.blue_in          * blue
+            }
+
+            when(instruction === UInt(1)){
+                red := io.red_in            + red
+                green := io.green_in        + green
+                blue := io.blue_in          + blue
+            }
+
+            when(instruction === UInt(2)){
+                when(red < io.red_in)       { red := io.red_in     } 
+                when(green < io.green_in)   { green := io.green_in } 
+                when(blue < io.blue_in)     { blue := io.blue_in   } 
+            }
         }
     }
 
-    io.data_out := accumulator
+    io.red_out := red
+    io.green_out := green
+    io.blue_out := blue
 
     io.valid_out := io.flush
 }

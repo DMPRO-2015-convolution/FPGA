@@ -31,7 +31,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     val cycle_time = cols
     val time_to_fill = (rows - 1)*row_time
 
-    val ALU_delay = 2
+    val ALU_delay = 2 + 1
 
     // We now have everything we need to calculate the time it takes for the first valid output
     // with data in input tree as T0

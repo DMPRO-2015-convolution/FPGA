@@ -25,6 +25,11 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     val reducers = Vec.fill(n_ALUs){ Module(new Reducer(data_width)).io }
     val selectors = Vec.fill(n_ALUs){ Module(new ShiftMux(data_width, rows, 2)).io }
 
+    val normalizer = Module(new Normalizer(data_width))
+    normalizer.io.red_in := UInt(0)
+    normalizer.io.green_in := UInt(0)
+    normalizer.io.blue_in := UInt(0)
+
     val shift_enablers = Vec.fill(n_ALUs){ Reg(Bool()) }
     val flush_signals = Vec.fill(n_ALUs){ Reg(Bool()) }
 
@@ -55,14 +60,22 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     mappers(0).pixel_in := selectors(0).data_out
     mappers(0).stall := io.stall
     mappers(0).load_instruction := io.load_instruction
-    reducers(0).mapped_pixel := mappers(0).mapped_pixel
+
+    reducers(0).red_in := mappers(0).red
+    reducers(0).green_in := mappers(0).green
+    reducers(0).blue_in := mappers(0).blue
+
     reducers(0).stall := io.stall
     reducers(0).load_instruction := io.load_instruction
     
     for(i <- 1 until n_ALUs){
         mappers(i).kernel_in := mappers(i-1).kernel_out    
         mappers(i).pixel_in := selectors(i).data_out
-        reducers(i).mapped_pixel := mappers(i).mapped_pixel
+
+        reducers(i).red_in := mappers(i).red
+        reducers(i).green_in := mappers(i).green
+        reducers(i).blue_in := mappers(i).blue
+
         mappers(i).stall := io.stall
         reducers(i).stall := io.stall
         reducers(i).load_instruction := io.load_instruction
@@ -79,10 +92,15 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     io.valid_out := Bool(false)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){
-            io.data_out := reducers(i).data_out
+            // io.data_out := reducers(i).data_out
+            normalizer.io.red_in := reducers(i).red_out
+            normalizer.io.green_in := reducers(i).green_out
+            normalizer.io.blue_in := reducers(i).blue_out
             io.valid_out := Bool(true)
         }
     }
+
+    io.data_out := normalizer.io.data_out
 
 
     def daisy_chain[T <: Data](input: T, elements: Vec[T]){

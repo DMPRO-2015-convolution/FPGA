@@ -16,7 +16,10 @@ class Mapper(data_width: Int) extends Module {
         val kernel_in = SInt(INPUT, data_width)
         val stall = Bool(INPUT)
 
-        val mapped_pixel = SInt(OUTPUT, data_width) 
+        val red = SInt(OUTPUT, 8) 
+        val green = SInt(OUTPUT, 8) 
+        val blue = SInt(OUTPUT, 8) 
+
         val kernel_out = SInt(OUTPUT, data_width)
 
         val dbg_kernel = SInt(OUTPUT, data_width)
@@ -28,9 +31,9 @@ class Mapper(data_width: Int) extends Module {
 
     val kernel = Reg(UInt(width=data_width))
 
-    val color1 = io.pixel_in(7,0)
-    val color2 = io.pixel_in(15,8)
-    val color3 = io.pixel_in(23,16)
+    val red = Reg(init=UInt(0, 8))
+    val green = Reg(init=UInt(0, 8))
+    val blue = Reg(init=UInt(0, 8))
 
     io.dbg_kernel := kernel
     io.dbg_instr := instruction
@@ -40,17 +43,44 @@ class Mapper(data_width: Int) extends Module {
 
         when(io.load_instruction){
             instruction := io.kernel_in(3, 0)
-            io.mapped_pixel := io.kernel_in
+            io.red := io.kernel_in(7, 0)
         }
 
         kernel := io.kernel_in
         io.kernel_out := kernel
+
+        when(instruction === UInt(0)){
+            red := io.pixel_in(7, 0)         * kernel(7, 0)
+            green := io.pixel_in(15, 8)      * kernel(15, 8)
+            blue := io.pixel_in(23, 16)      * kernel(23, 16)
+        }
+
+        when(instruction === UInt(1)){
+            red := io.pixel_in(7, 0)         + kernel(7, 0)
+            green := io.pixel_in(15, 8)      + kernel(15, 8)
+            blue := io.pixel_in(23, 16)      + kernel(23, 16)
+        }
+
+        // Mask
+        when(instruction === UInt(2)){
+            when(red < io.pixel_in(7, 0))    { red := UInt(0)   }
+            when(green < io.pixel_in(15, 8)) { green := UInt(0) }
+            when(blue < io.pixel_in(23, 16)) { blue := UInt(0)  }
+        }
+
+        when(instruction === UInt(3)){
+            red := io.pixel_in(7, 0)         / kernel(7, 0)
+            green := io.pixel_in(15, 8)      / kernel(16, 8)
+            blue := io.pixel_in(23, 16)      / kernel(23, 16)
+        }
     }
 
-    io.mapped_pixel := UInt(0)
+    io.red := UInt(0)
+    io.green := UInt(0)
+    io.blue := UInt(0)
 
-    io.mapped_pixel(7, 0) := color1*kernel
-    io.mapped_pixel(15, 8) := color2*kernel
-    io.mapped_pixel(23, 16) := color3*kernel
+    io.red(7, 0)    := red
+    io.green(15, 8) := green
+    io.blue(23, 16) := blue
 
 }
