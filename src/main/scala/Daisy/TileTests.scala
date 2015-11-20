@@ -73,9 +73,12 @@ class InputTest(c: Tile) extends Tester(c) {
         while(ops <= 15){
             if(r.nextInt(5) == 1){
                 ops = ops + 1
-                poke(c.io.control_data_in, 0)
+                poke(c.io.control_data_in, 4369)
                 poke(c.io.control_input_valid, true)
-                inspect_control()
+                inspect_kernels()
+                println("\n####################")
+                peek(c.SystemControl.translator.io)
+                println("####################\n")
                 inspect_program()
             }
             else{
@@ -89,21 +92,23 @@ class InputTest(c: Tile) extends Tester(c) {
     def load_kernels(): Unit = {
         println("STARTING PROGRAM INPUT")
         var ops = 0
+        var counter = 0
         while(ops <= 21){
-            if(r.nextInt(5) == 1){
+            if(counter%4 == 1){
                 ops = ops + 1
-                if(ops%3 == 0){ poke(c.io.control_data_in, 0) }
-                if(ops%3 == 1){ poke(c.io.control_data_in, 10) }
-                if(ops%3 == 2){ poke(c.io.control_data_in, 1) }
-                // poke(c.io.control_data_in, 8738)
-                // poke(c.io.control_data_in, 4369)
+                if(ops%3 == 2){ poke(c.io.control_data_in, 0) }
+                if(ops%3 == 0){ poke(c.io.control_data_in, 256) }
+                if(ops%3 == 1){ poke(c.io.control_data_in, 1) }
                 poke(c.io.control_input_valid, true)
-                inspect_control()
                 inspect_kernels()
+                println("\n####################")
+                peek(c.SystemControl.translator.io)
+                println("####################\n")
             }
             else{
                 poke(c.io.control_input_valid, false)
             }
+            counter = counter + 1
             step(1)
         }
     }
@@ -208,7 +213,6 @@ class InputTest(c: Tile) extends Tester(c) {
     println("REACTORS: ONLINE\n\nWEAPONS: ONLINE\n\nALL SYSTEMS NOMINAL\n\n")
     inspect_kernels()
     inspect_control()
-    assert(false)
     load_row(1)
     load_row(2)
     load_row(3)

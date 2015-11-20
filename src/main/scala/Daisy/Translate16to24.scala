@@ -20,6 +20,12 @@ class sixteen_twentyfour() extends Module {
         val dbg_buf2 = UInt(OUTPUT)
 
         val dbg_reads = UInt(OUTPUT)
+
+        val dbg_in_done = Bool(OUTPUT)
+        val dbg_out_done = Bool(OUTPUT)
+
+        val dbg_inputs_performed = UInt(OUTPUT)
+        val dbg_outputs_performed = UInt(OUTPUT)
     }
 
     io.rdy_in  := Bool(false)
@@ -30,12 +36,19 @@ class sixteen_twentyfour() extends Module {
 
     io.dbg_buf1 := buffer1
     io.dbg_buf2 := buffer2
+    val dbg_reads = Reg(init=UInt(0, 32))
+    io.dbg_reads := dbg_reads
 
     val inputs_finished = Reg(init=Bool(false))
     val outputs_finished = Reg(init=Bool(true))
+    io.dbg_in_done := inputs_finished
+    io.dbg_out_done := outputs_finished
 
     val inputs_performed = Reg(init=UInt(0, 8))
     val outputs_performed = Reg(init=UInt(0, 8))
+    io.dbg_inputs_performed := inputs_performed
+    io.dbg_outputs_performed := outputs_performed
+    
 
     val current = Reg(init=Bool(false))
 
@@ -70,6 +83,7 @@ class sixteen_twentyfour() extends Module {
     }
 
     when(io.req_out){
+        dbg_reads := dbg_reads + UInt(1)
         when(current){
             when(outputs_performed === UInt(1)){ io.d_out := buffer2(23, 0)  } 
             when(outputs_performed === UInt(0)){ io.d_out := buffer2(47, 24) } 
@@ -89,68 +103,50 @@ class sixteen_twentyfour() extends Module {
         current := ~current
         outputs_finished := Bool(false)
         inputs_finished := Bool(false)
+        outputs_performed := UInt(0)
+        inputs_performed := UInt(0)
     }
+
+    io.d_out := UInt(1)
 }
 
 
 class Translator1624Test(c: sixteen_twentyfour) extends Tester(c) {
+
+    def feed(): Unit = {
+        for(i <- 0 until 6){
+            if(i == 1){ poke(c.io.d_in, 0) }
+            if(i == 3){ poke(c.io.d_in, 256) }
+            if(i == 5){ poke(c.io.d_in, 1) }
+
+            if(i%2 == 0){
+                poke(c.io.req_in, false)
+            }
+            else{
+                poke(c.io.req_in, true)
+            }
+            step(1)
+            peek(c.io)
+        }
+    }
+
+    def extract(): Unit = {
+        poke(c.io.req_in, false)
+        step(1)
+        poke(c.io.req_out, true)
+        peek(c.io)
+        step(1)
+        peek(c.io)
+        step(1)
+        peek(c.io)
+        step(1)
+    }
     
     poke(c.io.req_in, false)
     poke(c.io.req_out, false)
     poke(c.io.d_in, 0)
-
-    step(1)
-    peek(c.io.rdy_in)
-    poke(c.io.d_in, 4660)
-    poke(c.io.req_in, true)
-    peek(c.buffer1)
-    peek(c.buffer2)
-    println()
-
-    step(1)
+    feed()
     poke(c.io.req_in, false)
-    println()
-    peek(c.io)
-    println()
-    peek(c.buffer1)
-    peek(c.buffer2)
-    println()
-
-    step(1)
-    poke(c.io.d_in, 17185)
-    poke(c.io.req_in, true)
-    println()
-    peek(c.io)
-    peek(c.buffer1)
-    peek(c.buffer2)
-    println()
-    
-    step(1)
-    poke(c.io.d_in, 26214)
-    poke(c.io.req_in, true)
-    println()
-    peek(c.io)
-    peek(c.inputs_finished)
-    peek(c.outputs_finished)
-    println()
-
-    step(1)
-    println()
-    poke(c.io.req_in, false)
-    println()
-    peek(c.io)
-    peek(c.inputs_finished)
-    peek(c.outputs_finished)
-
-    step(1)
-    poke(c.io.req_out, true)
-    peek(c.io)
-    peek(c.inputs_finished)
-    peek(c.outputs_finished)
-
-    step(1)
-    poke(c.io.req_out, true)
-    peek(c.io)
-    peek(c.inputs_finished)
-    peek(c.outputs_finished)
+    println("\n")
+    extract()
 }

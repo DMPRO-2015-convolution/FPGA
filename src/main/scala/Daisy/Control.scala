@@ -100,20 +100,22 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
     val stage = Reg(init=UInt(0, 32))
     val total_stages = total_kernels*2 + 2
 
-    val translator = Module(new WidthTranslator(control_data_width, pixel_data_width))
+    val translator = Module(new sixteen_twentyfour() )
 
-    translator.io.input_valid := io.control_input_valid
-    translator.io.input_data := io.control_data_in
+    translator.io.req_in := io.control_input_valid
+    translator.io.d_in := io.control_data_in
+    translator.io.req_out := Bool(false)
 
-    io.processor_control_input := translator.io.output_data
-    io.processor_configure := Bool(false)
+    io.processor_control_input := translator.io.d_out
     io.processor_control_input_valid := Bool(false)
+    io.processor_configure := Bool(false)
 
     when(state === control_mode){
         
         io.processor_configure := Bool(true)
 
-        when(translator.io.output_valid){
+        when(translator.io.rdy_out){
+            translator.io.req_out := Bool(true)
             io.processor_control_input_valid := Bool(true)
             stage := stage + UInt(1)
             io.processor_sleep := Bool(false)
