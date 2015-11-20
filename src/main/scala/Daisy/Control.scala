@@ -36,8 +36,6 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
 
         val processor_sleep = Bool(OUTPUT)
         val processor_configure = Bool(OUTPUT)
-
-        val output_buffer_ready = Bool(INPUT)
     }
 
     val valid_processor_input_count = Reg(init=UInt(0, 32))
@@ -55,7 +53,6 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     // #4 Valid data is not being fed, the controller should wait 
   
     io.processor_output_is_valid := Bool(false)
-    io.processor_sleep := Bool(true)
 
     when(state === data_mode){
         when(io.processor_input_is_valid){
@@ -93,6 +90,9 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
             valid_processor_output_count := UInt(0)
             io.processor_sleep := Bool(true)
         }
+    }
+    .otherwise{
+        io.processor_sleep := Bool(true)
     }
 
 

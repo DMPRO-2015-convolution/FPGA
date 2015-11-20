@@ -69,14 +69,12 @@ class InputTest(c: Tile) extends Tester(c) {
     def input_program(): Unit = {
         println("STARTING PROGRAM INPUT")
         var ops = 0
-        while(ops <= 15){
+        while(ops <= 12){
             if(r.nextInt(5) == 1){
                 ops = ops + 1
-                poke(c.io.control_data_in, 4369)
+                poke(c.io.control_data_in, 0)
                 poke(c.io.control_input_valid, true)
                 inspect_kernels()
-                println("\n####################")
-                println("####################\n")
                 inspect_program()
             }
             else{
@@ -91,16 +89,13 @@ class InputTest(c: Tile) extends Tester(c) {
         println("STARTING PROGRAM INPUT")
         var ops = 0
         var counter = 0
-        while(ops <= 21){
+        while(ops <= 9){
             if(counter%4 == 1){
                 ops = ops + 1
-                if(ops%3 == 2){ poke(c.io.control_data_in, 0) }
-                if(ops%3 == 0){ poke(c.io.control_data_in, 256) }
-                if(ops%3 == 1){ poke(c.io.control_data_in, 1) }
                 poke(c.io.control_input_valid, true)
+                poke(c.io.control_data_in, 1)
+                peek(c.SystemControl.io)
                 inspect_kernels()
-                println("\n####################")
-                println("####################\n")
             }
             else{
                 poke(c.io.control_input_valid, false)
@@ -192,6 +187,7 @@ class InputTest(c: Tile) extends Tester(c) {
         }
     }
     
+    poke(c.io.reset, false)
     step(1)
     peek(c.io.dbg_rdy_for_output)
     peek(c.io.dbg_rdy_for_input)
@@ -204,6 +200,7 @@ class InputTest(c: Tile) extends Tester(c) {
     println("REACTORS: ONLINE\n\nWEAPONS: ONLINE\n\nALL SYSTEMS NOMINAL\n\n")
     inspect_kernels()
     inspect_control()
+    assert(false)
     load_row(1)
     load_row(2)
     load_row(3)

@@ -55,7 +55,7 @@ class Tile( img_width: Int,
     SystemControl.io.ALU_output_is_valid := Processor.io.ALU_data_is_valid
     SystemControl.io.control_data_in := io.control_data_in
     SystemControl.io.control_input_valid := io.control_input_valid
-    SystemControl.io.output_buffer_ready := OutputHandler.io.ready_for_input
+    SystemControl.io.reset := io.reset
 
     // Output handler recieves data from the controller, aswell as a valid bit
     OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
