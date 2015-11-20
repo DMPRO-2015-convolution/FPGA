@@ -48,7 +48,7 @@ class PixelGrid(data_width: Int, cols: Int, rows: Int) extends Module {
     for(i <- 0 until 3){
         shift_muxes(i).io.shift := io.shift_mux
         shift_muxes(i).io.stall := io.stall
-        shift_muxes(i).io.reset := io.reset
+        shift_muxes(i).io.reset := io.stall
     }
 
     // Wire data from primary muxes to secondary muxes

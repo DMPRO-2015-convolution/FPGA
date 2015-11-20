@@ -169,7 +169,11 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     sleep(13)
     poke(c.io.processor_sleep, false)
     poke(c.io.processor_configure, false)
-    process_silent(28)
-    process_data(20)
+    // process_silent(28)
+    process_data(50)
+    poke(c.io.processor_sleep, true)
+    sleep(20)
+    poke(c.io.processor_sleep, false)
+    process_data(50)
 
 }
