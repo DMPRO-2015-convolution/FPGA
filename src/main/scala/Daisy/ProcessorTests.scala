@@ -61,7 +61,12 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
 
     def inspect_reducers(): Unit = {
         for(i <- 0 until 7){
+            peek(c.ALUs.reducers(i).mapped_pixel)
+            println("---------------------")
             peek(c.ALUs.reducers(i).data_out)
+            println("---------------------")
+            peek(c.ALUs.reducers(i).flush)
+            println("---------------------\n")
         }
     }
 
@@ -109,7 +114,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
                     poke(c.io.control_data_in, 1)
                 }
                 else{
-                    poke(c.io.control_data_in, 0)
+                    poke(c.io.control_data_in, 1)
                 }
                 poke(c.io.input_valid, true)
             }
@@ -164,7 +169,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     sleep(13)
     poke(c.io.processor_sleep, false)
     poke(c.io.processor_configure, false)
-    // process_silent(28)
-    process_data(50)
+    process_silent(28)
+    process_data(20)
 
 }
