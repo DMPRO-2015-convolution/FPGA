@@ -1,20 +1,18 @@
-To compile:
+Create verilog code: 
 
 $ sbt
-> run --backend c --genHarness --compile --test --debug
+> run --backend c --genHarness --compile --test --debug -v
 
-To test:
+Relies on the fpga-tidbits repo
 
-See methods in Tile.scala. The test you want to run is the one with image in its name
+https://github.com/maltanar/fpga-tidbits/tree/platform-layer
 
-In order to feed an image you need to edit lenna.c and to_img.c which are currently hardcoded for resolution and filename
-compile and run to create text files with the encoder using ./encoder
-adjust the width and height in the chisel test method
+remember to use the correct branch (platform layer)
+project is built on commit: 
 
-run
-$ sbt
-> run --backend c --genHarness --compile --test --debug
+commit a06dcea9612a33f9634ddfdf45143f86b84e6646
 
-run the decoder ./decoder
+In order to synthesize the following verilog file must be added:
 
-Marvel at the pshychedelic daisy
+https://github.com/maltanar/fpga-tidbits/blob/platform-layer/on-chip-memory/DualPortBRAM.v
+(Which lies in the on chip memory folder in the fpga tidbits repo already)
