@@ -101,7 +101,9 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     def process_data(cycles: Int) : Unit = {
         for(i <- 0 until cycles){
             poke(c.io.pixel_in, (i%9)+1)
-            println("\n\nSTEP: %d\n".format(i))
+            println("\n\n#############################################")
+            println("STEP: %d\n#############################################".format(i))
+            println("#############################################")
             // println("\nGRID\n")
             // inspect_grid()
             inspect_alu_in()
@@ -112,6 +114,8 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
             println("\nOUT\n")
             peek(c.ALUs.io.data_out)
             peek(c.ALUs.io.valid_out)
+            println("\n#############################################")
+            println("#############################################")
             step(1)
         }
     }
