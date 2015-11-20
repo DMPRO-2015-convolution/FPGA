@@ -34,6 +34,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         for(j <- 0 until 3){
             selectors(i).pixel_in(j) := io.pixel_in(j)
             selectors(i).stall := io.stall
+            selectors(i).reset := io.stall
         }
         mappers(i).pixel_in := selectors(i).data_out 
         selectors(i).shift := shift_enablers(i)

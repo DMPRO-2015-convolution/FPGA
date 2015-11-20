@@ -13,8 +13,19 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         for(i <- 0 until 7){
             peek(c.ALUs.mappers(i).dbg_kernel)
         }
+        peek(c.processor_control.kernel_skew)
         peek(c.processor_control.io.alu_stall)
         peek(c.processor_control.io.programming_mode)
+    }
+
+
+    def sleep(cycles: Int): Unit = {
+        poke(c.io.processor_sleep, true)
+        for(i <- 0 until cycles){
+            // inspect_mappers()
+            inspect_kernels()
+            step(1)
+        }
     }
 
 
@@ -27,6 +38,20 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         for(i <- 0 until 7){
             peek(c.ALUs.selectors(i).dbg_state)
         }
+
+        println("---------------------")
+
+        // for(i <- 0 until 7){
+        //     peek(c.ALUs.selectors(i).shift)
+        // }
+
+        // println("---------------------")
+
+        // for(i <- 0 until 7){
+        //     peek(c.ALUs.io.selector_shift)
+        // }
+
+        // println("---------------------")
     }
 
     def inspect_alu_in(): Unit = {
@@ -74,7 +99,8 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
                 poke(c.io.control_data_in, 1)
                 poke(c.io.input_valid, false)
             }
-            inspect_kernels()
+            peek(c.processor_control.kernel_skew)
+            // inspect_kernels()
             step(1)
         }
         for(i <- 0 until 19){
@@ -91,7 +117,8 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
                 poke(c.io.control_data_in, 0)
                 poke(c.io.input_valid, false)
             }
-            inspect_kernels()
+            peek(c.processor_control.kernel_skew)
+            // inspect_kernels()
             step(1)
         }
     }
@@ -115,6 +142,8 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
             inspect_mappers()
             println("\nREDUCERS\n")
             inspect_reducers()
+            println("\nCONTROL\n")
+            peek(c.data_control.io.ALU_shift)
             println("\nOUT\n")
             peek(c.ALUs.io.data_out)
             peek(c.ALUs.io.valid_out)
@@ -132,9 +161,10 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     peek(c.io)
     peek(c.processor_control.io)
     load_program(1)
+    sleep(13)
     poke(c.io.processor_sleep, false)
     poke(c.io.processor_configure, false)
-    process_silent(29)
-    process_data(20)
+    // process_silent(28)
+    process_data(50)
 
 }

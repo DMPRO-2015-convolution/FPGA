@@ -41,7 +41,7 @@ class Orchestrator(val cols: Int, val rows: Int)  extends Module {
     val first_valid_row_out = conveyor_start + read_delay + read_delay
     val conveyor_done = conveyor_start + cycle_time
     val data_out = conveyor_done + ALU_delay
-    val first_ALU_shift = 1
+    val first_ALU_shift = 0
 
     println("Time of first data in tree:\t\t\t\t%d".format(data_in_tree))
     println("Time of conveyor being ready:\t\t\t\t%d".format(conveyor_rdy))
