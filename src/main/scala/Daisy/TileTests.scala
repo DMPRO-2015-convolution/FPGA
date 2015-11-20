@@ -73,7 +73,7 @@ class InputTest(c: Tile) extends Tester(c) {
         while(ops <= 15){
             if(r.nextInt(5) == 1){
                 ops = ops + 1
-                poke(c.io.control_data_in, 4369)
+                poke(c.io.control_data_in, 0)
                 poke(c.io.control_input_valid, true)
                 inspect_control()
                 inspect_program()
@@ -92,7 +92,11 @@ class InputTest(c: Tile) extends Tester(c) {
         while(ops <= 21){
             if(r.nextInt(5) == 1){
                 ops = ops + 1
-                poke(c.io.control_data_in, 8738)
+                if(ops%3 == 0){ poke(c.io.control_data_in, 0) }
+                if(ops%3 == 1){ poke(c.io.control_data_in, 10) }
+                if(ops%3 == 2){ poke(c.io.control_data_in, 1) }
+                // poke(c.io.control_data_in, 8738)
+                // poke(c.io.control_data_in, 4369)
                 poke(c.io.control_input_valid, true)
                 inspect_control()
                 inspect_kernels()
@@ -160,18 +164,13 @@ class InputTest(c: Tile) extends Tester(c) {
         println()
     }
 
-    def run_output(runs: Int): Unit = {
+    def run_processor(runs: Int): Unit = {
         for(i <- 0 until runs){
-            if(i%4 == 0){ poke(c.io.request_processed_data, true) }
-            else{ poke(c.io.request_processed_data, false) }
             println()
             println("OUTPUT STEP %d".format(i))
-            inspect_run() 
             println()
-            peek(c.io)
-            peek(c.Processor.io.ALU_data_out)
+            peek(c.Processor.io)
             peek(c.SystemControl.io.processor_output_is_valid)
-            inspect_output_buffer()
             step(1)
             println()
         }
@@ -209,6 +208,7 @@ class InputTest(c: Tile) extends Tester(c) {
     println("REACTORS: ONLINE\n\nWEAPONS: ONLINE\n\nALL SYSTEMS NOMINAL\n\n")
     inspect_kernels()
     inspect_control()
+    assert(false)
     load_row(1)
     load_row(2)
     load_row(3)
@@ -220,10 +220,18 @@ class InputTest(c: Tile) extends Tester(c) {
     load_row(9)
     inspect_control()
     inspect_input_buffer()
-    // inspect_output_buffer()
     peek(c.io.dbg_rdy_for_output)
     peek(c.io.dbg_rdy_for_input)
-    run_output(50)       
+
+    run_processor(60*9)       
+    println("------")
+    run_processor(16)       
+
+    inspect_output_buffer()
+
+    run_processor(2)       
+
+    inspect_output_buffer()
 
     poke(c.io.request_processed_data, true)
     peek(c.io)

@@ -18,6 +18,8 @@ class sixteen_twentyfour() extends Module {
 
         val dbg_buf1 = UInt(OUTPUT)
         val dbg_buf2 = UInt(OUTPUT)
+
+        val dbg_reads = UInt(OUTPUT)
     }
 
     io.rdy_in  := Bool(false)
