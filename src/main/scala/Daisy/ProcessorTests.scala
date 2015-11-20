@@ -114,7 +114,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
                     poke(c.io.control_data_in, 1)
                 }
                 else{
-                    poke(c.io.control_data_in, 1)
+                    poke(c.io.control_data_in, 0)
                 }
                 poke(c.io.input_valid, true)
             }
@@ -165,7 +165,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     poke(c.io.input_valid, false)
     peek(c.io)
     peek(c.processor_control.io)
-    load_program(1)
+    load_program(0)
     sleep(13)
     poke(c.io.processor_sleep, false)
     poke(c.io.processor_configure, false)
