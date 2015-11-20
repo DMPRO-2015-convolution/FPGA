@@ -32,7 +32,7 @@ class Tile( img_width: Int,
 
     val InputHandler = Module(new InputHandler(img_width, data_width, kernel_dim))
     val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
-    val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
+    val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, Processor.first_valid_output))
     val OutputHandler = Module(new OutputHandler(img_width, data_width, img_height, kernel_dim))
     
 

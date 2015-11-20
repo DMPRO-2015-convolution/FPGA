@@ -9,7 +9,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
 
     val io = new Bundle { 
         val pixel_in = Vec.fill(rows){ UInt(INPUT, width=data_width) }
-        val kernel_in = SInt(INPUT, width=data_width)
+        val kernel_in = SInt(INPUT, 8)
         val accumulator_flush = Bool(INPUT)
         val selector_shift = Bool(INPUT)
         val stall = Bool(INPUT)
@@ -17,7 +17,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         val load_instruction = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, width=data_width)
-        val kernel_out = SInt(OUTPUT, width=data_width)
+        val kernel_out = SInt(OUTPUT, 8)
         val valid_out = Bool(OUTPUT)
     } 
 

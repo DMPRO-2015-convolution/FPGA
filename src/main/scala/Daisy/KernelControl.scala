@@ -8,16 +8,16 @@ class KernelBuffer(data_width: Int, kernel_dim: Int) extends Module {
     val total_kernels = kernel_dim*kernel_dim
 
     val io = new Bundle {
-        val kernel_in = UInt(INPUT, data_width)
+        val kernel_in = UInt(INPUT, 8)
 
         val data_in = UInt(INPUT, data_width)
         val stall = Bool(INPUT)
 
         val load_kernel = Bool(INPUT)
-        val kernel_out = UInt(OUTPUT, data_width)
+        val kernel_out = UInt(OUTPUT, 8)
 
-        val dbg_kernel0 = UInt(OUTPUT, data_width)
-        val dbg_kernel1 = UInt(OUTPUT, data_width)
+        val dbg_kernel0 = UInt(OUTPUT, 8)
+        val dbg_kernel1 = UInt(OUTPUT, 8)
     }
 
     val kernel_buffer = Vec.fill(inactive_kernels){ Reg(init=SInt(0, width=data_width)) }

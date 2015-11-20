@@ -8,18 +8,15 @@ import TidbitsOCM._
 // because there is a significant time delay between valid input and output.
 //
 // It is also responsible for handling programming of kernel values and operators
-class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_outputs: Int, first_valid_output: Int) extends Module {
+class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_valid_output: Int) extends Module {
 
     val mantle_width = (kernel_dim - 1)/2
     val valid_rows_per_slice = (kernel_dim*kernel_dim) - 2*mantle_width
     val valid_cols_per_slice = img_width - 2*mantle_width
 
-    val valid_outputs_per_slice = valid_rows_per_slice*valid_cols_per_slice
-    val drain_time = remnant_outputs
+    val outputs_per_slice = img_width*valid_cols_per_slice
 
     val total_kernels = kernel_dim*kernel_dim
-    
-    println("calculated outputs per slice to be %d".format(valid_outputs_per_slice))
 
     val io = new Bundle {
 
@@ -82,7 +79,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
         // We make sure to not trigger when waiting for next feed.
         .elsewhen(valid_processor_output_count > UInt(0)){
             // 3
-            when(valid_processor_output_count < UInt(valid_outputs_per_slice)){
+            when(valid_processor_output_count < UInt(outputs_per_slice)){
                 when(io.ALU_output_is_valid){
                     io.processor_output_is_valid := Bool(true)
                     valid_processor_output_count := valid_processor_output_count + UInt(1)
@@ -91,7 +88,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
         }
 
         // Reset counters after a slice has been fed
-        when(valid_processor_output_count === UInt(valid_outputs_per_slice)){
+        when(valid_processor_output_count === UInt(outputs_per_slice)){
             valid_processor_input_count := UInt(0)
             valid_processor_output_count := UInt(0)
             io.processor_sleep := Bool(true)
@@ -100,7 +97,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_o
 
 
     val stage = Reg(init=UInt(0, 32))
-    val total_stages = total_kernels*2 + 2
+    val total_stages = total_kernels*2 + 2 + 1
 
     io.processor_control_input := io.control_data_in
     io.processor_control_input_valid := io.control_input_valid

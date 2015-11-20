@@ -39,7 +39,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
             io.load_kernel := Bool(true)
             io.load_instruction := Bool(true)
 
-            when(stage >= UInt(cols)){
+            when(stage > UInt(cols)){
                 io.load_instruction := Bool(false)
                 when(kernel_skew === UInt(cols - 1)){
                     kernel_skew := UInt(0)

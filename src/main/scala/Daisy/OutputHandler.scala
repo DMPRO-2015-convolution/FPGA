@@ -10,7 +10,6 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
 
     val mantle_width = (kernel_dim)/2
     val valid_rows_per_image = img_height - (mantle_width*2)
-    val valid_pixels_per_row = row_length - (mantle_width*2)
     val slices_per_image = valid_rows_per_image / (kernel_dim*kernel_dim - 2)
 
     println("Slices: %d".format(slices_per_image))

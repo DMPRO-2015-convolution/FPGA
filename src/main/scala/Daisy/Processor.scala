@@ -42,7 +42,7 @@ class Processor(data_width: Int, val cols: Int, rows: Int, kernel_dim: Int) exte
 
     kernel_buffer.io.kernel_in    := ALUs.io.kernel_out
     kernel_buffer.io.stall        := processor_control.io.alu_stall
-    kernel_buffer.io.data_in      := io.control_data_in
+    kernel_buffer.io.data_in      := io.control_data_in(7, 0)
     kernel_buffer.io.load_kernel  := processor_control.io.load_kernel
 
     processor_control.io.input_valid      := io.input_valid

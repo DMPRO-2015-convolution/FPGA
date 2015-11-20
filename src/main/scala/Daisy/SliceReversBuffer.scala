@@ -9,9 +9,9 @@ import TidbitsOCM._
 class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
 
     val cols = kernel_dim*kernel_dim - 2
-    val total_enq = cols*(row_length - 2)
+    val total_enq = cols*row_length
     val total_deq = total_enq
-    val deqs_per_row = total_deq/7
+    val deqs_per_row = row_length
 
     println("Slice reverse buffer deqs per row is %d".format(deqs_per_row))
     
