@@ -22,6 +22,11 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         for(i <- 0 until 7){
             peek(c.ALUs.mappers(i).pixel_in)
         }
+        println("---------------------")
+
+        for(i <- 0 until 7){
+            peek(c.ALUs.selectors(i).dbg_state)
+        }
     }
 
     def inspect_alu_in(): Unit = {
@@ -102,10 +107,9 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         for(i <- 0 until cycles){
             poke(c.io.pixel_in, (i%9)+1)
             println("\n\n#############################################")
-            println("STEP: %d\n#############################################".format(i))
             println("#############################################")
-            // println("\nGRID\n")
-            // inspect_grid()
+            println("STEP: %d\n#############################################".format(i))
+            println("#############################################\n")
             inspect_alu_in()
             println("\nMAPPERS\n")
             inspect_mappers()
