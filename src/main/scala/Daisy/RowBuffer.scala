@@ -12,6 +12,9 @@ import TidbitsOCM._
 class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
     
     val io = new Bundle {
+
+        val reset = Bool(INPUT)
+
         val data_in = UInt(INPUT, data_width)
         val push = Bool(INPUT)
         val pop = Bool(INPUT)
@@ -24,6 +27,10 @@ class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
 
     val writePort = bram.ports(0)
     val readPort = bram.ports(1)
+
+    when(io.reset){
+        stack_top := UInt(0)
+    }
 
     writePort.req.writeData := io.data_in
     writePort.req.writeEn := Bool(false)

@@ -12,6 +12,9 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     val row_length_c = row_length
     
     val io = new Bundle {
+
+        val reset = Bool(INPUT)
+      
         val data_in = UInt(INPUT, data_width)
         val push = Bool(INPUT)
         val pop = Bool(INPUT)
@@ -24,6 +27,12 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     val push_row = Reg(init=UInt(0, 32))
     val pop_row  = Reg(init=UInt(0, 32))
     val push_top = Reg(init=UInt(0, 32))
+
+    when(io.reset){
+        pop_row := UInt(0)
+        push_row := UInt(0)
+        push_top := UInt(0)
+    }
 
     io.data_out := UInt(57005)
 
@@ -56,6 +65,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     // pop data 
     for(i <- 0 until cols){
+        row_buffers(i).reset := io.reset
         when(pop_row  === UInt(i)){
             row_buffers(i).pop := io.pop
             io.data_out := row_buffers( ((i-1)+cols) % cols ).data_out

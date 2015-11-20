@@ -4,10 +4,7 @@ import Chisel._
 import TidbitsOCM._
 
 class Tile( img_width: Int, 
-            control_data_width: Int, 
-            pixel_data_width: Int,
-            HDMI_data_width: Int, 
-            output_data_width: Int,
+            data_width: Int, 
             cols: Int, 
             rows: Int) extends Module{
 
@@ -15,15 +12,15 @@ class Tile( img_width: Int,
     val img_height = 480
 
     val io = new Bundle {
-        val control_data_in = UInt(INPUT, control_data_width)
+        val control_data_in = UInt(INPUT, data_width)
         val control_input_valid = Bool(INPUT)
 
-        val hdmi_data_in = UInt(INPUT, HDMI_data_width)
+        val hdmi_data_in = UInt(INPUT, data_width)
         val hdmi_input_valid = Bool(INPUT)
 
         val reset = Bool(INPUT)
 
-        val data_out = UInt(OUTPUT, output_data_width)
+        val data_out = UInt(OUTPUT, data_width)
         val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
         
@@ -33,10 +30,10 @@ class Tile( img_width: Int,
         val dbg_rdy_for_input = Bool(OUTPUT)
     }
 
-    val InputHandler = Module(new InputHandler(img_width, HDMI_data_width, pixel_data_width, kernel_dim))
-    val Processor = Module(new Processor(pixel_data_width, cols, rows, kernel_dim))
-    val SystemControl = Module(new TileController(control_data_width, pixel_data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
-    val OutputHandler = Module(new OutputHandler(img_width, pixel_data_width, output_data_width, img_height, kernel_dim))
+    val InputHandler = Module(new InputHandler(img_width, data_width, kernel_dim))
+    val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
+    val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, 10, Processor.first_valid_output))
+    val OutputHandler = Module(new OutputHandler(img_width, data_width, img_height, kernel_dim))
     
 
     // Input handler takes an input stream from any source and width and translates to data_width

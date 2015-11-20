@@ -64,6 +64,7 @@ class ProcessorController(data_width: Int, cols: Int, rows: Int, kernel_dims: In
         .otherwise{
             kernel_skew := kernel_skew + UInt(1)
         }
+        stage := UInt(0)
     }
 
     io.dbg_kernel_skew := kernel_skew

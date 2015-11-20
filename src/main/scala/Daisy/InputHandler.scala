@@ -7,22 +7,25 @@ import TidbitsOCM._
 
 // input buffer supports two way handshakes for determining data validity
 // currently this is only performed for input
-class InputHandler(img_width: Int, input_data_width: Int, data_width: Int, kernel_dim: Int) extends Module{
+class InputHandler(img_width: Int, data_width: Int, kernel_dim: Int) extends Module{
 
     val io = new Bundle {
+
+        val reset = Bool(INPUT)
 
         val data_mode = Bool(INPUT)
         val output_buffer_ready = Bool(INPUT)
 
         val input_ready = Bool(INPUT)
-        val data_in = UInt(INPUT, input_data_width)
+        val data_in = UInt(INPUT, data_width)
 
         val data_out = UInt(OUTPUT, data_width)
         val data_ready = Bool(OUTPUT)
 
     }
 
-    val input_buffer = Module(new SliceDoubleBuffer(img_width, input_data_width, data_width, kernel_dim))
+    val input_buffer = Module(new SliceDoubleBuffer(img_width, data_width, kernel_dim))
+    input_buffer.reset := io.reset
 
 
     io.data_out := UInt(57005)

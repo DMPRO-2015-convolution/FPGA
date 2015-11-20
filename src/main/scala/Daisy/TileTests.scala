@@ -33,7 +33,6 @@ class InputTest(c: Tile) extends Tester(c) {
         peek(c.Processor.processor_control.io.programming_mode)
         // println("\nTranslator")
         // println("----------------------------------")
-        // peek(c.SystemControl.translator.io)
         println("\n---------------------------------------\n")
     }
 
@@ -77,7 +76,6 @@ class InputTest(c: Tile) extends Tester(c) {
                 poke(c.io.control_input_valid, true)
                 inspect_kernels()
                 println("\n####################")
-                peek(c.SystemControl.translator.io)
                 println("####################\n")
                 inspect_program()
             }
@@ -102,7 +100,6 @@ class InputTest(c: Tile) extends Tester(c) {
                 poke(c.io.control_input_valid, true)
                 inspect_kernels()
                 println("\n####################")
-                peek(c.SystemControl.translator.io)
                 println("####################\n")
             }
             else{
@@ -187,17 +184,11 @@ class InputTest(c: Tile) extends Tester(c) {
     }
 
     def extract_output(): Unit = {
-        for(i <- 0 until 400){
-            if(i%4 == 0){
-                poke(c.io.request_processed_data, true)
-                peek(c.io.data_out)
-                peek(c.OutputHandler.io)
-            }else{
-                poke(c.io.request_processed_data, false)
-                peek(c.OutputHandler.io)
-            }
+        for(i <- 0 until 58*7){
+            poke(c.io.request_processed_data, true)
+            peek(c.io.data_out)
+            peek(c.OutputHandler.io)
             step(1)
-            
         }
     }
     
@@ -240,7 +231,7 @@ class InputTest(c: Tile) extends Tester(c) {
     poke(c.io.request_processed_data, true)
     peek(c.io)
     step(1)
-    // extract_output()
+    extract_output()
 
 
 

@@ -4,9 +4,9 @@ import Chisel._
 import TidbitsOCM._
 
 // Buffers output which can be fed out at whatever pace
-class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: Int, img_height: Int, kernel_dim: Int) extends Module {
+class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_dim: Int) extends Module {
  
-    val entries = (row_length*pixel_data_width)/output_data_width
+    val entries = row_length
 
     val mantle_width = (kernel_dim)/2
     val valid_rows_per_image = img_height - (mantle_width*2)
@@ -17,7 +17,7 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
     
     val io = new Bundle {
 
-        val data_in = UInt(INPUT, pixel_data_width)
+        val data_in = UInt(INPUT, data_width)
         val input_valid = Bool(INPUT)
 
         val ready_for_input = Bool(OUTPUT)
@@ -26,60 +26,39 @@ class OutputHandler(row_length: Int, pixel_data_width: Int, output_data_width: I
         val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
 
-        val data_out = UInt(OUTPUT, output_data_width)
+        val data_out = UInt(OUTPUT, data_width)
 
-        val dbg_output_buffer = new Bundle {
+        val dbg_enq_row = UInt(OUTPUT)
+        val dbg_deq_row = UInt(OUTPUT)
 
-            val can_enqueue = Bool(OUTPUT)
-            val can_dequeue = Bool(OUTPUT)
-
-            val data_out = UInt(OUTPUT, output_data_width)
-
-            val buf1 = UInt(OUTPUT, 32)
-            val buf2 = UInt(OUTPUT, 32)
-
-            val enq_row = UInt(OUTPUT, 32)
-            val deq_row = UInt(OUTPUT, 32)
-        }
+        val dbg_row_deq_count = UInt(OUTPUT)
     }
 
-    val translator = Module(new twentyfour_sixteen())
-    translator.io.req_in := Bool(false)
-    translator.io.req_out := Bool(false)
-    val output_buffer = Module(new SliceReverseBuffer(row_length: Int, pixel_data_width: Int, kernel_dim))
-    output_buffer.io.enqueue := Bool(false)
-    output_buffer.io.dequeue := Bool(false)
+    val output_buffer = Module(new SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim))
+    output_buffer.io.enq := Bool(false)
+    output_buffer.io.deq := Bool(false)
     output_buffer.io.data_in := io.data_in
 
-    // io.ready_for_input := Bool(false)
-    io.ready_for_input := output_buffer.io.can_enqueue
-    io.output_ready := output_buffer.io.can_dequeue
+    io.ready_for_input := output_buffer.io.can_enq
+    io.output_ready := output_buffer.io.can_deq
 
     val chip_sel = Reg(init=Bool(false)) 
 
     when(io.input_valid){
-        output_buffer.io.enqueue := Bool(true)
+        output_buffer.io.enq := Bool(true)
     }
-
-    translator.io.d_in := output_buffer.io.data_out
-    translator.io.req_out := io.request_output
     
     when(io.request_output){
-        translator.io.req_in := Bool(true)
-        output_buffer.io.dequeue := translator.io.rdy_in
+        output_buffer.io.deq := Bool(true)
     }
 
-    io.data_out := translator.io.d_out
-    io.output_valid := translator.io.rdy_out
+    io.output_valid := output_buffer.io.can_deq
+    io.data_out := output_buffer.io.data_out
 
 
-    io.dbg_output_buffer.can_enqueue := output_buffer.io.can_enqueue
-    io.dbg_output_buffer.can_dequeue := output_buffer.io.can_dequeue
-    io.dbg_output_buffer.data_out := output_buffer.io.data_out
-    io.dbg_output_buffer.buf1 := translator.io.dbg_buf1
-    io.dbg_output_buffer.buf2 := translator.io.dbg_buf2
-    io.dbg_output_buffer.enq_row := output_buffer.io.dbg_enq_row
-    io.dbg_output_buffer.deq_row := output_buffer.io.dbg_deq_row
+    io.dbg_enq_row := output_buffer.io.dbg_enq_row
+    io.dbg_deq_row := output_buffer.io.dbg_deq_row
+    io.dbg_row_deq_count := output_buffer.io.dbg_row_deq_count
 
 }
 
@@ -99,9 +78,6 @@ class OutputHandlerTest(c: OutputHandler) extends Tester(c) {
         poke(c.io.data_in, ((i%7)+1)*1118481)
         println()
         peek(c.io)
-        peek(c.translator.io)
-        peek(c.translator.inputs_finished)
-        peek(c.translator.outputs_finished)
         step(1)
     }
 
@@ -120,11 +96,8 @@ class OutputHandlerTest(c: OutputHandler) extends Tester(c) {
             outputs = outputs + 1
             poke(c.io.request_output, true)
             peek(c.io.data_out)
-            peek(c.output_buffer.dequeue_row)
-            peek(c.output_buffer.row_dequeue_count)
-            peek(c.translator.dbg_reads)
-            peek(c.translator.io.dbg_buf1)
-            peek(c.translator.io.dbg_buf2)
+            peek(c.output_buffer.deq_row)
+            peek(c.output_buffer.row_deq_count)
             println()
             println()
             println("outputs: %d".format(outputs))

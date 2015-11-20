@@ -8,7 +8,7 @@ import TidbitsOCM._
 // because there is a significant time delay between valid input and output.
 //
 // It is also responsible for handling programming of kernel values and operators
-class TileController(control_data_width: Int, pixel_data_width: Int, img_width: Int, kernel_dim: Int, remnant_outputs: Int, first_valid_output: Int) extends Module {
+class TileController(data_width: Int, img_width: Int, kernel_dim: Int, remnant_outputs: Int, first_valid_output: Int) extends Module {
 
     val mantle_width = (kernel_dim - 1)/2
     val valid_rows_per_slice = (kernel_dim*kernel_dim) - 2*mantle_width
@@ -23,10 +23,12 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
 
     val io = new Bundle {
 
-        val control_data_in = UInt(INPUT, control_data_width)
+        val reset = Bool(INPUT)
+
+        val control_data_in = UInt(INPUT, data_width)
         val control_input_valid = Bool(INPUT)
 
-        val processor_control_input = UInt(OUTPUT, control_data_width)
+        val processor_control_input = UInt(OUTPUT, data_width)
         val processor_control_input_valid = Bool(OUTPUT)
 
         val processor_input_is_valid = Bool(INPUT)
@@ -100,23 +102,15 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
     val stage = Reg(init=UInt(0, 32))
     val total_stages = total_kernels*2 + 2
 
-    val translator = Module(new sixteen_twentyfour() )
-
-    translator.io.req_in := io.control_input_valid
-    translator.io.d_in := io.control_data_in
-    translator.io.req_out := Bool(false)
-
-    io.processor_control_input := translator.io.d_out
-    io.processor_control_input_valid := Bool(false)
+    io.processor_control_input := io.control_data_in
+    io.processor_control_input_valid := io.control_input_valid
     io.processor_configure := Bool(false)
 
     when(state === control_mode){
         
         io.processor_configure := Bool(true)
 
-        when(translator.io.rdy_out){
-            translator.io.req_out := Bool(true)
-            io.processor_control_input_valid := Bool(true)
+        when(io.control_input_valid){
             stage := stage + UInt(1)
             io.processor_sleep := Bool(false)
 
@@ -124,6 +118,11 @@ class TileController(control_data_width: Int, pixel_data_width: Int, img_width: 
                 state := data_mode
             }
         }
+    }
+
+    when(io.reset){
+        state := control_mode    
+        stage := UInt(0)
     }
 }
 

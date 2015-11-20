@@ -6,7 +6,7 @@ import Chisel._
 import TidbitsOCM._
 
 
-class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_width: Int, kernel_dim: Int) extends Module {
+class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
 
     val cols = kernel_dim*kernel_dim
     val total_reads = row_length*cols
@@ -14,7 +14,10 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
 
 
     val io = new Bundle {
-        val data_in = UInt(INPUT, input_data_width)
+
+        val reset = Bool(INPUT)
+
+        val data_in = UInt(INPUT, data_width)
 
         val slave_read_input = Bool(INPUT)        // master requests the sdb to write data
         val slave_drive_output = Bool(INPUT)      // master requests to read data from sdb
@@ -22,12 +25,14 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
         val slave_can_read_input = Bool(OUTPUT)   // slave can be fed data
         val slave_can_drive_output = Bool(OUTPUT) // slave has valid output data
 
-        val data_out = UInt(OUTPUT, pixel_data_width)
+        val data_out = UInt(OUTPUT, data_width)
         val error = Bool(OUTPUT)
     }
 
-    val slice1 = Module(new SliceBuffer(row_length, pixel_data_width, kernel_dim))
-    val slice2 = Module(new SliceBuffer(row_length, pixel_data_width, kernel_dim))
+    val slice1 = Module(new SliceBuffer(row_length, data_width, kernel_dim))
+    val slice2 = Module(new SliceBuffer(row_length, data_width, kernel_dim))
+    slice1.reset := io.reset
+    slice2.reset := io.reset
 
     val reads_finished = Reg(init=Bool(false))
     val writes_finished = Reg(init=Bool(true))
@@ -48,6 +53,13 @@ class SliceDoubleBuffer(val row_length: Int, input_data_width: Int, pixel_data_w
     io.error := Bool(false)
     io.slave_can_read_input := Bool(false)
     io.slave_can_drive_output := Bool(false)
+
+    when(io.reset){
+        reads_performed := UInt(0)
+        writes_finished := UInt(0)
+        reads_finished := Bool(false)
+        writes_finished := Bool(true)
+    }
 
     // Handle read requests
     // This means we want to read some data from, which means we want the buffer to write data out
