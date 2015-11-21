@@ -49,7 +49,9 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     // #1 Valid input is being fed, but the output is not yet valid, leading to invalid output
     // #2 Valid input is being fed, validity is supplied by ALU
     // #3 Valid data is no longer being fed, but there is still valid output in the conveyor.
-    //    validity is decided by ALU
+    //    validity is decided by ALU. In order to provide borders, some invalid output is used
+    //    to pad the image.
+    //    
     // #4 Valid data is not being fed, the controller should wait 
   
     io.processor_output_is_valid := Bool(false)
@@ -97,7 +99,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
 
 
     val stage = Reg(init=UInt(0, 32))
-    val total_stages = total_kernels*2 + 2 + 1
+    val total_stages = total_kernels*2 + 2 + 2
 
     io.processor_control_input := io.control_data_in
     io.processor_control_input_valid := io.control_input_valid

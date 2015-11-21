@@ -89,7 +89,7 @@ class InputTest(c: Tile) extends Tester(c) {
         println("STARTING PROGRAM INPUT")
         var ops = 0
         var counter = 0
-        while(ops <= 9){
+        while(ops <= 10){
             if(counter%4 == 1){
                 ops = ops + 1
                 poke(c.io.control_input_valid, true)
