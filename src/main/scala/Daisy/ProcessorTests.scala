@@ -108,14 +108,17 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
             // inspect_kernels()
             step(1)
         }
+    }
+
+
+    def load_kernels(kernels: Array[Int]): Unit = {
+
+        var counter = 0
+
         for(i <- 0 until 19){
             if(i%2 == 1){
-                if(i/2 == identity){
-                    poke(c.io.control_data_in, 1)
-                }
-                else{
-                    poke(c.io.control_data_in, 0)
-                }
+                poke(c.io.control_data_in, kernels(counter))
+                counter = counter + 1
                 poke(c.io.input_valid, true)
             }
             else{
@@ -123,7 +126,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
                 poke(c.io.input_valid, false)
             }
             peek(c.processor_control.kernel_skew)
-            // inspect_kernels()
+            peek(c.processor_control.io)
             step(1)
         }
     }
@@ -158,6 +161,8 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         }
     }
 
+    val kernels = Array[Int](1, 2, 3, 4, 5, 6, 7, 8, 9)
+
     poke(c.io.pixel_in, 0)
     poke(c.io.control_data_in, 0)
     poke(c.io.processor_sleep, true)
@@ -166,9 +171,11 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     peek(c.io)
     peek(c.processor_control.io)
     load_program(0)
-    sleep(13)
-    poke(c.io.processor_sleep, false)
+    load_kernels(kernels)
     poke(c.io.processor_configure, false)
+    sleep(13)
+    assert(false)
+    poke(c.io.processor_sleep, false)
     // process_silent(28)
     process_data(5)
     assert(false)

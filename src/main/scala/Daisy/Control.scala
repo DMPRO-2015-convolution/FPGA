@@ -90,6 +90,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
             when(valid_processor_output_count < UInt(outputs_per_slice)){
                 io.processor_output_is_valid := Bool(true)
                 valid_processor_output_count := valid_processor_output_count + UInt(1)
+                
                 // when(io.ALU_output_is_valid){
                 //     valid_processor_output_count := valid_processor_output_count + UInt(1)
                 // }
