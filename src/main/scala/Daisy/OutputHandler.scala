@@ -25,6 +25,8 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
         val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
 
+        val frame_finished = Bool(OUTPUT)
+
         val data_out = UInt(OUTPUT, data_width)
 
         val dbg_enq_row = UInt(OUTPUT)
@@ -42,8 +44,6 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
     io.ready_for_input := output_buffer.io.can_enq
     io.output_ready := output_buffer.io.can_deq
 
-    val chip_sel = Reg(init=Bool(false)) 
-
     when(io.input_valid){
         output_buffer.io.enq := Bool(true)
     }
@@ -55,12 +55,24 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
     io.output_valid := output_buffer.io.can_deq
     io.data_out := output_buffer.io.data_out
 
-
     io.dbg_enq_row := output_buffer.io.dbg_enq_row
     io.dbg_deq_row := output_buffer.io.dbg_deq_row
     io.dbg_row_deq_count := output_buffer.io.dbg_row_deq_count
     io.dbg_enq_count := output_buffer.io.dbg_enq_count
 
+    val status = Reg(init=Bool(false))
+    val slice_counter = Reg(init=UInt(0, 8))
+
+    status := output_buffer.io.can_enq
+    
+    when(output_buffer.io.can_enq){
+        when(!status){
+            slice_counter := slice_counter + UInt(1)
+        }
+    }
+
+    when(slice_counter === UInt(slices_per_image)){
+    }
 }
 
 class OutputHandlerTest(c: OutputHandler) extends Tester(c) {
