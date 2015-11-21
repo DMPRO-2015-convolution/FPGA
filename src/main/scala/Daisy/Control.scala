@@ -16,6 +16,8 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
 
     val outputs_per_slice = img_width*valid_cols_per_slice
 
+    printf("outputs per slice: %d".format(outputs_per_slice))
+
     val total_kernels = kernel_dim*kernel_dim
 
     val io = new Bundle {
@@ -36,10 +38,13 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
 
         val processor_sleep = Bool(OUTPUT)
         val processor_configure = Bool(OUTPUT)
+
+        val dbg_processor_valid_output_count = UInt(OUTPUT, 32)
     }
 
     val valid_processor_input_count = Reg(init=UInt(0, 32))
     val valid_processor_output_count = Reg(init=UInt(0, 32))
+    io.dbg_processor_valid_output_count := valid_processor_output_count
     
     val control_mode :: data_mode :: Nil = Enum(UInt(), 2)
     val state = Reg(init=control_mode)

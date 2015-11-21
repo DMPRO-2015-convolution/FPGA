@@ -41,6 +41,7 @@ class Tile( img_width: Int,
     InputHandler.io.data_in := io.hdmi_data_in
     InputHandler.io.data_mode := ~SystemControl.io.processor_configure
     InputHandler.io.output_buffer_ready := OutputHandler.io.ready_for_input
+    InputHandler.io.reset := (io.reset || SystemControl.io.processor_configure)
 
     // Processor processes data. Incredible
     Processor.io.pixel_in := InputHandler.io.data_out

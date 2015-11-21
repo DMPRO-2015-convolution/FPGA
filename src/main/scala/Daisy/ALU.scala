@@ -92,7 +92,9 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     io.valid_out := Bool(false)
     for(i <- 0 until n_ALUs){
         when(flush_signals(i)){
-            // io.data_out := reducers(i).data_out
+            io.data_out(7, 0) := reducers(i).red_out
+            io.data_out(15, 8) := reducers(i).green_out
+            io.data_out(23, 16) := reducers(i).blue_out
             normalizer.io.red_in := reducers(i).red_out
             normalizer.io.green_in := reducers(i).green_out
             normalizer.io.blue_in := reducers(i).blue_out
@@ -100,7 +102,7 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         }
     }
 
-    io.data_out := normalizer.io.data_out
+    // io.data_out := normalizer.io.data_out
 
 
     def daisy_chain[T <: Data](input: T, elements: Vec[T]){

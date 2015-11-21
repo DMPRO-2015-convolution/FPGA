@@ -42,6 +42,10 @@ class InputTest(c: Tile) extends Tester(c) {
         for(i <- 0 until 7){
             peek(c.Processor.ALUs.mappers(i).dbg_instr)
         }
+
+        for(i <- 0 until 7){
+            peek(c.Processor.ALUs.reducers(i).dbg_instr)
+        }
         println()
     }
 
@@ -49,6 +53,7 @@ class InputTest(c: Tile) extends Tester(c) {
     def inspect_kernels(): Unit = {
         println("\nKernels")
         
+        peek(c.Processor.processor_control.kernel_skew)
         peek(c.Processor.kernel_buffer.io.dbg_kernel0)
         peek(c.Processor.kernel_buffer.io.dbg_kernel1)
         for(i <- 0 until 7){
@@ -95,6 +100,7 @@ class InputTest(c: Tile) extends Tester(c) {
                 poke(c.io.control_input_valid, true)
                 poke(c.io.control_data_in, 1)
                 peek(c.SystemControl.io)
+                peek(c.Processor.processor_control.kernel_skew)
                 inspect_kernels()
             }
             else{
@@ -124,20 +130,35 @@ class InputTest(c: Tile) extends Tester(c) {
         println("------------------------------------------")
     }
 
-    def load_row(value: Int): Unit = {
+    def load_row(value: Int, entries: Int): Unit = {
         var loads = 0
-        while(loads < 60){
+        while(loads < entries){
             if(r.nextInt(5) == 1){
                 loads = loads + 1
                 poke(c.io.hdmi_data_in, value)
                 poke(c.io.hdmi_input_valid, true)
-                peek(c.InputHandler.input_buffer.slice1.push_row)
-                peek(c.InputHandler.input_buffer.slice1.push_top)
             }
             else{
                 poke(c.io.hdmi_input_valid, false)
-                peek(c.InputHandler.input_buffer.slice1.push_row)
-                peek(c.InputHandler.input_buffer.slice1.push_top)
+            }
+            println("LOADS: %d".format(loads))
+            peek(c.InputHandler.input_buffer.slice1.push_row)
+            peek(c.InputHandler.input_buffer.slice1.push_top)
+            inspect_input_buffer()
+            step(1)
+        }
+    }
+
+    def load_row_sparse(value: Int, entries: Int): Unit = {
+        var loads = 0
+        while(loads < entries){
+            if(r.nextInt(5) == 1){
+                loads = loads + 1
+                poke(c.io.hdmi_data_in, value)
+                poke(c.io.hdmi_input_valid, true)
+            }
+            else{
+                poke(c.io.hdmi_input_valid, false)
             }
             step(1)
         }
@@ -145,7 +166,7 @@ class InputTest(c: Tile) extends Tester(c) {
 
 
     def inspect_input_buffer(): Unit = {
-        println("Taking a peak at input buffer")
+        println("Taking a peek at input buffer")
         peek(c.InputHandler.input_buffer.reads_finished)
         peek(c.InputHandler.input_buffer.writes_finished)
         peek(c.InputHandler.input_buffer.reads_performed)
@@ -158,16 +179,44 @@ class InputTest(c: Tile) extends Tester(c) {
         peek(c.InputHandler.input_buffer.slice2.push_row)
         peek(c.InputHandler.input_buffer.slice2.pop_row)
         peek(c.InputHandler.input_buffer.slice2.push_top)
+        println("INPUT HANDLER")
+        peek(c.InputHandler.io)
         println()
     }
 
-    def run_processor(runs: Int): Unit = {
+
+    def run_processor_ALU_focus(runs: Int): Unit = {
         for(i <- 0 until runs){
             println()
             println("OUTPUT STEP %d".format(i))
             println()
-            peek(c.Processor.io)
-            peek(c.SystemControl.io.processor_output_is_valid)
+            println("INPUT IS:\n")
+            inspect_input_buffer()
+            println("\n\nPROCESSOR STATE:\n\n")
+            inspect_processor()
+            // println("\n\nOUTPUT_STATE:\n\n")
+            // inspect_output_buffer()
+            println("\n\nFIN\n\n")
+            step(1)
+            println()
+        }
+    }
+
+
+    def run_processor_output_focus(runs: Int): Unit = {
+        for(i <- 0 until runs){
+            println()
+            println("OUTPUT STEP %d".format(i))
+            println()
+            // peek(c.SystemControl.io.dbg_processor_valid_output_count)
+            // println("INPUT IS:\n")
+            // inspect_input_buffer()
+            println("\n\nPROCESSOR STATE:\n\n")
+            // inspect_processor()
+            peek(c.Processor.io.ALU_data_out)
+            println("\n\nOUTPUT_STATE:\n\n")
+            inspect_output_buffer()
+            println("\n\nFIN\n\n")
             step(1)
             println()
         }
@@ -186,6 +235,37 @@ class InputTest(c: Tile) extends Tester(c) {
             step(1)
         }
     }
+
+    def inspect_processor(): Unit = {
+        peek(c.Processor.io)
+        peek(c.SystemControl.io.processor_output_is_valid)
+        peek(c.Processor.processor_control.io)
+
+        for(i <- 0 until 7){
+            peek(c.Processor.ALUs.mappers(i).pixel_in)
+        }
+        println("---------------------")
+
+        peek(c.Processor.ALUs.mappers(0).dbg_instr)
+
+        for(i <- 0 until 7){
+            peek(c.Processor.ALUs.selectors(i).dbg_state)
+        }
+
+        println("---------------------")
+
+        for(i <- 0 until 7){
+            peek(c.Processor.ALUs.reducers(i).red_in)
+            println("---------------------")
+            peek(c.Processor.ALUs.reducers(i).red_out)
+            println("---------------------")
+            peek(c.Processor.ALUs.reducers(i).flush)
+            println("---------------------\n")
+        }
+        peek(c.Processor.ALUs.reducers(0).dbg_instr)
+
+        peek(c.Processor.ALUs.io)
+    }
     
     poke(c.io.reset, false)
     step(1)
@@ -200,28 +280,34 @@ class InputTest(c: Tile) extends Tester(c) {
     println("REACTORS: ONLINE\n\nWEAPONS: ONLINE\n\nALL SYSTEMS NOMINAL\n\n")
     inspect_kernels()
     inspect_control()
-    assert(false)
-    load_row(1)
-    load_row(2)
-    load_row(3)
-    load_row(4)
-    load_row(5)
-    load_row(6)
-    load_row(7)
-    load_row(8)
-    load_row(9)
+    load_row(1, 60)
+    load_row_sparse(2, 60)
+    load_row_sparse(3, 60)
+    load_row_sparse(4, 60)
+    load_row_sparse(5, 60)
+    load_row_sparse(6, 60)
+    load_row_sparse(7, 60)
+    load_row_sparse(9, 60)
+    load_row(8, 60)
+    poke(c.io.control_data_in, 15)
+    inspect_kernels()
+    peek(c.Processor.processor_control.kernel_skew)
     inspect_control()
     inspect_input_buffer()
     peek(c.io.dbg_rdy_for_output)
     peek(c.io.dbg_rdy_for_input)
 
-    run_processor(60*9)       
+    poke(c.io.hdmi_input_valid, false)
+
+    run_processor_output_focus(9*60 + 30)       
+    assert(false)
+
+    inspect_program()
+    inspect_kernels()
     println("------")
-    run_processor(16)       
 
     inspect_output_buffer()
 
-    run_processor(2)       
 
     inspect_output_buffer()
 

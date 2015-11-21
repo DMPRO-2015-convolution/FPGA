@@ -31,6 +31,7 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
         val dbg_deq_row = UInt(OUTPUT)
 
         val dbg_row_deq_count = UInt(OUTPUT)
+        val dbg_enq_count = UInt(OUTPUT)
     }
 
     val output_buffer = Module(new SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim))
@@ -58,6 +59,7 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
     io.dbg_enq_row := output_buffer.io.dbg_enq_row
     io.dbg_deq_row := output_buffer.io.dbg_deq_row
     io.dbg_row_deq_count := output_buffer.io.dbg_row_deq_count
+    io.dbg_enq_count := output_buffer.io.dbg_enq_count
 
 }
 

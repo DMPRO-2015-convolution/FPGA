@@ -30,6 +30,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         val dbg_deq_row = UInt(OUTPUT, 32)
 
         val dbg_row_deq_count = UInt(OUTPUT, 32)
+        val dbg_enq_count = UInt(OUTPUT, 32)
     }
 
     val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
@@ -44,6 +45,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
 
     val enq_performed = Reg(init=UInt(0, 32))
     val deq_performed = Reg(init=UInt(0, 32))
+    io.dbg_enq_count := enq_performed
 
     val deq_mode :: enq_mode :: Nil = Enum(UInt(), 2)
     val mode = Reg(init=enq_mode)

@@ -45,7 +45,7 @@ object DaisyMain {
         /////////////////
         ///////////////////////////////////
         
-        // chiselMainTest(args, () => Module(new Processor(pixel_data_width, cols, rows, kernel_dim))) { c => new ProcessorRunTest(c) }
+        // chiselMainTest(args, () => Module(new Processor(data_width, cols, rows, kernel_dim))) { c => new ProcessorRunTest(c) }
 
 
 

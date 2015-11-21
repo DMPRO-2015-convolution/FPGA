@@ -24,7 +24,8 @@ class Reducer(data_width: Int) extends Module {
 
         val valid_out = Bool(OUTPUT)
 
-        val dbg_flush = Bool(OUTPUT)
+        val dbg_flush = SInt(OUTPUT, 4)
+        val dbg_instr = SInt(OUTPUT, 4) 
     } 
 
     val instruction = Reg(UInt(0, 4))
@@ -34,28 +35,29 @@ class Reducer(data_width: Int) extends Module {
     val green = Reg(init=SInt(0, 8))
     val blue = Reg(init=SInt(0, 8))
 
+
     when(!io.stall){
         
         when(io.load_instruction){
             instruction := io.red_in
         }
         .elsewhen(io.flush){ 
-            red := red
-            green := green
-            blue := blue
+            red := io.red_in
+            green := io.green_in
+            blue := io.blue_in
 
         }.otherwise{
             
             when(instruction === UInt(0)){
-                red := io.red_in            * red
-                green := io.green_in        * green
-                blue := io.blue_in          * blue
-            }
-
-            when(instruction === UInt(1)){
                 red := io.red_in            + red
                 green := io.green_in        + green
                 blue := io.blue_in          + blue
+            }
+
+            when(instruction === UInt(1)){
+                red := io.red_in            * red
+                green := io.green_in        * green
+                blue := io.blue_in          * blue
             }
 
             when(instruction === UInt(2)){
@@ -65,6 +67,9 @@ class Reducer(data_width: Int) extends Module {
             }
         }
     }
+
+    io.dbg_instr := instruction
+    io.dbg_flush := io.flush
 
     io.red_out := red
     io.green_out := green

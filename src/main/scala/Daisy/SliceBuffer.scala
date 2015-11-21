@@ -37,7 +37,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     io.data_out := UInt(57005)
 
     // Maintain push row
-    when(push_top === UInt(row_length - 1)){
+    when(push_top === UInt(row_length)){
         push_top := UInt(0)
         when(push_row < UInt(cols)){
             push_row := push_row + UInt(1)
@@ -47,7 +47,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     }
 
     when(io.push){
-        when(push_top === UInt(row_length - 1)){
+        when(push_top === UInt(row_length)){
             push_top := UInt(0)
         }.otherwise{
             push_top := push_top + UInt(1)
@@ -68,7 +68,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
         row_buffers(i).reset := io.reset
         when(pop_row  === UInt(i)){
             row_buffers(i).pop := io.pop
-            io.data_out := row_buffers( ((i-1)+cols) % cols ).data_out
+            io.data_out := row_buffers(i).data_out
         }.otherwise{
             row_buffers(i).pop := Bool(false)
         }
