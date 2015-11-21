@@ -38,7 +38,11 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
         for(i <- 0 until 7){
             peek(c.ALUs.selectors(i).dbg_state)
         }
+        println("---------------------")
 
+        for(i <- 0 until 7){
+            peek(c.ALUs.mappers(i).dbg_kernel)
+        }
         println("---------------------")
 
         // for(i <- 0 until 7){
@@ -140,7 +144,7 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
 
     def process_data(cycles: Int) : Unit = {
         for(i <- 0 until cycles){
-            poke(c.io.pixel_in, (i%9)+1)
+            poke(c.io.pixel_in, 1)
             println("\n\n#############################################")
             println("#############################################")
             println("STEP: %d\n#############################################".format(i))
@@ -174,10 +178,9 @@ class ProcessorRunTest(c: Processor) extends Tester(c) {
     load_kernels(kernels)
     poke(c.io.processor_configure, false)
     sleep(13)
-    assert(false)
     poke(c.io.processor_sleep, false)
-    // process_silent(28)
-    process_data(5)
+    process_silent(28)
+    process_data(15)
     assert(false)
     poke(c.io.processor_sleep, true)
     sleep(20)

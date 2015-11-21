@@ -61,9 +61,9 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
     mappers(0).stall := io.stall
     mappers(0).load_instruction := io.load_instruction
 
-    reducers(0).red_in := mappers(0).red
-    reducers(0).green_in := mappers(0).green
-    reducers(0).blue_in := mappers(0).blue
+    reducers(0).red_in := mappers(0).red_out
+    reducers(0).green_in := mappers(0).green_out
+    reducers(0).blue_in := mappers(0).blue_out
 
     reducers(0).stall := io.stall
     reducers(0).load_instruction := io.load_instruction
@@ -72,9 +72,9 @@ class ALUrow(data_width: Int, cols: Int, rows: Int, kernel_dim: Int) extends Mod
         mappers(i).kernel_in := mappers(i-1).kernel_out    
         mappers(i).pixel_in := selectors(i).data_out
 
-        reducers(i).red_in := mappers(i).red
-        reducers(i).green_in := mappers(i).green
-        reducers(i).blue_in := mappers(i).blue
+        reducers(i).red_in := mappers(i).red_out
+        reducers(i).green_in := mappers(i).green_out
+        reducers(i).blue_in := mappers(i).blue_out
 
         mappers(i).stall := io.stall
         reducers(i).stall := io.stall

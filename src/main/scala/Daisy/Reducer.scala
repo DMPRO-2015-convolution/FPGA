@@ -55,16 +55,22 @@ class Reducer(data_width: Int) extends Module {
             }
 
             when(instruction === UInt(1)){
-                red := io.red_in            * red
-                green := io.green_in        * green
-                blue := io.blue_in          * blue
+                red := io.red_in            + red
+                green := io.green_in        + green
+                blue := io.blue_in          + blue
             }
 
             when(instruction === UInt(2)){
-                when(red < io.red_in)       { red := io.red_in     } 
-                when(green < io.green_in)   { green := io.green_in } 
-                when(blue < io.blue_in)     { blue := io.blue_in   } 
+                red := io.red_in            + red
+                green := io.green_in        + green
+                blue := io.blue_in          + blue
             }
+
+            // when(instruction === UInt(2)){
+            //     when(red < io.red_in)       { red := io.red_in     } 
+            //     when(green < io.green_in)   { green := io.green_in } 
+            //     when(blue < io.blue_in)     { blue := io.blue_in   } 
+            // }
         }
     }
 

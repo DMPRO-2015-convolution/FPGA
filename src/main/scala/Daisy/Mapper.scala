@@ -16,9 +16,9 @@ class Mapper(data_width: Int) extends Module {
         val kernel_in = SInt(INPUT, 8)
         val stall = Bool(INPUT)
 
-        val red = SInt(OUTPUT, 8) 
-        val green = SInt(OUTPUT, 8) 
-        val blue = SInt(OUTPUT, 8) 
+        val red_out = SInt(OUTPUT, 8) 
+        val green_out = SInt(OUTPUT, 8) 
+        val blue_out = SInt(OUTPUT, 8) 
 
         val kernel_out = SInt(OUTPUT, 8)
 
@@ -35,6 +35,10 @@ class Mapper(data_width: Int) extends Module {
     val green = Reg(init=UInt(0, 8))
     val blue = Reg(init=UInt(0, 8))
 
+    io.red_out   := UInt(0)
+    io.green_out := UInt(0)
+    io.blue_out  := UInt(0)
+
     io.dbg_kernel := kernel
     io.dbg_instr := instruction
 
@@ -43,7 +47,7 @@ class Mapper(data_width: Int) extends Module {
 
         when(io.load_instruction){
             instruction := io.kernel_in(3, 0)
-            io.red := io.kernel_in(7, 0)
+            io.red_out := io.kernel_in(7, 0)
         }
 
         kernel := io.kernel_in
@@ -56,24 +60,21 @@ class Mapper(data_width: Int) extends Module {
         }
 
         when(instruction === UInt(1)){
-            red := io.pixel_in(7, 0)         + kernel
-            green := io.pixel_in(15, 8)      + kernel
-            blue := io.pixel_in(23, 16)      + kernel
+            red := io.pixel_in(7, 0)         * kernel
+            green := io.pixel_in(15, 8)      * kernel
+            blue := io.pixel_in(23, 16)      * kernel
         }
 
         when(instruction === UInt(2)){
-            red := io.pixel_in(7, 0)         / kernel
-            green := io.pixel_in(15, 8)      / kernel
-            blue := io.pixel_in(23, 16)      / kernel
+            red := io.pixel_in(7, 0)         * kernel
+            green := io.pixel_in(15, 8)      * kernel
+            blue := io.pixel_in(23, 16)      * kernel
         }
     }
 
-    io.red := UInt(0)
-    io.green := UInt(0)
-    io.blue := UInt(0)
 
-    io.red(7, 0)    := red
-    io.green(15, 8) := green
-    io.blue(23, 16) := blue
+    io.red_out    := red
+    io.green_out  := green
+    io.blue_out   := blue
 
 }
