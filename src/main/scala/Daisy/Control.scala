@@ -16,7 +16,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
 
     val outputs_per_slice = img_width*valid_cols_per_slice
 
-    printf("outputs per slice: %d".format(outputs_per_slice))
+    // printf("outputs per slice: %d".format(outputs_per_slice))
 
     val total_kernels = kernel_dim*kernel_dim
 
