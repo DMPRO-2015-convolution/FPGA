@@ -14,9 +14,13 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     val valid_rows_per_slice = (kernel_dim*kernel_dim) - 2*mantle_width
     val valid_cols_per_slice = img_width - 2*mantle_width
 
-    val outputs_per_slice = img_width*valid_cols_per_slice
+    val outputs_per_slice = img_width*valid_rows_per_slice
 
-    // printf("outputs per slice: %d".format(outputs_per_slice))
+    println("mantle width %d".format(mantle_width))
+    println("valid rows per slice %d".format(valid_rows_per_slice))
+    println("valid cols per slice %d".format(valid_cols_per_slice))
+    println("image width %d".format(img_width))
+    println("outputs per slice: %d".format(outputs_per_slice))
 
     val total_kernels = kernel_dim*kernel_dim
 
@@ -84,10 +88,11 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
         .elsewhen(valid_processor_output_count > UInt(0)){
             // 3
             when(valid_processor_output_count < UInt(outputs_per_slice)){
-                when(io.ALU_output_is_valid){
-                    io.processor_output_is_valid := Bool(true)
-                    valid_processor_output_count := valid_processor_output_count + UInt(1)
-                }
+                io.processor_output_is_valid := Bool(true)
+                valid_processor_output_count := valid_processor_output_count + UInt(1)
+                // when(io.ALU_output_is_valid){
+                //     valid_processor_output_count := valid_processor_output_count + UInt(1)
+                // }
             }
         }
 
