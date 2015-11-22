@@ -35,6 +35,12 @@ class Tile( img_width: Int,
     val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, Processor.first_valid_output))
     val OutputHandler = Module(new OutputHandler(img_width, data_width, img_height, kernel_dim))
     
+    io.output_ready := Bool(false)
+    io.output_valid := Bool(false)
+    io.dbg_rdy_for_input := Bool(false)
+    io.dbg_rdy_for_output := Bool(false)
+    io.data_out := UInt(0, 8)
+
 
     // Input handler takes an input stream from any source and width and translates to data_width
     InputHandler.io.input_ready := io.hdmi_input_valid

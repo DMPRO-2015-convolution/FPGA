@@ -34,6 +34,9 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     slice1.reset := io.reset
     slice2.reset := io.reset
 
+    val bonus_row1 = Module(new Rowbuffer(row_length, data_width, 11))
+    val bonus_row2 = Module(new Rowbuffer(row_length, data_width, 22))
+
     val reads_finished = Reg(init=Bool(false))
     val writes_finished = Reg(init=Bool(true))
 
