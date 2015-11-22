@@ -6,7 +6,7 @@ import Chisel._
 // to handle more interesting features. Low priority, but should be parametrized
 // somewhere down the road.
 
-class Mapper(data_width: Int) extends Module {
+class Mapper(data_width: Int, kernel_defauls: Int) extends Module {
 
     val io = new Bundle { 
 

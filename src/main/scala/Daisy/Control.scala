@@ -51,7 +51,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     io.dbg_processor_valid_output_count := valid_processor_output_count
     
     val control_mode :: data_mode :: Nil = Enum(UInt(), 2)
-    val state = Reg(init=control_mode)
+    val state = Reg(init=data_mode)
 
     // When a slice is fed to the Processor we have the following cases:
     //
@@ -131,7 +131,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     }
 
     when(io.reset){
-        state := control_mode    
+        state := data_mode
         stage := UInt(0)
     }
 }
