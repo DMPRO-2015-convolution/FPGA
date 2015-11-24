@@ -34,6 +34,9 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     slice1.reset := io.reset
     slice2.reset := io.reset
 
+    val bonus_row1 = Module(new RowBuffer(row_length, data_width, 0))
+    val bonus_row2 = Module(new RowBuffer(row_length, data_width, 0))
+
     val push_finished = Reg(init=Bool(false))
     val pop_finished = Reg(init=Bool(true))
 
@@ -42,13 +45,28 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
     val current = Reg(init=Bool(false))
 
+    val bonus_mode :: normal_mode = Enum(UInt(), 2)
+    val fill_mode = Reg(init=bonus_mode)
+
     // defaults
     slice1.io.pop := Bool(false)
-    slice2.io.pop := Bool(false)
     slice1.io.push := Bool(false)
-    slice2.io.push := Bool(false)
     slice1.io.data_in := UInt(0)
+
+    slice2.io.pop := Bool(false)
+    slice2.io.push := Bool(false)
     slice2.io.data_in := UInt(0)
+
+    bonus_row1.io.reset := io.reset
+    bonus_row1.io.data_in := io.data_in
+    bonus_row1.io.push := Bool(false)
+    bonus_row1.io.pop := Bool(false)
+
+    bonus_row2.io.reset := io.reset
+    bonus_row2.io.data_in := io.data_in
+    bonus_row2.io.push := Bool(false)
+    bonus_row2.io.pop := Bool(false)
+
     io.data_out := UInt(0)
     io.error := Bool(false)
     io.slave_can_push_input := Bool(false)
@@ -63,12 +81,22 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
     // Handle input data
     when(io.slave_push_input){
-        when(current === Bool(false)){
-            slice1.io.push := Bool(true)
-            slice1.io.data_in := io.data_in
-        }.otherwise{
-            slice2.io.push := Bool(true)
-            slice2.io.data_in := io.data_in
+        when(fill_mode === bonus_mode){
+            when(current === Bool(false)){
+                bonus_row1.io.push := Bool(true)
+            }
+            .otherwise{
+                bonus_row2.io.push := Bool(true)
+            }
+        }
+        .otherwise{
+            when(current === Bool(false)){
+                slice1.io.push := Bool(true)
+                slice1.io.data_in := io.data_in
+            }.otherwise{
+                slice2.io.push := Bool(true)
+                slice2.io.data_in := io.data_in
+            }
         }
 
         push_performed := push_performed + UInt(1)

@@ -8,7 +8,7 @@ import TidbitsOCM._
 
 class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
 
-    val cols = kernel_dim*kernel_dim
+    val cols = kernel_dim*kernel_dim - 1
     val row_length_c = row_length
 
     val io = new Bundle {
