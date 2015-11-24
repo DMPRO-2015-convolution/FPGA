@@ -13,7 +13,7 @@ object DaisyMain {
 
         // val daisy = Module(new Tile(img_width, data_width, cols, rows))
 
-        chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
+        // chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
 
 
         ///////////////////////////////////
@@ -27,7 +27,7 @@ object DaisyMain {
         // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
 
 
-        // chiselMainTest(args, () => Module(new BRAMtest())) { c => new TestTest(c) }
+        chiselMainTest(args, () => Module(new BRAMtest())) { c => new TestTest(c) }
 
         ///////////////////////////////////
         /////////////////
