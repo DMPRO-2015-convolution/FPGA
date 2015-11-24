@@ -8,8 +8,7 @@ import TidbitsOCM._
 
 class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
 
-    val cols = kernel_dim*kernel_dim - 1
-    val row_length_c = row_length
+    val cols = kernel_dim*kernel_dim - 2
 
     val io = new Bundle {
 
@@ -20,6 +19,8 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
         val pop = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width)
+        val push_row = UInt(OUTPUT, 8)
+        val pop_row = UInt(OUTPUT, 8)
     }
 
     val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
@@ -34,6 +35,8 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
         push_top := UInt(0)
     }
 
+    io.push_row := push_row
+    io.pop_row := pop_row
     io.data_out := UInt(57005)
 
     // Maintain push row
