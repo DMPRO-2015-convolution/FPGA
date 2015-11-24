@@ -13,8 +13,6 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
     val total_deq = total_enq
     val deqs_per_row = row_length
 
-    println("Slice reverse buffer deqs per row is %d".format(deqs_per_row))
-
     val io = new Bundle {
 
         val reset = Bool(INPUT)
@@ -58,12 +56,17 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
 
 
     // Maintain deq row
-    when(row_deq_count === UInt(row_length)){
-        row_deq_count := UInt(0)
-        when(deq_row < UInt(cols)){
-            deq_row := deq_row + UInt(1)
-        }.otherwise{
-            deq_row := UInt(0)
+    when(io.deq){
+        when(row_deq_count === UInt(row_length)){
+            when(deq_row < UInt(cols)){
+                deq_row := deq_row + UInt(1)
+            }.otherwise{
+                deq_row := UInt(0)
+            }
+            row_deq_count := UInt(0)
+        }
+        .otherwise{
+            row_deq_count := row_deq_count + UInt(1)
         }
     }
 

@@ -53,23 +53,23 @@ class Mapper(data_width: Int, kernel_defauls: Int) extends Module {
         kernel := io.kernel_in
         io.kernel_out := kernel
 
-        when(instruction === UInt(0)){
-            red := io.pixel_in(7, 0)         * kernel
-            green := io.pixel_in(15, 8)      * kernel
-            blue := io.pixel_in(23, 16)      * kernel
-        }
+        // when(instruction === UInt(0)){
+        red := io.pixel_in(7, 0)         * UInt(1)
+        green := io.pixel_in(15, 8)      * UInt(1)
+        blue := io.pixel_in(23, 16)      * UInt(1)
+        // }
 
-        when(instruction === UInt(1)){
-            red := io.pixel_in(7, 0)         * kernel
-            green := io.pixel_in(15, 8)      * kernel
-            blue := io.pixel_in(23, 16)      * kernel
-        }
+        // when(instruction === UInt(1)){
+        //     red := io.pixel_in(7, 0)         * kernel
+        //     green := io.pixel_in(15, 8)      * kernel
+        //     blue := io.pixel_in(23, 16)      * kernel
+        // }
 
-        when(instruction === UInt(2)){
-            red := io.pixel_in(7, 0)         * kernel
-            green := io.pixel_in(15, 8)      * kernel
-            blue := io.pixel_in(23, 16)      * kernel
-        }
+        // when(instruction === UInt(2)){
+        //     red := io.pixel_in(7, 0)         * kernel
+        //     green := io.pixel_in(15, 8)      * kernel
+        //     blue := io.pixel_in(23, 16)      * kernel
+        // }
     }
 
 

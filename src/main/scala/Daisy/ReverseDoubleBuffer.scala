@@ -13,8 +13,6 @@ class ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim: Int) ext
 
     val io = new Bundle {
 
-        val some_numbers = UInt(INPUT, data_width)
-
         val reset = Bool(INPUT)
         val data_in = UInt(INPUT, data_width)
 
@@ -24,11 +22,7 @@ class ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim: Int) ext
         val slave_can_enq_input = Bool(OUTPUT)   // slave can be fed data
         val slave_can_deq_output = Bool(OUTPUT) // slave has valid output data
 
-
         val data_out = UInt(OUTPUT, data_width)
-        val error = Bool(OUTPUT)
-
-        val dbg_mode = UInt(OUTPUT, 32)
     }
 
     val slice1 = Module(new SliceReverseBuffer(row_length, data_width, kernel_dim))
@@ -43,7 +37,6 @@ class ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim: Int) ext
 
     val init_mode :: normal_mode :: Nil = Enum(UInt(), 2)
     val mode = Reg(init=UInt(init_mode))
-    io.dbg_mode := mode
 
     val enq_performed = Reg(init=UInt(0, 32))
     val deq_performed = Reg(init=UInt(0, 32))
@@ -60,8 +53,8 @@ class ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim: Int) ext
     slice2.io.deq := Bool(false)
     slice1.io.deq := Bool(false)
     slice2.io.enq := Bool(false)
-    slice1.io.data_in := UInt(0)
-    slice2.io.data_in := UInt(0)
+    slice1.io.data_in := io.data_in
+    slice2.io.data_in := io.data_in
     io.data_out := UInt(0)
     io.slave_can_enq_input := Bool(false)
     io.slave_can_deq_output := Bool(false)
@@ -133,6 +126,74 @@ class ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim: Int) ext
 
 }
 
-
 class RDBtest(c: ReverseDoubleBuffer) extends Tester(c) {
+
+    poke(c.io.reset, false)
+    poke(c.io.slave_enq_input, true)
+    poke(c.io.slave_deq_output, false)
+
+    for(i <- 0 until 70){
+        poke(c.io.data_in, (i%7) + 1)
+        peek(c.current)
+        println()
+        peek(c.io)
+        println()
+        peek(c.slice1.io.dbg_enq_row)
+        peek(c.slice2.io.dbg_enq_row)
+        println()
+        peek(c.slice1.io.data_in)
+        peek(c.slice2.io.data_in)
+        step(1)
+    }
+
+    for(i <- 0 until 70){
+        poke(c.io.data_in, (i%7) + 1)
+        peek(c.current)
+        println()
+        peek(c.io)
+        println()
+        peek(c.slice1.io.dbg_enq_row)
+        peek(c.slice2.io.dbg_enq_row)
+        println()
+        peek(c.slice1.io.data_in)
+        peek(c.slice2.io.data_in)
+        step(1)
+    }
+
+    peek(c.io)
+    step(1)
+    peek(c.io)
+
+    poke(c.io.slave_deq_output, true)
+    poke(c.io.slave_enq_input, false)
+    step(1)
+    peek(c.io.slave_deq_output)
+    // poke(c.io.slave_enq_input, false)
+    for(i <- 0 until 70){
+        poke(c.io.data_in, (i%7) + 1)
+        peek(c.current)
+        println()
+        peek(c.io)
+        println()
+        peek(c.slice1.io.deq)
+        peek(c.slice1.io.dbg_enq_row)
+        peek(c.slice1.io.dbg_deq_row)
+        peek(c.slice1.io.dbg_row_deq_count)
+        println()
+        peek(c.slice2.io.deq)
+        peek(c.slice2.io.dbg_deq_row)
+        peek(c.slice2.io.dbg_enq_row)
+        peek(c.slice2.io.dbg_row_deq_count)
+        println()
+        peek(c.slice1.io.data_in)
+        peek(c.slice2.io.data_in)
+        println()
+        println()
+        peek(c.io.data_out)
+        peek(c.slice1.io.data_out)
+        peek(c.slice2.io.data_out)
+        println()
+        println()
+        step(1)
+    }
 }

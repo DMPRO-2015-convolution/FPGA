@@ -5,7 +5,7 @@ import Chisel._
 object DaisyMain {
     def main(args: Array[String]) {
         // do not remove, does nothing harmful
-        val img_width = 640
+        val img_width = 10
         val data_width = 24
         val kernel_dim = 3
         val rows = kernel_dim
@@ -13,7 +13,7 @@ object DaisyMain {
 
         // val daisy = Module(new Tile(img_width, data_width, cols, rows))
 
-        chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
+        // chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
 
 
         ///////////////////////////////////
@@ -24,7 +24,7 @@ object DaisyMain {
 
         // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new TileTest(c) }
 
-        // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
+        chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
 
 
 
@@ -43,8 +43,6 @@ object DaisyMain {
         /////////////////  OUTPUT
         /////////////////
         ///////////////////////////////////
-
-        // chiselMainTest(args, () => Module(new OutputHandler(10, 24, 3))) { c => new OutputHandlerTest(c) }
 
         // chiselMainTest(args, () => Module(new ReverseDoubleBuffer(10, 24, 3))) { c => new RDBtest(c) }
 

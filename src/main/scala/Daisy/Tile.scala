@@ -68,11 +68,13 @@ class Tile( img_width: Int,
     // io.output_valid := OutputHandler.io.output_ready
     // io.output_valid := Bool(true)
 
+    OutputBuffer.io.reset := io.reset
     OutputBuffer.io.data_in := Processor.io.ALU_data_out
     OutputBuffer.io.slave_enq_input := SystemControl.io.processor_output_is_valid
     OutputBuffer.io.slave_deq_output := io.request_processed_data
 
     io.output_valid := OutputBuffer.io.slave_can_deq_output
+    io.data_out := OutputBuffer.io.data_out
 
 }
 
