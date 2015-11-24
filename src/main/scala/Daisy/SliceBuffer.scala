@@ -20,7 +20,10 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
         val data_out = UInt(OUTPUT, data_width)
         val push_row = UInt(OUTPUT, 8)
+
         val pop_row = UInt(OUTPUT, 8)
+        val push_top = UInt(OUTPUT, 16)
+
     }
 
     val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
@@ -38,11 +41,12 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     io.push_row := push_row
     io.pop_row := pop_row
     io.data_out := UInt(57005)
+    io.push_top := push_top
 
     // Maintain push row
-    when(push_top === UInt(row_length)){
+    when(push_top === UInt(row_length - 1)){
         push_top := UInt(0)
-        when(push_row < UInt(cols)){
+        when(push_row < UInt(cols - 1)){
             push_row := push_row + UInt(1)
         }.otherwise{
             push_row := UInt(0)
@@ -50,8 +54,13 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     }
 
     when(io.push){
-        when(push_top === UInt(row_length)){
+        when(push_top === UInt(row_length - 1)){
             push_top := UInt(0)
+            when(push_row < UInt(cols - 1)){
+                push_row := push_row + UInt(1)
+            }.otherwise{
+                push_row := UInt(0)
+            }
         }.otherwise{
             push_top := push_top + UInt(1)
         }
@@ -59,7 +68,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     // Maintain pop row
     when(io.pop){
-        when(pop_row < UInt(cols-1)){
+        when(pop_row < UInt(cols - 1)){
             pop_row := pop_row  + UInt(1)    
         }.otherwise{
             pop_row  := UInt(0)

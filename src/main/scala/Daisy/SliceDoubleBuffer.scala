@@ -9,7 +9,7 @@ import TidbitsOCM._
 class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) extends Module {
 
     val cols = kernel_dim*kernel_dim
-    val total_push = row_length*cols
+    val total_push = row_length*(cols - 2)
     val total_pops = row_length*cols
 
 
@@ -57,10 +57,12 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     slice1.io.pop := Bool(false)
     slice1.io.push := Bool(false)
     slice1.io.data_in := UInt(0)
+    slice1.io.reset := io.reset
 
     slice2.io.pop := Bool(false)
     slice2.io.push := Bool(false)
     slice2.io.data_in := UInt(0)
+    slice2.io.reset := io.reset
 
     slice1_bonus_row1.io.reset := io.reset
     slice1_bonus_row1.io.data_in := io.data_in
@@ -152,16 +154,22 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
     when(io.slave_pop_output){
         when(current === Bool(true)){
             when(bonus_pop === UInt(0)){
+
                 bonus_pop := UInt(1)
                 slice2_bonus_row1.io.pop := Bool(true)
+                io.data_out := slice2_bonus_row1.io.data_out
+
             }.elsewhen(bonus_pop === UInt(1)){
+
                 bonus_pop := UInt(2)
                 slice2_bonus_row2.io.pop := Bool(true)
+                io.data_out := slice2_bonus_row2.io.data_out
+
             }
             .otherwise{
                 slice1.io.pop := Bool(true)
                 io.data_out := slice1.io.data_out
-                when(slice1.io.pop_row === UInt(7)){
+                when(slice1.io.pop_row === UInt(6)){
                     bonus_pop := UInt(0)
                 }
             }
@@ -169,20 +177,27 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
         }.otherwise{
             when(bonus_pop === UInt(0)){
+
                 bonus_pop := UInt(1)
                 slice1_bonus_row1.io.pop := Bool(true)
+                io.data_out := slice2_bonus_row1.io.data_out
+
             }.elsewhen(bonus_pop === UInt(1)){
+
+                io.data_out := slice2_bonus_row1.io.data_out
                 bonus_pop := UInt(2)
                 slice1_bonus_row2.io.pop := Bool(true)
+
             }
             .otherwise{
                 slice2.io.pop := Bool(true)
                 io.data_out := slice2.io.data_out
-                when(slice2.io.pop_row === UInt(7)){
+                when(slice2.io.pop_row === UInt(6)){
                     bonus_pop := UInt(0)
                 }
             }
             pop_performed := pop_performed + UInt(1)
+
         }
     }
 
@@ -218,4 +233,48 @@ class SliceDoubleBuffer(val row_length: Int, data_width: Int, kernel_dim: Int) e
 
 
 class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
-} 
+
+    poke(c.io.slave_pop_output, false)
+    poke(c.io.reset, false)
+    for(i <- 0 until 90){
+        poke(c.io.data_in, (i/10) + 1)
+        poke(c.io.slave_push_input, true)
+        println()
+        peek(c.io)
+        println()
+        peek(c.slice1.io)
+        println()
+        peek(c.fill_mode)
+        step(1)
+    }
+
+    peek(c.io)
+    peek(c.slice1.io)
+    poke(c.io.slave_push_input, false)
+    step(1)
+    peek(c.io)
+    peek(c.slice1.io)
+
+    step(1)
+    poke(c.io.slave_pop_output, true)
+    poke(c.io.slave_push_input, true)
+    for(i <- 0 until 30){
+        println("-----------------------")
+        poke(c.io.data_in, (i/10) + 1)
+        poke(c.io.slave_push_input, true)
+        println()
+        peek(c.io)
+        println()
+        peek(c.slice1.io)
+        println()
+        peek(c.slice2.io)
+        println()
+        peek(c.fill_mode)
+        println()
+        peek(c.io.data_out)
+        println()
+        peek(c.bonus_pop)
+        println("-----------------------")
+        step(1)
+    }
+}
