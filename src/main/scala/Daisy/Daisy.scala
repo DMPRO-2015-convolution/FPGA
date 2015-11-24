@@ -22,12 +22,14 @@ object DaisyMain {
         /////////////////
         ///////////////////////////////////
 
-        // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new TileTest(c) }
+        chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new TileTest(c) }
 
-        // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
+        chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
 
 
-        chiselMainTest(args, () => Module(new BRAMtest())) { c => new TestTest(c) }
+
+
+        // chiselMainTest(args, () => Module(new BRAMtest())) { c => new TestTest(c) }
 
         ///////////////////////////////////
         /////////////////
