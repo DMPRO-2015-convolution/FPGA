@@ -13,8 +13,10 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
     val slices_per_image = valid_rows_per_image / (kernel_dim*kernel_dim - 2)
 
     println("Slices: %d".format(slices_per_image))
-    
+
     val io = new Bundle {
+
+        val reset = Bool(INPUT)
 
         val data_in = UInt(INPUT, data_width)
         val input_valid = Bool(INPUT)
@@ -23,118 +25,34 @@ class OutputHandler(row_length: Int, data_width: Int, img_height: Int, kernel_di
 
         val request_output = Bool(INPUT)
         val output_ready = Bool(OUTPUT)
-        val output_valid = Bool(OUTPUT)
 
         val frame_finished = Bool(OUTPUT)
 
         val data_out = UInt(OUTPUT, data_width)
 
-        val dbg_enq_row = UInt(OUTPUT)
-        val dbg_deq_row = UInt(OUTPUT)
-
-        val dbg_row_deq_count = UInt(OUTPUT)
-        val dbg_enq_count = UInt(OUTPUT)
     }
 
-    val output_buffer = Module(new SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim))
-    output_buffer.io.enq := Bool(false)
-    output_buffer.io.deq := Bool(false)
-    output_buffer.io.data_in := io.data_in
+    val output_buffer = Module(new ReverseDoubleBuffer(row_length: Int, data_width: Int, kernel_dim))
+    output_buffer.reset := io.reset
 
-    io.ready_for_input := output_buffer.io.can_enq
-    io.output_ready := output_buffer.io.can_deq
 
-    when(io.input_valid){
-        output_buffer.io.enq := Bool(true)
-    }
-    
-    when(io.request_output){
-        output_buffer.io.deq := Bool(true)
-    }
+    output_buffer.io.slave_enq_input := Bool(false)
+    output_buffer.io.slave_deq_output := Bool(false)
+    output_buffer.io.slave_enq_input := io.input_valid
 
-    io.output_valid := output_buffer.io.can_deq
+    io.ready_for_input := output_buffer.io.slave_can_enq_input
+    io.output_ready := output_buffer.io.slave_can_deq_output
     io.data_out := output_buffer.io.data_out
 
-    io.dbg_enq_row := output_buffer.io.dbg_enq_row
-    io.dbg_deq_row := output_buffer.io.dbg_deq_row
-    io.dbg_row_deq_count := output_buffer.io.dbg_row_deq_count
-    io.dbg_enq_count := output_buffer.io.dbg_enq_count
 
-    val status = Reg(init=Bool(false))
-    val slice_counter = Reg(init=UInt(0, 8))
-
-    status := output_buffer.io.can_enq
-    
-    when(output_buffer.io.can_enq){
-        when(!status){
-            slice_counter := slice_counter + UInt(1)
-        }
+    output_buffer.io.data_in := UInt(57005)
+    when(io.input_valid){
+        output_buffer.io.data_in := io.data_in
     }
 
-    when(slice_counter === UInt(slices_per_image)){
+    when(io.request_output){
+        output_buffer.io.slave_deq_output := Bool(true)
     }
+
 }
 
-// class OutputHandlerTest(c: OutputHandler) extends Tester(c) {
-//     
-//     poke(c.io.data_in, 0)
-//     poke(c.io.input_valid, false)
-//     poke(c.io.request_output, false)
-// 
-//     peek(c.io)
-// 
-//     step(1)
-// 
-//     poke(c.io.input_valid, true)
-// 
-//     for(i <- 0 until 30*7){
-//         poke(c.io.data_in, ((i%7)+1)*1118481)
-//         println()
-//         peek(c.io)
-//         step(1)
-//     }
-// 
-//     println("\n\nDONERINO\n\n")
-//     poke(c.io.request_output, true)
-//     poke(c.io.input_valid, false)
-// 
-//     poke(c.io.data_in, 0)
-// 
-//     var outputs = 0
-//     var count = 0
-//     while(outputs < 30*9*24/16){
-//     // while(outputs < 7){
-//         count = count + 1
-//         if(count % 4 == 0){
-//             outputs = outputs + 1
-//             poke(c.io.request_output, true)
-//             peek(c.io.data_out)
-//             peek(c.output_buffer.deq_row)
-//             peek(c.output_buffer.row_deq_count)
-//             println()
-//             println()
-//             println("outputs: %d".format(outputs))
-//             println()
-//             println()
-//         }
-//         else{
-//             poke(c.io.request_output, false)
-//         }
-//         step(1)
-//     }
-// }
-// 
-    // for(i <- 0 until 6){
-    //     println()
-    //     peek(c.io.data_out)
-    //     peek(c.output_buffer.io)
-    //     println()
-    //     println()
-    //     peek(c.translator.io)
-    //     peek(c.translator.inputs_finished)
-    //     peek(c.translator.outputs_finished)
-    //     println()
-    //     println()
-
-    //     step(1)
-    // }

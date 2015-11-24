@@ -13,13 +13,7 @@ object DaisyMain {
 
         // val daisy = Module(new Tile(img_width, data_width, cols, rows))
 
-
-        // object chiselMain {
-        //     def apply[T <: Module]
-        //     (args: Array[String], daisy: () => T): T
-        // }
-
-        chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
+        // chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
 
 
         ///////////////////////////////////
@@ -27,19 +21,19 @@ object DaisyMain {
         /////////////////  TILE
         /////////////////
         ///////////////////////////////////
-       
-        // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new TileTest(c) }
+
+        chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new TileTest(c) }
 
         // chiselMainTest(args, () => Module(new Tile(img_width, data_width, cols, rows))) { c => new InputTest(c) }
 
-        
+
 
         ///////////////////////////////////
         /////////////////
         /////////////////  PROCESSOR
         /////////////////
         ///////////////////////////////////
-        
+
         // chiselMainTest(args, () => Module(new Processor(data_width, cols, rows, kernel_dim))) { c => new ProcessorRunTest(c) }
 
 

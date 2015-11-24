@@ -49,7 +49,7 @@ class TileController(data_width: Int, img_width: Int, kernel_dim: Int, first_val
     val valid_processor_input_count = Reg(init=UInt(0, 32))
     val valid_processor_output_count = Reg(init=UInt(0, 32))
     io.dbg_processor_valid_output_count := valid_processor_output_count
-    
+
     val control_mode :: data_mode :: Nil = Enum(UInt(), 2)
     val state = Reg(init=data_mode)
 

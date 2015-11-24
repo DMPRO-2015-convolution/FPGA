@@ -10,12 +10,12 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     val cols = kernel_dim*kernel_dim
     val row_length_c = row_length
-    
+
     val io = new Bundle {
 
         val reset = Bool(INPUT)
-      
         val data_in = UInt(INPUT, data_width)
+
         val push = Bool(INPUT)
         val pop = Bool(INPUT)
 
@@ -23,7 +23,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
     }
 
     val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
-      
+
     val push_row = Reg(init=UInt(0, 32))
     val pop_row  = Reg(init=UInt(0, 32))
     val push_top = Reg(init=UInt(0, 32))
@@ -85,45 +85,3 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
         }
     }
 }
-
-// class SliceBufferTest(c: SliceBuffer) extends Tester(c) {
-//     
-//     // Fill all buffers  
-//     print("Filling data memory\n")
-//     poke(c.io.pop, false)
-//     for(i <- 0 until c.cols*c.row_length_c){
-//         poke(c.io.push, true)
-//         poke(c.io.data_in, (i+1))
-//         peek(c.push_row)
-//         peek(c.pop_row)
-//         peek(c.push_top)
-//         step(1)
-//     }
-// 
-//     poke(c.io.push, false)
-//     poke(c.io.pop, false)
-//     step(1)
-// 
-//     print("\n\nRetrieving data memory\n")
-//     // Retrieve data
-//     poke(c.io.push, false)
-//     poke(c.io.pop, true)
-//     for(i <- 0 until c.cols*c.row_length_c + 1){
-//         println()
-//         peek(c.push_row)
-//         peek(c.pop_row)
-//         peek(c.push_top)
-//         peek(c.io.data_out)
-//         println("Buf 0")
-//         peek(c.row_buffers(0))
-//         println("Buf 1")
-//         peek(c.row_buffers(1))
-//         println("Buf 2")
-//         peek(c.row_buffers(2))
-//         println("Buf 3")
-//         peek(c.row_buffers(3))
-//         println()
-//         step(1)
-//     }
-// 
-// }

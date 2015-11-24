@@ -30,27 +30,27 @@ class InputHandler(img_width: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     io.data_out := UInt(57005)
     io.data_ready := Bool(false)
-    input_buffer.io.slave_read_input := Bool(false)
-    input_buffer.io.slave_drive_output := Bool(false)
+    input_buffer.io.slave_push_input := Bool(false)
+    input_buffer.io.slave_pop_output := Bool(false)
     input_buffer.io.data_in := UInt(57005)
 
 
     when(io.data_mode){
 
-        input_buffer.io.slave_read_input := io.input_ready
+        input_buffer.io.slave_push_input := io.input_ready
 
         when(io.input_ready){
             input_buffer.io.data_in := io.data_in
         }
 
-        input_buffer.io.slave_drive_output := Bool(false)
+        input_buffer.io.slave_pop_output := Bool(false)
 
-        when(input_buffer.io.slave_can_drive_output && io.output_buffer_ready){
+        when(input_buffer.io.slave_can_pop_output){
             io.data_out := input_buffer.io.data_out 
-            input_buffer.io.slave_drive_output := Bool(true)
+            input_buffer.io.slave_pop_output := Bool(true)
         }
 
-        io.data_ready := input_buffer.io.slave_drive_output
+        io.data_ready := input_buffer.io.slave_can_pop_output
     }
     .otherwise{
         when(io.input_ready){

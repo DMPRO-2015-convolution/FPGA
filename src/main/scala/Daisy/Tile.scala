@@ -21,9 +21,8 @@ class Tile( img_width: Int,
         val reset = Bool(INPUT)
 
         val data_out = UInt(OUTPUT, data_width)
-        val output_ready = Bool(OUTPUT)
         val output_valid = Bool(OUTPUT)
-        
+
         val request_processed_data = Bool(INPUT)
 
         val dbg_rdy_for_output = Bool(OUTPUT)
@@ -34,8 +33,8 @@ class Tile( img_width: Int,
     val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
     val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, Processor.first_valid_output))
     val OutputHandler = Module(new OutputHandler(img_width, data_width, img_height, kernel_dim))
-    
-    io.output_ready := Bool(false)
+
+
     io.output_valid := Bool(false)
     io.dbg_rdy_for_input := Bool(false)
     io.dbg_rdy_for_output := Bool(false)
@@ -70,10 +69,8 @@ class Tile( img_width: Int,
     OutputHandler.io.request_output := io.request_processed_data 
 
     io.data_out := OutputHandler.io.data_out
-    io.output_valid := OutputHandler.io.output_valid
-    io.output_ready := OutputHandler.io.output_ready
+    io.output_valid := OutputHandler.io.output_ready
 
-    io.dbg_rdy_for_output := OutputHandler.io.output_ready
     io.dbg_rdy_for_input := OutputHandler.io.ready_for_input
 }
 
