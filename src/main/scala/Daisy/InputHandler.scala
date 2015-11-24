@@ -14,7 +14,6 @@ class InputHandler(img_width: Int, data_width: Int, kernel_dim: Int) extends Mod
         val reset = Bool(INPUT)
 
         val data_mode = Bool(INPUT)
-        val output_buffer_ready = Bool(INPUT)
 
         val input_ready = Bool(INPUT)
         val data_in = UInt(INPUT, data_width)
@@ -29,10 +28,11 @@ class InputHandler(img_width: Int, data_width: Int, kernel_dim: Int) extends Mod
 
 
     io.data_out := UInt(57005)
+    input_buffer.io.data_in := UInt(57005)
+
     io.data_ready := Bool(false)
     input_buffer.io.slave_push_input := Bool(false)
     input_buffer.io.slave_pop_output := Bool(false)
-    input_buffer.io.data_in := UInt(57005)
 
 
     when(io.data_mode){

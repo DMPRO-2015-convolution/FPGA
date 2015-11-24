@@ -13,7 +13,7 @@ object DaisyMain {
 
         // val daisy = Module(new Tile(img_width, data_width, cols, rows))
 
-        // chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
+        chiselMain(args, () => Module(new Tile(img_width, data_width, cols, rows)))
 
 
         ///////////////////////////////////
@@ -44,7 +44,9 @@ object DaisyMain {
         /////////////////
         ///////////////////////////////////
 
-        // chiselMainTest(args, () => Module(new OutputHandler(32, 24, 16, 32, 3))) { c => new OutputHandlerTest(c) }
+        // chiselMainTest(args, () => Module(new OutputHandler(10, 24, 3))) { c => new OutputHandlerTest(c) }
+
+        // chiselMainTest(args, () => Module(new ReverseDoubleBuffer(10, 24, 3))) { c => new RDBtest(c) }
 
 
 
@@ -54,6 +56,6 @@ object DaisyMain {
         /////////////////
         ///////////////////////////////////
 
-        chiselMainTest(args, () => Module(new SliceDoubleBuffer(10, 24, 3))) { c => new DoubleBufferTest(c) }
+        // chiselMainTest(args, () => Module(new SliceDoubleBuffer(10, 24, 3))) { c => new DoubleBufferTest(c) }
     }
 }

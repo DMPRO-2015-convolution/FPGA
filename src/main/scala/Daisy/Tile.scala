@@ -25,19 +25,16 @@ class Tile( img_width: Int,
 
         val request_processed_data = Bool(INPUT)
 
-        val dbg_rdy_for_output = Bool(OUTPUT)
-        val dbg_rdy_for_input = Bool(OUTPUT)
     }
 
     val InputHandler = Module(new InputHandler(img_width, data_width, kernel_dim))
     val Processor = Module(new Processor(data_width, cols, rows, kernel_dim))
     val SystemControl = Module(new TileController(data_width, img_width, kernel_dim, Processor.first_valid_output))
-    val OutputHandler = Module(new OutputHandler(img_width, data_width, img_height, kernel_dim))
+    // val OutputHandler = Module(new OutputHandler(img_width, data_width, kernel_dim))
+    val OutputBuffer = Module(new ReverseDoubleBuffer(img_width, data_width, kernel_dim))
 
 
     io.output_valid := Bool(false)
-    io.dbg_rdy_for_input := Bool(false)
-    io.dbg_rdy_for_output := Bool(false)
     io.data_out := UInt(0, 8)
 
 
@@ -45,7 +42,6 @@ class Tile( img_width: Int,
     InputHandler.io.input_ready := io.hdmi_input_valid
     InputHandler.io.data_in := io.hdmi_data_in
     InputHandler.io.data_mode := ~SystemControl.io.processor_configure
-    InputHandler.io.output_buffer_ready := OutputHandler.io.ready_for_input
     InputHandler.io.reset := (io.reset || SystemControl.io.processor_configure)
 
     // Processor processes data. Incredible
@@ -64,14 +60,20 @@ class Tile( img_width: Int,
     SystemControl.io.reset := io.reset
 
     // Output handler recieves data from the controller, aswell as a valid bit
-    OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
-    OutputHandler.io.data_in := Processor.io.ALU_data_out
-    OutputHandler.io.request_output := io.request_processed_data 
+    // OutputHandler.io.input_valid := SystemControl.io.processor_output_is_valid
+    // OutputHandler.io.data_in := Processor.io.ALU_data_out
+    // OutputHandler.io.request_output := io.request_processed_data 
 
-    io.data_out := OutputHandler.io.data_out
-    io.output_valid := OutputHandler.io.output_ready
+    // io.data_out := OutputHandler.io.data_out
+    // io.output_valid := OutputHandler.io.output_ready
+    // io.output_valid := Bool(true)
 
-    io.dbg_rdy_for_input := OutputHandler.io.ready_for_input
+    OutputBuffer.io.data_in := Processor.io.ALU_data_out
+    OutputBuffer.io.slave_enq_input := SystemControl.io.processor_output_is_valid
+    OutputBuffer.io.slave_deq_output := io.request_processed_data
+
+    io.output_valid := OutputBuffer.io.slave_can_deq_output
+
 }
 
 class TileTest(c: Tile) extends Tester(c) {

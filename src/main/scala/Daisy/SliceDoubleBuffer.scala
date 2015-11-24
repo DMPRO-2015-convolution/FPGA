@@ -258,7 +258,8 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
     step(1)
     poke(c.io.slave_pop_output, true)
     poke(c.io.slave_push_input, true)
-    for(i <- 0 until 30){
+
+    for(i <- 0 until 70){
         println("-----------------------")
         poke(c.io.data_in, (i/10) + 1)
         poke(c.io.slave_push_input, true)
@@ -277,4 +278,5 @@ class DoubleBufferTest(c: SliceDoubleBuffer) extends Tester(c) {
         println("-----------------------")
         step(1)
     }
+
 }
