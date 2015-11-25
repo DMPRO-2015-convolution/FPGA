@@ -9,8 +9,8 @@ import TidbitsOCM._
 // A stack which should synthesize to BRAM. Should be used to store slices.
 // This stack only serves to buffer slices of our image which is done with two buffers
 // thus we dont need to take too many precautions.
-class RowBuffer(entries: Int, data_width: Int, number: Int) extends Module {
-    
+class RowBuffer(entries: Int, data_width: Int) extends Module {
+
     val io = new Bundle {
 
         val reset = Bool(INPUT)

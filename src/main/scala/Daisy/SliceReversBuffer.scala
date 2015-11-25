@@ -30,7 +30,7 @@ class SliceReverseBuffer(row_length: Int, data_width: Int, kernel_dim: Int) exte
         val dbg_row_deq_count = UInt(OUTPUT, 32)
     }
 
-    val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
+    val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width)).io
 
 
     // Keep track of which row to enqueue or dequeue

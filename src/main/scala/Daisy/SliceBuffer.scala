@@ -26,7 +26,7 @@ class SliceBuffer(row_length: Int, data_width: Int, kernel_dim: Int) extends Mod
 
     }
 
-    val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width, i)).io
+    val row_buffers = for(i <- 0 until cols) yield Module(new RowBuffer(row_length, data_width)).io
 
     val push_row = Reg(init=UInt(0, 32))
     val pop_row  = Reg(init=UInt(0, 32))
