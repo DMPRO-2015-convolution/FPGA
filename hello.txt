@@ -5,11 +5,11 @@ but I'm not going to bother setting everything up to confirm that. I'm sorry git
 assured that taking shortcuts did in no way end up saving any time...
 
 In order to make sense of daisy (the core processor, see the report) you're better off studying some of the earlier commits.
-At the end we were desperate and we were kind of throwing stuff at the wall seeing what would stick. The interesting parts
+At the end I was desperate and I was kinda throwing stuff at the wall seeing what would stick. The interesting parts of Daisy
 is the core, not the double barrel buffers and flow control etc. You should take a look at one of the commits where the
 software emulated processor manages to properly convolute an entire image. You should also take a look at the makeshift
-tester which prints processor states (in the final commit it's the stuff in "scratchpad.scala", but it used to be a little
-saner further back)
+tester which prints processor states (in this branchs final commit there's a file called "scratchpad.scala", look for something
+similar in the commit logs if you're interested in how I did testing)
 
 I believe testing in chisel has come a lot further than when I wrote all these shite tests, and I was pretty clueless about
 scala, so I think you can do a lot better. I imagine if I made something to parse logs allowing me to step through snapshots
