@@ -1,6 +1,6 @@
 To the next generation:
 
-This is the correct branch for the core of camvolution, I'm pretty sure it contains the correct chisel and VHDL code,
+This is the wrong branch for the core of camvolution, try the one called "Refactor". I'm pretty sure it contains the correct chisel code,
 but I'm not going to bother setting everything up to confirm that. I'm sorry git is as fucked up as it is, but rest
 assured that taking shortcuts did in no way end up saving any time...
 
@@ -15,8 +15,10 @@ I believe testing in chisel has come a lot further than when I wrote all these s
 scala, so I think you can do a lot better. I imagine if I made something to parse logs allowing me to step through snapshots
 instead of 10 000 lines of log.txt it would have been a lot easier.
 
-The readme mentions some C software convolution, it's from a TDT4200 exercise, but it should work well enough.
+The readme for Refactor mentions some C software convolution, it's from a TDT4200 exercise, but it should work well enough.
 Don't be dumbasses, don't use C unless you know you need it (hint: you don't)
+
+In short, use this branch for the VHDL HDMI module and use the Refactor (sorry! sorry!) for the chisel code.
 
 
 You know where we went wrong, it's up to you to find new and exciting ways to go wrong. Good luck!
