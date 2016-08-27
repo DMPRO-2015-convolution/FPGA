@@ -18,3 +18,14 @@ $ sbt
 run the decoder ./decoder
 
 Marvel at the pshychedelic daisy
+
+
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
+!!! READ hello.txt !!!
